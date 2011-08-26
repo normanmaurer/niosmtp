@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.    
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>me.normanmaurer</groupId>
+  <artifactId>niosmtp</artifactId>
+  <name>NIOsmtp</name>
+  <version>0.1-SNAPSHOT</version>
+  <description>NIO based SMTP client</description>
+  <inceptionYear>2011</inceptionYear>
+  <packaging>jar</packaging>
+  
+  <prerequisites>
+    <maven>3.0.2</maven>
+  </prerequisites>
+  
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>2.3.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>2.4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.0-beta-3</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>2.3.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>2.4.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.felix</groupId>
+          <artifactId>maven-bundle-plugin</artifactId>
+          <version>2.1.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>2.7</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jxr-plugin</artifactId>
+          <version>2.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-pmd-plugin</artifactId>
+          <version>2.5</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-changes-plugin</artifactId>
+          <version>2.4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-project-info-reports-plugin</artifactId>
+          <version>2.3.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-war-plugin</artifactId>
+          <version>2.1.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-report-plugin</artifactId>
+          <version>2.7.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>findbugs-maven-plugin</artifactId>
+          <version>2.3.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>versions-maven-plugin</artifactId>
+          <version>1.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>1.3</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>1.2</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <optimize>true</optimize>
+          <source>${target.jdk}</source>
+          <target>${target.jdk}</target>
+        </configuration>
+      </plugin>
+      <!-- Use maven deploy plugin version 2.4 as workaround -->
+      <!-- See: http://jira.codehaus.org/browse/MAPPASM-96 -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <configuration>
+          <filesets>
+            <fileset>
+              <!-- just delete the bin directory -->
+              <directory>bin</directory>
+              <followSymlinks>false</followSymlinks>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
+
+
+      <!-- Site generation -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <executions>
+          <!-- Attach non-reporting site-descriptor when installing -->
+          <execution>
+            <id>attach-descriptor</id>
+            <goals>
+              <goal>attach-descriptor</goal>
+            </goals>
+            <configuration>
+              <siteDirectory>${basedir}/src/site</siteDirectory>
+              <generateReports>false</generateReports>
+            </configuration>
+          </execution>
+        </executions>
+        <configuration>
+          <siteDirectory>${maven-site-plugin.siteDirectory}</siteDirectory>
+          <generateReports>${maven-site-plugin.generateReports}</generateReports>
+          <generateSitemap>true</generateSitemap>
+          <reportPlugins>
+            <!-- Order matters. First project-info-reports, second jxr. -->
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-project-info-reports-plugin</artifactId>
+              <reports>
+                    <report>index</report>
+                    <report>project-team</report>
+                    <report>mailing-list</report>
+                    <report>cim</report>
+                    <report>issue-tracking</report>
+                    <report>license</report>
+                    <report>scm</report>
+                    <report>dependencies</report>
+              </reports>
+            </plugin>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-jxr-plugin</artifactId>
+              <configuration>
+                <aggregate>true</aggregate>
+              </configuration>
+            </plugin>
+            <!-- disable this till we released a new version with javamail 1.4.3 as dependency -->
+            <!-- 
+            <plugin>
+              <groupId>org.apache.james</groupId>
+              <artifactId>maven-mailetdocs-plugin</artifactId>
+              <version>0.1</version>
+            </plugin>
+            -->
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-javadoc-plugin</artifactId>
+              <configuration>
+                <minmemory>256m</minmemory>
+                <maxmemory>1g</maxmemory>
+                <linksource>true</linksource>
+                <tags>
+                  <tag>
+                    <name>note</name>
+                    <placement>a</placement>
+                    <head>NOTE</head>
+                  </tag>
+                  <tag>
+                    <name>todo</name>
+                    <placement>a</placement>
+                    <head>TODO</head>
+                  </tag>
+                  <tag>
+                    <name>warning</name>
+                    <placement>a</placement>
+                    <head>WARNING</head>
+                  </tag>
+                </tags>
+                <source>${target.jdk}</source>
+              </configuration>
+              <reportSets>
+                <reportSet>
+                  <reports>
+                    <report>aggregate</report>
+                    <report>test-aggregate</report>
+                  </reports>
+                </reportSet>
+              </reportSets>
+            </plugin>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-pmd-plugin</artifactId>
+              <configuration>
+                <linkXref>true</linkXref>
+                <aggregate>true</aggregate>
+                <targetJdk>${target.jdk}</targetJdk>
+                <rulesets>
+                  <ruleset>/rulesets/basic.xml</ruleset>
+                  <ruleset>/rulesets/controversial.xml</ruleset>
+                </rulesets>
+                <format>xml</format>
+                <xrefLocation>${project.reporting.outputDirectory}/xref</xrefLocation>
+                <xrefTestLocation>${project.reporting.outputDirectory}/xref-test</xrefTestLocation>
+                <sourceEncoding>utf-8</sourceEncoding>
+                <minimumTokens>100</minimumTokens>
+              </configuration>
+            </plugin>
+            <plugin>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>findbugs-maven-plugin</artifactId>
+              <configuration>
+                <!-- required by dashboard plugin and hudson -->
+                <xmlOutput>true</xmlOutput>
+                <effort>Max</effort>
+                <findbugsXmlOutput>true</findbugsXmlOutput>
+                <findbugsXmlWithMessages>true</findbugsXmlWithMessages>
+              </configuration>
+            </plugin>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-changes-plugin</artifactId>
+              <configuration>
+                  <onlyCurrentVersion>true</onlyCurrentVersion>
+                  <resolutionIds>Closed</resolutionIds>
+                  <maxEntries>1000</maxEntries>
+              </configuration>
+              <reportSets>
+                <reportSet>
+                  <reports>
+                    <report>jira-report</report>
+                  </reports>
+                </reportSet>
+              </reportSets>
+            </plugin>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-surefire-report-plugin</artifactId>
+              <configuration>
+                <argLine>-Xmx1024m -XX:MaxPermSize=512m</argLine>
+                <aggregate>true</aggregate>
+                <linkXref>true</linkXref>
+                <xrefLocation>${project.reporting.outputDirectory}</xrefLocation>
+              </configuration>
+            </plugin>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-dependency-plugin</artifactId>
+            </plugin>
+            <plugin>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>versions-maven-plugin</artifactId>
+              <reportSets>
+                <reportSet>
+                  <reports>
+                    <report>dependency-updates-report</report>
+                    <report>plugin-updates-report</report>
+                    <report>property-updates-report</report>
+                  </reports>
+                </reportSet>
+              </reportSets>
+            </plugin>
+          </reportPlugins>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <dependencies>
+   
+    <dependency>
+      <groupId>org.jboss.netty</groupId>
+      <artifactId>netty</artifactId>
+      <version>3.2.5.Final</version>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
+
+  <properties>
+ 
+    <target.jdk>1.6</target.jdk>
+  </properties>
+
+</project>
