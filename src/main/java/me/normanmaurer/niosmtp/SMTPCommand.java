@@ -8,5 +8,6 @@ public enum SMTPCommand {
     FROM,
     DATA,
     AUTH,
+    NOOP,
     QUIT
 }

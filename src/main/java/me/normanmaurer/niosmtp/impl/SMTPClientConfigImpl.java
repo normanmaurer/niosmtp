@@ -4,6 +4,13 @@ import java.net.InetAddress;
 
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 
+/**
+ * Simple {@link SMTPClientConfig} implementation which allows
+ * to handle the config via a POJO.
+ * 
+ * @author Norman Maurer
+ *
+ */
 public class SMTPClientConfigImpl implements SMTPClientConfig {
 
     private String heloName = "localhost";
@@ -20,6 +27,10 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
     }
     
     
+    /*
+     * (non-Javadoc)
+     * @see me.normanmaurer.niosmtp.SMTPClientConfig#getHeloName()
+     */
     public String getHeloName() {
         return heloName;
     }
@@ -28,6 +39,10 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
         this.timeout = timeout;
     }
     
+    /*
+     * (non-Javadoc)
+     * @see me.normanmaurer.niosmtp.SMTPClientConfig#getTimeout()
+     */
     public int getTimeout() {
         return timeout;
     }
@@ -36,10 +51,18 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
         this.type = type;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see me.normanmaurer.niosmtp.SMTPClientConfig#getType()
+     */
     public Type getType() {
         return type;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see me.normanmaurer.niosmtp.SMTPClientConfig#getLocalAddress()
+     */
     public InetAddress getLocalAddress() {
         return localAddress;
     }
@@ -48,6 +71,10 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
         this.localAddress = localAddress;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see me.normanmaurer.niosmtp.SMTPClientConfig#usePipelining()
+     */
     public boolean usePipelining() {
         return usePipelining;
     }

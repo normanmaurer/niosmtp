@@ -2,6 +2,12 @@ package me.normanmaurer.niosmtp;
 
 import java.net.InetAddress;
 
+/**
+ * Configuration which is used to deliver email via SMTP
+ *
+ * @author Norman Maurer
+ *
+ */
 public interface SMTPClientConfig {
 
     /**
