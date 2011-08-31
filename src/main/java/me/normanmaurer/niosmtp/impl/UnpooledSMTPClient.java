@@ -27,13 +27,13 @@ import me.normanmaurer.niosmtp.SMTPClientConfig;
 public class UnpooledSMTPClient implements SMTPClient {
 
     private final ClientBootstrap bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
-    private final SMTPClientPipelineFactory pfactory = new SMTPClientPipelineFactory();
     
     public UnpooledSMTPClient() {
-        bootstrap.setPipelineFactory(pfactory);
     }
     
     public Future<List<RecipientStatus>> deliver(InetSocketAddress host, String mailFrom, List<String> recipients, InputStream msg, SMTPClientConfig config) {
+        bootstrap.setPipelineFactory(new SMTPClientPipelineFactory(mailFrom, recipients, msg, config));
+
         bootstrap.connect(host);
         // TODO Auto-generated method stub
         return null;
