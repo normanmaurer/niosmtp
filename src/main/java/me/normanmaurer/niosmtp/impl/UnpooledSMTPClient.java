@@ -1,7 +1,9 @@
 package me.normanmaurer.niosmtp.impl;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -41,5 +43,10 @@ public class UnpooledSMTPClient implements SMTPClient {
 
     public void destroy() {
         bootstrap.releaseExternalResources();
+    }
+    
+    public static void main(String[] args) {
+        UnpooledSMTPClient client = new UnpooledSMTPClient();
+        client.deliver(new InetSocketAddress("192.168.0.254", 25), "test@test.de", Arrays.asList("norman@apache.org"), new ByteArrayInputStream("Subject: test\r\n\r\ntest".getBytes()), new SMTPClientConfigImpl());
     }
 }
