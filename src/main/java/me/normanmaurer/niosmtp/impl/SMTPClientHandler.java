@@ -67,7 +67,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler {
                     break;
                 case MESSAGE:
                     ctx.getChannel().write(new ChunkedStream(msg));
-                    ctx.getChannel().write(ChannelBuffers.wrappedBuffer(".\r\n".getBytes()));
+                    ctx.getChannel().write(ChannelBuffers.wrappedBuffer("\r\n.\r\n".getBytes()));
                     ctx.setAttachment(SMTPCommand.QUIT);
 
                 case QUIT:
