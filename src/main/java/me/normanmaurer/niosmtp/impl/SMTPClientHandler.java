@@ -1,6 +1,7 @@
 package me.normanmaurer.niosmtp.impl;
 
 import java.io.InputStream;
+import java.util.LinkedList;
 import java.util.List;
 
 import me.normanmaurer.niosmtp.SMTPClientConfig;
@@ -20,12 +21,12 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler {
     private SMTPClientConfig config;
     private String mailFrom;
     private InputStream msg;
-    private List<String> recipients;
+    private LinkedList<String> recipients;
 
     public SMTPClientHandler(String mailFrom, List<String> recipients, InputStream msg, SMTPClientConfig config) {
         this.config = config;
         this.mailFrom = mailFrom;
-        this.recipients = recipients;
+        this.recipients = new LinkedList<String>(recipients);
         this.msg = msg;
     }
 
@@ -57,11 +58,13 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler {
                     ctx.setAttachment(SMTPCommand.RCPT);
                     break;
                 case RCPT:
-
-                    for (int i = 0; i < recipients.size(); i++) {
-                        ctx.getChannel().write(new SMTPRequestImpl("RCPT TO:", "<" + recipients.get(i) + ">"));
+                    String rcpt = recipients.removeFirst();
+                    ctx.getChannel().write(new SMTPRequestImpl("RCPT TO:", "<" + rcpt + ">"));
+                    if (recipients.isEmpty()) {
+                        ctx.setAttachment(SMTPCommand.DATA);
+                    } else {
+                        ctx.setAttachment(SMTPCommand.RCPT);
                     }
-                    ctx.setAttachment(SMTPCommand.DATA);
                     break;
                 case DATA:
                     ctx.getChannel().write(new SMTPRequestImpl("DATA", null));
@@ -71,9 +74,10 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler {
                     ctx.getChannel().write(new ChunkedStream(msg));
                     ctx.getChannel().write(ChannelBuffers.wrappedBuffer("\r\n.\r\n".getBytes()));
                     ctx.setAttachment(SMTPCommand.QUIT);
-
+                    break;
                 case QUIT:
                     ctx.getChannel().write(new SMTPRequestImpl("QUIT", null)).addListener(ChannelFutureListener.CLOSE);
+                    break;
                 default:
                     ctx.getChannel().write(ChannelBuffers.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
                     break;
