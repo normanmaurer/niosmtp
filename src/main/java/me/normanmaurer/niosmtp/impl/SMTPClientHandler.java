@@ -7,6 +7,7 @@ import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPCommand;
 import me.normanmaurer.niosmtp.SMTPResponse;
 
+import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -51,6 +52,9 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler {
                     ctx.setAttachment(SMTPCommand.MAIL);
                     break;
                 case MAIL:
+                    if (mailFrom == null) {
+                        mailFrom = "";
+                    }
                     ctx.getChannel().write(new SMTPRequestImpl("MAIL FROM:", "<" + mailFrom + ">"));
                     ctx.setAttachment(SMTPCommand.RCPT);
                     break;
@@ -73,7 +77,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler {
                 case QUIT:
                     ctx.getChannel().write(new SMTPRequestImpl("QUIT", null)).addListener(ChannelFutureListener.CLOSE);
                 default:
-                    // TODO: fix me
+                    ctx.getChannel().write(ChannelBuffers.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
                     break;
                 }
             }
