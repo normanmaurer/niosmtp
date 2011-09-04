@@ -3,7 +3,6 @@ package me.normanmaurer.niosmtp;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.util.List;
-import java.util.concurrent.Future;
 
 /**
  * A client which deliver email via SMTP
@@ -13,5 +12,5 @@ import java.util.concurrent.Future;
  */
 public interface SMTPClient {
 
-    public Future<List<RecipientStatus>> deliver(InetSocketAddress host, String mailFrom, List<String> recipients, InputStream msg, SMTPClientConfig config);
+    public SMTPClientFuture deliver(InetSocketAddress host, String mailFrom, List<String> recipients, InputStream msg, SMTPClientConfig config);
 }

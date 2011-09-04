@@ -4,16 +4,20 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
+import org.jboss.netty.channel.ChannelFuture;
+import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 
-import me.normanmaurer.niosmtp.RecipientStatus;
 import me.normanmaurer.niosmtp.SMTPClient;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
+import me.normanmaurer.niosmtp.SMTPClientFuture;
+import me.normanmaurer.niosmtp.SMTPCommand;
 
 /**
  * {@link SMTPClient} implementation which will create a new Connection for
@@ -26,17 +30,26 @@ import me.normanmaurer.niosmtp.SMTPClientConfig;
  * @author Norman Maurer
  * 
  */
-public class UnpooledSMTPClient implements SMTPClient {
+public class UnpooledSMTPClient implements SMTPClient, ChannelLocalSupport {
 
     private final ClientBootstrap bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
     
     public UnpooledSMTPClient() {
     }
     
-    public Future<List<RecipientStatus>> deliver(InetSocketAddress host, String mailFrom, List<String> recipients, InputStream msg, SMTPClientConfig config) {
+    public SMTPClientFuture deliver(InetSocketAddress host, String mailFrom, List<String> recipients, InputStream msg, SMTPClientConfig config) {
+        final SMTPClientFutureImpl future = new SMTPClientFutureImpl();
         bootstrap.setPipelineFactory(new SMTPClientPipelineFactory(mailFrom, recipients, msg, config));
-
-        bootstrap.connect(host);
+        bootstrap.connect(host).addListener(new ChannelFutureListener() {
+            
+            @Override
+            public void operationComplete(ChannelFuture cf) throws Exception {
+                Map<String, Object> attrs = new HashMap<String, Object>();
+                attrs.put(FUTURE_KEY, future);
+                attrs.put(NEXT_COMMAND_KEY, SMTPCommand.HELO);
+                ATTRIBUTES.set(cf.getChannel(), attrs);
+            }
+        });
         // TODO Auto-generated method stub
         return null;
     }

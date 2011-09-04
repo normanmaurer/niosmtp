@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import me.normanmaurer.niosmtp.SMTPClientConfig;
+import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPCommand;
 import me.normanmaurer.niosmtp.SMTPResponse;
 
@@ -16,7 +17,7 @@ import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.stream.ChunkedStream;
 
-public class SMTPClientHandler extends SimpleChannelUpstreamHandler {
+public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements ChannelLocalSupport {
 
     private SMTPClientConfig config;
     private String mailFrom;
@@ -44,6 +45,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler {
             SMTPCommand nextCommand = (SMTPCommand) ctx.getAttachment();
             int code = response.getCode();
             if (code > 400) {
+                
             } else {
                 switch (nextCommand) {
                 case HELO:
@@ -86,6 +88,13 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler {
 
         }
         super.messageReceived(ctx, e);
+    }
+
+    @Override
+    public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+        SMTPClientFutureImpl future = (SMTPClientFutureImpl) ATTRIBUTES.get(e.getChannel()).get(FUTURE_KEY);
+        future.done();
+        super.channelClosed(ctx, e);
     }
 
 }
