@@ -41,7 +41,6 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler {
         if (e.getMessage() instanceof SMTPResponse) {
             SMTPResponse response = (SMTPResponse) e.getMessage();
             SMTPCommand nextCommand = (SMTPCommand) ctx.getAttachment();
-            System.out.println(nextCommand.name());
             int code = response.getCode();
             if (code > 400) {
             } else {
