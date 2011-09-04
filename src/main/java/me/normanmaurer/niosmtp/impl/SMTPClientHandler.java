@@ -7,7 +7,6 @@ import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPCommand;
 import me.normanmaurer.niosmtp.SMTPResponse;
 
-import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -83,7 +82,6 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler {
             }
 
         }
-        // TODO Auto-generated method stub
         super.messageReceived(ctx, e);
     }
 
