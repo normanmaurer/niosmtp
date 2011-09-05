@@ -46,6 +46,10 @@ public class UnpooledSMTPClient implements SMTPClient, ChannelLocalSupport {
         bootstrap.setPipelineFactory(new SMTPClientPipelineFactory());
     }
     
+    /*
+     * (non-Javadoc)
+     * @see me.normanmaurer.niosmtp.SMTPClient#deliver(java.net.InetSocketAddress, java.lang.String, java.util.List, java.io.InputStream, me.normanmaurer.niosmtp.SMTPClientConfig)
+     */
     public SMTPClientFuture deliver(InetSocketAddress host, final String mailFrom, final List<String> recipients, final InputStream msg, final SMTPClientConfig config) {
         final SMTPClientFutureImpl future = new SMTPClientFutureImpl();
         bootstrap.connect(host).addListener(new ChannelFutureListener() {
@@ -65,6 +69,9 @@ public class UnpooledSMTPClient implements SMTPClient, ChannelLocalSupport {
         return future;
     }
 
+    /**
+     * Call this method to destroy the {@link SMTPClient} and release all resources
+     */
     public void destroy() {
         bootstrap.releaseExternalResources();
     }
