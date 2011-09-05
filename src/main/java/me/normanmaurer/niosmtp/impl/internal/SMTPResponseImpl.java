@@ -2,7 +2,7 @@ package me.normanmaurer.niosmtp.impl.internal;
 
 import me.normanmaurer.niosmtp.SMTPResponse;
 
-public class SMTPResponseImpl implements SMTPResponse{
+class SMTPResponseImpl implements SMTPResponse{
 
     private int code;
     private String line;
