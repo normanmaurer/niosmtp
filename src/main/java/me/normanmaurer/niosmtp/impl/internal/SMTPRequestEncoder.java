@@ -1,12 +1,16 @@
 package me.normanmaurer.niosmtp.impl.internal;
 
+import java.nio.charset.Charset;
+
 import me.normanmaurer.niosmtp.SMTPRequest;
 
+import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
 
 public class SMTPRequestEncoder extends OneToOneEncoder{
+    private final static Charset CHARSET = Charset.forName("US-ASCII");
 
     @Override
     protected Object encode(ChannelHandlerContext arg0, Channel arg1, Object msg) throws Exception {
@@ -20,7 +24,7 @@ public class SMTPRequestEncoder extends OneToOneEncoder{
                 sb.append(req.getArgument());
             }
             sb.append("\r\n");
-            return sb.toString();
+            return ChannelBuffers.wrappedBuffer(sb.toString().getBytes(CHARSET));
         }
         return msg;
     }

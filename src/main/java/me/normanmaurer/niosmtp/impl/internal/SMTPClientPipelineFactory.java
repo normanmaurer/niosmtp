@@ -1,7 +1,6 @@
 package me.normanmaurer.niosmtp.impl.internal;
 
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.util.List;
 
 import me.normanmaurer.niosmtp.SMTPClientConfig;
@@ -11,17 +10,25 @@ import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.handler.codec.frame.DelimiterBasedFrameDecoder;
 import org.jboss.netty.handler.codec.frame.Delimiters;
-import org.jboss.netty.handler.codec.string.StringDecoder;
-import org.jboss.netty.handler.codec.string.StringEncoder;
 import org.jboss.netty.handler.stream.ChunkedWriteHandler;
 
+/**
+ * {@link ChannelPipelineFactory} which is used for the SMTP Client
+ * 
+ * @author Norman Maurer
+ * 
+ *
+ */
 public class SMTPClientPipelineFactory implements ChannelPipelineFactory{
 
+    private final static DelimiterBasedFrameDecoder FRAMER = new DelimiterBasedFrameDecoder(8192, true, Delimiters.lineDelimiter());
+    private final static SMTPResponseDecoder SMTP_RESPONSE_DECODER = new SMTPResponseDecoder();
+    private final static SMTPRequestEncoder SMTP_REQUEST_ENCODER = new SMTPRequestEncoder();
+    
     private final String mailFrom;
     private final List<String> recipients;
     private final InputStream msg;
     private final SMTPClientConfig config;
-    private final static Charset CHARSET = Charset.forName("US-ASCII");
     
     public SMTPClientPipelineFactory(String mailFrom, List<String> recipients, InputStream msg, SMTPClientConfig config) {
         this.mailFrom = mailFrom;
@@ -33,11 +40,9 @@ public class SMTPClientPipelineFactory implements ChannelPipelineFactory{
     @Override
     public ChannelPipeline getPipeline() throws Exception {
         ChannelPipeline pipeline = Channels.pipeline();
-        pipeline.addLast("framer", new DelimiterBasedFrameDecoder(8192, true, Delimiters.lineDelimiter()));
-        pipeline.addLast("stringDecoder", new StringDecoder(CHARSET));
-        pipeline.addLast("decoder", new SMTPResponseDecoder());
-        pipeline.addLast("stringEncoder", new StringEncoder(CHARSET));
-        pipeline.addLast("encoder", new SMTPRequestEncoder());
+        pipeline.addLast("framer", FRAMER);
+        pipeline.addLast("decoder", SMTP_RESPONSE_DECODER);
+        pipeline.addLast("encoder", SMTP_REQUEST_ENCODER);
         pipeline.addLast("chunk", new ChunkedWriteHandler());
         pipeline.addLast("coreHandler", new SMTPClientHandler(mailFrom, recipients, msg, config));
         return pipeline;
