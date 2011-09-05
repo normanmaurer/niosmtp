@@ -15,5 +15,5 @@ public interface SMTPClientFutureListener {
      * 
      * @param status
      */
-    void operationComplete(Iterator<RecipientStatus> status); 
+    void operationComplete(Iterator<DeliveryRecipientStatus> status); 
 }

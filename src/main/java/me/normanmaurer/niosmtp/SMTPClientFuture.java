@@ -5,12 +5,12 @@ import java.util.concurrent.Future;
 
 /**
  * A {@link Future} which allows to register {@link SMTPClientFutureListener} and also make it possible to
- * access an {@link Iterator} which holds {@link RecipientStatus} objects in a blocking mode.
+ * access an {@link Iterator} which holds {@link DeliveryRecipientStatus} objects in a blocking mode.
  * 
  * @author Norman Maurer
  *
  */
-public interface SMTPClientFuture extends Future<Iterator<RecipientStatus>>{
+public interface SMTPClientFuture extends Future<Iterator<DeliveryRecipientStatus>>{
 
     /**
      * Add the {@link SMTPClientFutureListener} which will notified one the delivery is complete.

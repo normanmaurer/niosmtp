@@ -8,7 +8,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import me.normanmaurer.niosmtp.RecipientStatus;
+import me.normanmaurer.niosmtp.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPClientFutureListener;
 
@@ -16,7 +16,7 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
 
     private volatile boolean isReady = false;
     private volatile boolean isCancelled = false;
-    private final List<RecipientStatusImpl> status = Collections.synchronizedList(new ArrayList<RecipientStatusImpl>());
+    private final List<DeliveryRecipientStatusImpl> status = Collections.synchronizedList(new ArrayList<DeliveryRecipientStatusImpl>());
     private final List<SMTPClientFutureListener> listeners = Collections.synchronizedList(new ArrayList<SMTPClientFutureListener>());
     public synchronized void done() {
         if (!isReady) {
@@ -25,8 +25,8 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
 
             
             for (int i = 0; i < listeners.size(); i++) {
-                final Iterator<RecipientStatusImpl> it = status.iterator();
-                listeners.get(i).operationComplete(new Iterator<RecipientStatus>() {
+                final Iterator<DeliveryRecipientStatusImpl> it = status.iterator();
+                listeners.get(i).operationComplete(new Iterator<DeliveryRecipientStatus>() {
 
                     @Override
                     public boolean hasNext() {
@@ -34,7 +34,7 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
                     }
 
                     @Override
-                    public RecipientStatus next() {
+                    public DeliveryRecipientStatus next() {
                         return it.next();
                     }
 
@@ -50,7 +50,7 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
         }
     }
     
-    protected List<RecipientStatusImpl> getStatus() {
+    protected List<DeliveryRecipientStatusImpl> getStatus() {
         return status;
     }
     
@@ -95,13 +95,13 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
         listeners.remove(listener);
     }
 
-    protected void addRecipientStatus(RecipientStatusImpl rcptStatus) {
+    protected void addRecipientStatus(DeliveryRecipientStatusImpl rcptStatus) {
         status.add(rcptStatus);
     }
 
 
     @Override
-    public Iterator<RecipientStatus> get() throws InterruptedException, ExecutionException {
+    public Iterator<DeliveryRecipientStatus> get() throws InterruptedException, ExecutionException {
         checkReady();
         return new RecipientStatusIterator(status.iterator());
     }
@@ -109,7 +109,7 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
 
 
     @Override
-    public Iterator<RecipientStatus> get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+    public Iterator<DeliveryRecipientStatus> get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         checkReady(unit.toMillis(timeout));
         if (isDone()) {
             return new RecipientStatusIterator(status.iterator());
@@ -118,10 +118,10 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
         }
     }
     
-    private final class RecipientStatusIterator implements Iterator<RecipientStatus> {
+    private final class RecipientStatusIterator implements Iterator<DeliveryRecipientStatus> {
 
-        private final Iterator<RecipientStatusImpl> it;
-        public RecipientStatusIterator(Iterator<RecipientStatusImpl> it) {
+        private final Iterator<DeliveryRecipientStatusImpl> it;
+        public RecipientStatusIterator(Iterator<DeliveryRecipientStatusImpl> it) {
             this.it = it;
         }
         
@@ -131,7 +131,7 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
         }
 
         @Override
-        public RecipientStatus next() {
+        public DeliveryRecipientStatus next() {
             return it.next();
         }
 

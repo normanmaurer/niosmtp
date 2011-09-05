@@ -16,7 +16,7 @@ import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 
-import me.normanmaurer.niosmtp.RecipientStatus;
+import me.normanmaurer.niosmtp.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.SMTPClient;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPClientFuture;
@@ -63,9 +63,9 @@ public class UnpooledSMTPClient implements SMTPClient, ChannelLocalSupport {
     public static void main(String[] args) throws InterruptedException, ExecutionException {
         UnpooledSMTPClient client = new UnpooledSMTPClient();
         SMTPClientFuture future = client.deliver(new InetSocketAddress("192.168.0.254", 25), "test@test.de", Arrays.asList("nm2@normanmaurer.me", "nm2@normanmaurer.me"), new ByteArrayInputStream("Subject: test\r\n\r\ntest".getBytes()), new SMTPClientConfigImpl());
-        Iterator<RecipientStatus> statusIt = future.get();
+        Iterator<DeliveryRecipientStatus> statusIt = future.get();
         while(statusIt.hasNext()) {
-            RecipientStatus rs = statusIt.next();
+            DeliveryRecipientStatus rs = statusIt.next();
             System.out.println(rs.getAddress() + "=> " + rs.getReturnCode() + " " + rs.getResponse());
         }
     }

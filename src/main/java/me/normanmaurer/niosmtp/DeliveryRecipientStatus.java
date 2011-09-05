@@ -5,7 +5,7 @@ package me.normanmaurer.niosmtp;
  * @author Norman Maurer
  *
  */
-public interface RecipientStatus {
+public interface DeliveryRecipientStatus {
 
     /**
      * Return the return code which was returned for the recipient. 

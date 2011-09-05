@@ -89,7 +89,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements C
                 break;
             case RCPT:
                 if (curCommand == SMTPCommand.RCPT) {
-                    future.addRecipientStatus(new RecipientStatusImpl((String) ctx.getAttachment(), code, response.getLastLine()));
+                    future.addRecipientStatus(new DeliveryRecipientStatusImpl((String) ctx.getAttachment(), code, response.getLastLine()));
                 } else if (code > 400) {
                     setResponseForAll(response, future, ctx);
                     break;
@@ -116,7 +116,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements C
                 }
                 break;
             case DATA:
-                future.addRecipientStatus(new RecipientStatusImpl((String) ctx.getAttachment(), code, response.getLastLine()));
+                future.addRecipientStatus(new DeliveryRecipientStatusImpl((String) ctx.getAttachment(), code, response.getLastLine()));
 
                 if (code < 400) {
                     ctx.getChannel().write(new SMTPRequestImpl("DATA", null)).addListener(new ChannelFutureListener() {
@@ -130,7 +130,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements C
                     states.put(NEXT_COMMAND_KEY, SMTPCommand.MESSAGE);
 
                 } else {
-                    List<RecipientStatusImpl> status = future.getStatus();
+                    List<DeliveryRecipientStatusImpl> status = future.getStatus();
                     boolean success = false;
                     for (int i = 0; i < status.size(); i++) {
                        if (status.get(i).isSuccessful()) {
@@ -177,7 +177,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements C
     
     private void setResponseForAll(SMTPResponse response, SMTPClientFutureImpl future, ChannelHandlerContext ctx) {
         while (!recipients.isEmpty()) {
-            future.addRecipientStatus(new RecipientStatusImpl(recipients.removeFirst(), response.getCode(), response.getLastLine()));
+            future.addRecipientStatus(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response.getCode(), response.getLastLine()));
         }
         ctx.getChannel().write(ChannelBuffers.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
 
@@ -186,7 +186,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements C
     }
 
     private void replaceStatusForAll(SMTPResponse response, SMTPClientFutureImpl future, ChannelHandlerContext ctx) {
-        List<RecipientStatusImpl> status = future.getStatus();
+        List<DeliveryRecipientStatusImpl> status = future.getStatus();
         for (int i = 0; i < status.size(); i++) {
             status.get(i).setResponse(response.getCode(), response.getLastLine());
         }

@@ -1,14 +1,14 @@
 package me.normanmaurer.niosmtp.impl;
 
-import me.normanmaurer.niosmtp.RecipientStatus;
+import me.normanmaurer.niosmtp.DeliveryRecipientStatus;
 
-public class RecipientStatusImpl implements RecipientStatus{
+public class DeliveryRecipientStatusImpl implements DeliveryRecipientStatus{
 
     private String address;
     private String response;
     private int code;
 
-    public RecipientStatusImpl(String address, int code, String response) {
+    public DeliveryRecipientStatusImpl(String address, int code, String response) {
         
         this.address = address;
         this.code = code;
