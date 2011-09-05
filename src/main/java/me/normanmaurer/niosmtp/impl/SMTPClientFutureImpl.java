@@ -16,10 +16,42 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
 
     private volatile boolean isReady = false;
     private volatile boolean isCancelled = false;
-    private List<RecipientStatus> status = Collections.synchronizedList(new ArrayList<RecipientStatus>());
-    public void done() {
-        isReady = true;
-        notify();
+    private final List<RecipientStatusImpl> status = Collections.synchronizedList(new ArrayList<RecipientStatusImpl>());
+    private final List<SMTPFutureListener> listeners = Collections.synchronizedList(new ArrayList<SMTPFutureListener>());
+    public synchronized void done() {
+        if (!isReady) {
+            isReady = true;
+            notify();
+
+            
+            for (int i = 0; i < listeners.size(); i++) {
+                final Iterator<RecipientStatusImpl> it = status.iterator();
+                listeners.get(i).operationComplete(new Iterator<RecipientStatus>() {
+
+                    @Override
+                    public boolean hasNext() {
+                        return it.hasNext();
+                    }
+
+                    @Override
+                    public RecipientStatus next() {
+                        return it.next();
+                    }
+
+                    @Override
+                    public void remove() {
+                        it.remove();
+                        
+                    }
+                });
+            }
+        } else {
+            notify();
+        }
+    }
+    
+    protected List<RecipientStatusImpl> getStatus() {
+        return status;
     }
     
     @Override
@@ -52,17 +84,18 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
 
     @Override
     public void addListener(SMTPFutureListener listener) {
-        // TODO Auto-generated method stub
-        
+        listeners.add(listener);
+        if (isReady) {
+            listener.operationComplete(new RecipientStatusIterator(status.iterator()));
+        }
     }
 
     @Override
     public void removeListener(SMTPFutureListener listener) {
-        // TODO Auto-generated method stub
-        
+        listeners.remove(listener);
     }
 
-    public void addRecipientStatus(RecipientStatus rcptStatus) {
+    protected void addRecipientStatus(RecipientStatusImpl rcptStatus) {
         status.add(rcptStatus);
     }
 
@@ -70,7 +103,7 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
     @Override
     public Iterator<RecipientStatus> get() throws InterruptedException, ExecutionException {
         checkReady();
-        return status.iterator();
+        return new RecipientStatusIterator(status.iterator());
     }
 
 
@@ -79,10 +112,35 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
     public Iterator<RecipientStatus> get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         checkReady(unit.toMillis(timeout));
         if (isDone()) {
-            return status.iterator();
+            return new RecipientStatusIterator(status.iterator());
         } else {
             return null;
         }
+    }
+    
+    private final class RecipientStatusIterator implements Iterator<RecipientStatus> {
+
+        private final Iterator<RecipientStatusImpl> it;
+        public RecipientStatusIterator(Iterator<RecipientStatusImpl> it) {
+            this.it = it;
+        }
+        
+        @Override
+        public boolean hasNext() {
+            return it.hasNext();
+        }
+
+        @Override
+        public RecipientStatus next() {
+            return it.next();
+        }
+
+        @Override
+        public void remove() {
+            it.remove();
+            
+        }
+        
     }
 
 }

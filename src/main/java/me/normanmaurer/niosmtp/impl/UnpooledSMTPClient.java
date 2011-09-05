@@ -5,8 +5,10 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
@@ -14,6 +16,7 @@ import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 
+import me.normanmaurer.niosmtp.RecipientStatus;
 import me.normanmaurer.niosmtp.SMTPClient;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPClientFuture;
@@ -50,16 +53,20 @@ public class UnpooledSMTPClient implements SMTPClient, ChannelLocalSupport {
                 ATTRIBUTES.set(cf.getChannel(), attrs);
             }
         });
-        // TODO Auto-generated method stub
-        return null;
+        return future;
     }
 
     public void destroy() {
         bootstrap.releaseExternalResources();
     }
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
         UnpooledSMTPClient client = new UnpooledSMTPClient();
-        client.deliver(new InetSocketAddress("192.168.0.254", 25), "test@test.de", Arrays.asList("nm@normanmaurer.me"), new ByteArrayInputStream("Subject: test\r\n\r\ntest".getBytes()), new SMTPClientConfigImpl());
+        SMTPClientFuture future = client.deliver(new InetSocketAddress("192.168.0.254", 25), "test@test.de", Arrays.asList("nm@normanmaurer.me", "nm@normanmaurer.me"), new ByteArrayInputStream("Subject: test\r\n\r\ntest".getBytes()), new SMTPClientConfigImpl());
+        Iterator<RecipientStatus> statusIt = future.get();
+        while(statusIt.hasNext()) {
+            RecipientStatus rs = statusIt.next();
+            System.out.println(rs.getAddress() + "=> " + rs.getReturnCode() + " " + rs.getResponse());
+        }
     }
 }
