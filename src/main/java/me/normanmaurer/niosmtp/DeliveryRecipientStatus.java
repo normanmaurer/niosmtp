@@ -1,6 +1,7 @@
 package me.normanmaurer.niosmtp;
 
 /**
+ * Status for the delivery of an email to a recipient
  * 
  * @author Norman Maurer
  *

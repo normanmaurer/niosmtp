@@ -1,4 +1,4 @@
-package me.normanmaurer.niosmtp.impl;
+package me.normanmaurer.niosmtp.impl.internal;
 
 import me.normanmaurer.niosmtp.SMTPRequest;
 

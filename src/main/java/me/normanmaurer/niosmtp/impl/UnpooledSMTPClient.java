@@ -21,6 +21,10 @@ import me.normanmaurer.niosmtp.SMTPClient;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPCommand;
+import me.normanmaurer.niosmtp.impl.internal.ChannelLocalSupport;
+import me.normanmaurer.niosmtp.impl.internal.SMTPClientConfigImpl;
+import me.normanmaurer.niosmtp.impl.internal.SMTPClientFutureImpl;
+import me.normanmaurer.niosmtp.impl.internal.SMTPClientPipelineFactory;
 
 /**
  * {@link SMTPClient} implementation which will create a new Connection for

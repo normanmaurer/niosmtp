@@ -1,10 +1,10 @@
-package me.normanmaurer.niosmtp.impl;
+package me.normanmaurer.niosmtp.impl.internal;
 
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.oneone.OneToOneDecoder;
 
-public class SMTPResponseDecoder extends OneToOneDecoder{
+class SMTPResponseDecoder extends OneToOneDecoder{
 
 
     @Override

@@ -1,8 +1,8 @@
-package me.normanmaurer.niosmtp.impl;
+package me.normanmaurer.niosmtp.impl.internal;
 
 import me.normanmaurer.niosmtp.SMTPRequest;
 
-public class SMTPRequestImpl implements SMTPRequest{
+class SMTPRequestImpl implements SMTPRequest{
 
     private String command;
     private String argument;
@@ -11,6 +11,7 @@ public class SMTPRequestImpl implements SMTPRequest{
         this.command = command;
         this.argument = argument;
     }
+    
     @Override
     public String getCommand() {
         return command;

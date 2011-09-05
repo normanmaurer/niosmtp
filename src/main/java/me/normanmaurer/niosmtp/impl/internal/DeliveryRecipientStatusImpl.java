@@ -1,8 +1,8 @@
-package me.normanmaurer.niosmtp.impl;
+package me.normanmaurer.niosmtp.impl.internal;
 
 import me.normanmaurer.niosmtp.DeliveryRecipientStatus;
 
-public class DeliveryRecipientStatusImpl implements DeliveryRecipientStatus{
+class DeliveryRecipientStatusImpl implements DeliveryRecipientStatus{
 
     private String address;
     private String response;
