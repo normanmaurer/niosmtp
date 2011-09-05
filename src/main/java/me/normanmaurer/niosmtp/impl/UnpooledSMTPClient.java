@@ -6,6 +6,7 @@ import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -42,11 +43,11 @@ public class UnpooledSMTPClient implements SMTPClient, ChannelLocalSupport {
     private final ClientBootstrap bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
     
     public UnpooledSMTPClient() {
+        bootstrap.setPipelineFactory(new SMTPClientPipelineFactory());
     }
     
-    public SMTPClientFuture deliver(InetSocketAddress host, String mailFrom, List<String> recipients, InputStream msg, SMTPClientConfig config) {
+    public SMTPClientFuture deliver(InetSocketAddress host, final String mailFrom, final List<String> recipients, final InputStream msg, final SMTPClientConfig config) {
         final SMTPClientFutureImpl future = new SMTPClientFutureImpl();
-        bootstrap.setPipelineFactory(new SMTPClientPipelineFactory(mailFrom, recipients, msg, config));
         bootstrap.connect(host).addListener(new ChannelFutureListener() {
             
             @Override
@@ -54,6 +55,10 @@ public class UnpooledSMTPClient implements SMTPClient, ChannelLocalSupport {
                 Map<String, Object> attrs = new HashMap<String, Object>();
                 attrs.put(FUTURE_KEY, future);
                 attrs.put(NEXT_COMMAND_KEY, SMTPCommand.HELO);
+                attrs.put(MAIL_FROM_KEY, mailFrom);
+                attrs.put(RECIPIENTS_KEY, new LinkedList<String>(recipients));
+                attrs.put(MSG_KEY, msg);
+                attrs.put(SMTP_CONFIG_KEY, config);
                 ATTRIBUTES.set(cf.getChannel(), attrs);
             }
         });

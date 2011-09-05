@@ -20,16 +20,8 @@ import org.jboss.netty.handler.stream.ChunkedStream;
 
 public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements ChannelLocalSupport {
 
-    private SMTPClientConfig config;
-    private String mailFrom;
-    private InputStream msg;
-    private LinkedList<String> recipients;
 
-    public SMTPClientHandler(String mailFrom, List<String> recipients, InputStream msg, SMTPClientConfig config) {
-        this.config = config;
-        this.mailFrom = mailFrom;
-        this.recipients = new LinkedList<String>(recipients);
-        this.msg = msg;
+    public SMTPClientHandler() {
     }
 
     @Override
@@ -40,13 +32,16 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements C
         super.channelBound(ctx, e);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
         if (e.getMessage() instanceof SMTPResponse) {
             final Map<String, Object> states = ATTRIBUTES.get(e.getChannel());
             SMTPResponse response = (SMTPResponse) e.getMessage();
             final SMTPCommand nextCommand = (SMTPCommand) states.get(NEXT_COMMAND_KEY);
-            final SMTPCommand curCommand = (SMTPCommand) states.get(CURRENT_COMMAND);
+            final SMTPCommand curCommand = (SMTPCommand) states.get(CURRENT_COMMAND_KEY);
+            final SMTPClientConfig config = (SMTPClientConfig) states.get(SMTP_CONFIG_KEY);
+            final LinkedList<String> recipients = (LinkedList<String>) states.get(RECIPIENTS_KEY);
 
             SMTPClientFutureImpl future = (SMTPClientFutureImpl) ATTRIBUTES.get(e.getChannel()).get(FUTURE_KEY);
             int code = response.getCode();
@@ -58,17 +53,18 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements C
 
                         @Override
                         public void operationComplete(ChannelFuture cf) throws Exception {
-                            states.put(CURRENT_COMMAND, nextCommand);
+                            states.put(CURRENT_COMMAND_KEY, nextCommand);
 
                         }
                     });
                     states.put(NEXT_COMMAND_KEY, SMTPCommand.MAIL);
                 } else {
-                    setResponseForAll(response, future, ctx);
+                    setResponseForAll(response, recipients, future, ctx);
 
                 }
                 break;
             case MAIL:
+                String mailFrom = (String) states.get(MAIL_FROM_KEY);
                 if (mailFrom == null) {
                     mailFrom = "";
                 }
@@ -78,20 +74,20 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements C
 
                         @Override
                         public void operationComplete(ChannelFuture cf) throws Exception {
-                            states.put(CURRENT_COMMAND, nextCommand);
+                            states.put(CURRENT_COMMAND_KEY, nextCommand);
 
                         }
                     });
                     states.put(NEXT_COMMAND_KEY, SMTPCommand.RCPT);
                 } else {
-                    setResponseForAll(response, future, ctx);
+                    setResponseForAll(response, recipients, future, ctx);
                 }
                 break;
             case RCPT:
                 if (curCommand == SMTPCommand.RCPT) {
                     future.addRecipientStatus(new DeliveryRecipientStatusImpl((String) ctx.getAttachment(), code, response.getLastLine()));
                 } else if (code > 400) {
-                    setResponseForAll(response, future, ctx);
+                    setResponseForAll(response, recipients, future, ctx);
                     break;
                 }
                 
@@ -103,7 +99,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements C
 
                         @Override
                         public void operationComplete(ChannelFuture cf) throws Exception {
-                            states.put(CURRENT_COMMAND, nextCommand);
+                            states.put(CURRENT_COMMAND_KEY, nextCommand);
 
                         }
                     });
@@ -123,7 +119,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements C
 
                         @Override
                         public void operationComplete(ChannelFuture cf) throws Exception {
-                            states.put(CURRENT_COMMAND, nextCommand);
+                            states.put(CURRENT_COMMAND_KEY, nextCommand);
 
                         }
                     });
@@ -145,12 +141,12 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements C
                 break;
             case MESSAGE:
                 if (code < 400) {
-                    ctx.getChannel().write(new ChunkedStream(msg));
+                    ctx.getChannel().write(new ChunkedStream((InputStream) states.get(MSG_KEY)));
                     ctx.getChannel().write(ChannelBuffers.wrappedBuffer("\r\n.\r\n".getBytes())).addListener(new ChannelFutureListener() {
 
                         @Override
                         public void operationComplete(ChannelFuture cf) throws Exception {
-                            states.put(CURRENT_COMMAND, nextCommand);
+                            states.put(CURRENT_COMMAND_KEY, nextCommand);
 
                         }
                     });
@@ -175,7 +171,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements C
         super.messageReceived(ctx, e);
     }
     
-    private void setResponseForAll(SMTPResponse response, SMTPClientFutureImpl future, ChannelHandlerContext ctx) {
+    private void setResponseForAll(SMTPResponse response, LinkedList<String> recipients, SMTPClientFutureImpl future, ChannelHandlerContext ctx) {
         while (!recipients.isEmpty()) {
             future.addRecipientStatus(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response.getCode(), response.getLastLine()));
         }
