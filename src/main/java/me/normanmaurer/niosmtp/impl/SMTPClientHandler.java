@@ -133,7 +133,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements C
                     List<RecipientStatusImpl> status = future.getStatus();
                     boolean success = false;
                     for (int i = 0; i < status.size(); i++) {
-                       if (status.get(i).isSuccessfull()) {
+                       if (status.get(i).isSuccessful()) {
                            success = true;
                            break;
                        }

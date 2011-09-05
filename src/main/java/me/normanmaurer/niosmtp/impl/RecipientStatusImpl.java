@@ -31,7 +31,7 @@ public class RecipientStatusImpl implements RecipientStatus{
     }
 
     @Override
-    public boolean isSuccessfull() {
+    public boolean isSuccessful() {
         return code < 300 && code > 200;
     }
 

@@ -1,5 +1,11 @@
 package me.normanmaurer.niosmtp;
 
+/**
+ * The different SMTP Commands
+ * 
+ * @author Norman Maurer
+ *
+ */
 public enum SMTPCommand {
     NONE,
     EHLO,
@@ -10,5 +16,6 @@ public enum SMTPCommand {
     AUTH,
     NOOP,
     QUIT, 
-    RCPT, MESSAGE
+    RCPT, 
+    MESSAGE
 }

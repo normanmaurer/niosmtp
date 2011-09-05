@@ -10,14 +10,14 @@ import java.util.concurrent.TimeoutException;
 
 import me.normanmaurer.niosmtp.RecipientStatus;
 import me.normanmaurer.niosmtp.SMTPClientFuture;
-import me.normanmaurer.niosmtp.SMTPFutureListener;
+import me.normanmaurer.niosmtp.SMTPClientFutureListener;
 
 public class SMTPClientFutureImpl implements SMTPClientFuture{
 
     private volatile boolean isReady = false;
     private volatile boolean isCancelled = false;
     private final List<RecipientStatusImpl> status = Collections.synchronizedList(new ArrayList<RecipientStatusImpl>());
-    private final List<SMTPFutureListener> listeners = Collections.synchronizedList(new ArrayList<SMTPFutureListener>());
+    private final List<SMTPClientFutureListener> listeners = Collections.synchronizedList(new ArrayList<SMTPClientFutureListener>());
     public synchronized void done() {
         if (!isReady) {
             isReady = true;
@@ -83,7 +83,7 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
     }
 
     @Override
-    public void addListener(SMTPFutureListener listener) {
+    public void addListener(SMTPClientFutureListener listener) {
         listeners.add(listener);
         if (isReady) {
             listener.operationComplete(new RecipientStatusIterator(status.iterator()));
@@ -91,7 +91,7 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
     }
 
     @Override
-    public void removeListener(SMTPFutureListener listener) {
+    public void removeListener(SMTPClientFutureListener listener) {
         listeners.remove(listener);
     }
 
