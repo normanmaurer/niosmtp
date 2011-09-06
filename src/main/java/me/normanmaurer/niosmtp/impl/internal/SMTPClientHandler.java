@@ -182,8 +182,8 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements C
         for (int i = 0; i < status.size(); i++) {
             status.get(i).setResponse(response.getCode(), response.getLastLine());
         }
-        ctx.getChannel().write(new SMTPRequestImpl("QUIT", null)).addListener(ChannelFutureListener.CLOSE);
-        future.done();
+        sendQuit(future, ctx);
+
 
     }
     
