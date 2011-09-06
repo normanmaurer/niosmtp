@@ -78,7 +78,7 @@ public class UnpooledSMTPClient implements SMTPClient, ChannelLocalSupport {
     
     public static void main(String[] args) throws InterruptedException, ExecutionException {
         UnpooledSMTPClient client = new UnpooledSMTPClient();
-        SMTPClientFuture future = client.deliver(new InetSocketAddress("192.168.0.254", 25), "test@test.de", Arrays.asList("nm2@normanmaurer.me", "nm2@normanmaurer.me"), new ByteArrayInputStream("Subject: test\r\n\r\ntest".getBytes()), new SMTPClientConfigImpl());
+        SMTPClientFuture future = client.deliver(new InetSocketAddress("192.168.0.254", 25), "test@test.de", Arrays.asList("nm@normanmaurer.me", "nm2@normanmaurer.me"), new ByteArrayInputStream("Subject: test\r\n\r\ntest".getBytes()), new SMTPClientConfigImpl());
         Iterator<DeliveryRecipientStatus> statusIt = future.get();
         while(statusIt.hasNext()) {
             DeliveryRecipientStatus rs = statusIt.next();

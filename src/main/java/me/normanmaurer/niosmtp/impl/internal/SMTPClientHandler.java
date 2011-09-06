@@ -114,7 +114,15 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements C
             case DATA:
                 future.addRecipientStatus(new DeliveryRecipientStatusImpl((String) ctx.getAttachment(), code, response.getLastLine()));
 
-                if (code < 400) {
+                List<DeliveryRecipientStatusImpl> status = future.getStatus();
+                boolean success = false;
+                for (int i = 0; i < status.size(); i++) {
+                   if (status.get(i).isSuccessful()) {
+                       success = true;
+                       break;
+                   }
+                }
+                if (success) {
                     ctx.getChannel().write(new SMTPRequestImpl("DATA", null)).addListener(new ChannelFutureListener() {
 
                         @Override
@@ -126,16 +134,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements C
                     states.put(NEXT_COMMAND_KEY, SMTPCommand.MESSAGE);
 
                 } else {
-                    List<DeliveryRecipientStatusImpl> status = future.getStatus();
-                    boolean success = false;
-                    for (int i = 0; i < status.size(); i++) {
-                       if (status.get(i).isSuccessful()) {
-                           success = true;
-                           break;
-                       }
-                    }
-                    if (!success)
-                    future.done();
+                    sendQuit(future, ctx);
                 }
 
                 break;
@@ -156,7 +155,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements C
                 break;
             case QUIT:
                 if (code < 400) {
-                    ctx.getChannel().write(new SMTPRequestImpl("QUIT", null)).addListener(ChannelFutureListener.CLOSE);
+                    sendQuit(future, ctx);
                 } else {
                     replaceStatusForAll(response, future, ctx);
                 }
@@ -174,9 +173,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements C
         while (!recipients.isEmpty()) {
             future.addRecipientStatus(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response.getCode(), response.getLastLine()));
         }
-        ctx.getChannel().write(ChannelBuffers.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
 
-        future.done();
         
     }
 
@@ -185,10 +182,17 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements C
         for (int i = 0; i < status.size(); i++) {
             status.get(i).setResponse(response.getCode(), response.getLastLine());
         }
-        ctx.getChannel().write(ChannelBuffers.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+        ctx.getChannel().write(new SMTPRequestImpl("QUIT", null)).addListener(ChannelFutureListener.CLOSE);
         future.done();
 
     }
+    
+    private void sendQuit(SMTPClientFutureImpl future, ChannelHandlerContext ctx) {
+        ctx.getChannel().write(new SMTPRequestImpl("QUIT", null)).addListener(ChannelFutureListener.CLOSE);
+
+        future.done();
+    }
+    
 
     @Override
     public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
