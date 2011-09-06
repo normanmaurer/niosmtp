@@ -141,8 +141,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements C
                 break;
             case MESSAGE:
                 if (code < 400) {
-                    ctx.getChannel().write(new ChunkedStream((InputStream) states.get(MSG_KEY)));
-                    ctx.getChannel().write(ChannelBuffers.wrappedBuffer("\r\n.\r\n".getBytes())).addListener(new ChannelFutureListener() {
+                    ctx.getChannel().write(new ChunkedStream(new DataTerminatingInputStream((InputStream) states.get(MSG_KEY)))).addListener(new ChannelFutureListener() {
 
                         @Override
                         public void operationComplete(ChannelFuture cf) throws Exception {
