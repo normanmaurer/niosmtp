@@ -85,7 +85,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements C
                 break;
             case RCPT:
                 if (curCommand == SMTPCommand.RCPT) {
-                    future.addRecipientStatus(new DeliveryRecipientStatusImpl((String) ctx.getAttachment(), code, response.getLastLine()));
+                    future.addRecipientStatus(new DeliveryRecipientStatusImpl((String) ctx.getAttachment(), response));
                 } else if (code > 400) {
                     setResponseForAll(response, recipients, future, ctx);
                     break;
@@ -112,7 +112,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements C
                 }
                 break;
             case DATA:
-                future.addRecipientStatus(new DeliveryRecipientStatusImpl((String) ctx.getAttachment(), code, response.getLastLine()));
+                future.addRecipientStatus(new DeliveryRecipientStatusImpl((String) ctx.getAttachment(), response));
 
                 List<DeliveryRecipientStatusImpl> status = future.getStatus();
                 boolean success = false;
@@ -171,7 +171,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements C
     
     private void setResponseForAll(SMTPResponse response, LinkedList<String> recipients, SMTPClientFutureImpl future, ChannelHandlerContext ctx) {
         while (!recipients.isEmpty()) {
-            future.addRecipientStatus(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response.getCode(), response.getLastLine()));
+            future.addRecipientStatus(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response));
         }
 
         
@@ -180,7 +180,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements C
     private void replaceStatusForAll(SMTPResponse response, SMTPClientFutureImpl future, ChannelHandlerContext ctx) {
         List<DeliveryRecipientStatusImpl> status = future.getStatus();
         for (int i = 0; i < status.size(); i++) {
-            status.get(i).setResponse(response.getCode(), response.getLastLine());
+            status.get(i).setResponse(response);
         }
         sendQuit(future, ctx);
 

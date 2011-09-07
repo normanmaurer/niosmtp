@@ -1,43 +1,38 @@
 package me.normanmaurer.niosmtp.impl.internal;
 
 import me.normanmaurer.niosmtp.DeliveryRecipientStatus;
+import me.normanmaurer.niosmtp.SMTPResponse;
 
 class DeliveryRecipientStatusImpl implements DeliveryRecipientStatus{
 
     private String address;
-    private String response;
-    private int code;
+    private SMTPResponse response;
 
-    public DeliveryRecipientStatusImpl(String address, int code, String response) {
+    public DeliveryRecipientStatusImpl(String address, SMTPResponse response) {
         
         this.address = address;
-        this.code = code;
         this.response = response;
     }
     
-    public void setResponse(int code, String response) {
-        this.code = code;
+    public void setResponse(SMTPResponse response) {
         this.response = response;
     }
     
-    @Override
-    public int getReturnCode() {
-        return code;
-    }
 
-    @Override
-    public String getResponse() {
-        return response;
-    }
 
     @Override
     public boolean isSuccessful() {
-        return code < 300 && code > 200;
+        return response.getCode() < 300 &&  response.getCode() > 200;
     }
 
     @Override
     public String getAddress() {
         return address;
+    }
+
+    @Override
+    public SMTPResponse getResponse() {
+        return response;
     }
 
 }

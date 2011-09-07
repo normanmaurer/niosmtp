@@ -9,18 +9,11 @@ package me.normanmaurer.niosmtp;
 public interface DeliveryRecipientStatus {
 
     /**
-     * Return the return code which was returned for the recipient. 
-     * 
-     * @return code
-     */
-    public int getReturnCode();
-    
-    /**
-     * Return the response String which was returned for the recipient. May be null
+     * Return the {@link SMTPResponse} which was returned for the recipient. 
      * 
      * @return response
      */
-    public String getResponse();
+    public SMTPResponse getResponse();
     
     /**
      * Return true if the delivery for the recipient was successful. This is the case if

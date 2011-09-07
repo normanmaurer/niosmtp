@@ -85,7 +85,7 @@ public class UnpooledSMTPClient implements SMTPClient, ChannelLocalSupport {
         Iterator<DeliveryRecipientStatus> statusIt = future.get();
         while(statusIt.hasNext()) {
             DeliveryRecipientStatus rs = statusIt.next();
-            System.out.println(rs.getAddress() + "=> " + rs.getReturnCode() + " " + rs.getResponse());
+            System.out.println(rs.getAddress() + "=> " + rs.getResponse().getCode() + " " + rs.getResponse().getLines().toString());
         }
     }
 }

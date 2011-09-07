@@ -17,7 +17,10 @@ class SMTPResponseDecoder extends OneToOneDecoder {
             if (parts.length == 0) {
                 return null;
             } else {
-                return new SMTPResponseImpl(Integer.parseInt(parts[0]), parts[1]);
+                SMTPResponseImpl response = new SMTPResponseImpl(Integer.parseInt(parts[0]));
+                if (parts.length == 2) {
+                    response.addLine(parts[1]);
+                }
             }
         }
         return msg;

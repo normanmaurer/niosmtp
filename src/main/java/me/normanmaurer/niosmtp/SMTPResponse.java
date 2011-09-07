@@ -1,5 +1,7 @@
 package me.normanmaurer.niosmtp;
 
+import java.util.List;
+
 /**
  * The SMTP Response which is send back from the SMTP Server to the client
  * 
@@ -16,9 +18,9 @@ public interface SMTPResponse {
     public int getCode();
 
     /**
-     * Return the last line of the response which may be null
+     * Return all lines of the response. This may be null
      * 
-     * @return line
+     * @return lines
      */
-    public String getLastLine();
+    public List<String> getLines();
 }

@@ -1,28 +1,31 @@
 package me.normanmaurer.niosmtp.impl.internal;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import me.normanmaurer.niosmtp.SMTPResponse;
 
 class SMTPResponseImpl implements SMTPResponse{
 
     private int code;
-    private String line;
+    private final List<String> lines = new ArrayList<String>();
 
-    public SMTPResponseImpl(int code, String line) {
+    public SMTPResponseImpl(int code) {
         this.code = code;
-        this.line = line;
     }
     @Override
     public int getCode() {
         return code;
     }
 
-    @Override
-    public String getLastLine() {
-        return line;
+    public void addLine(String line) {
+        lines.add(line);
     }
-    
-    public String toString() {
-        return code + " " + line;
+
+    @Override
+    public List<String> getLines() {
+        return Collections.unmodifiableList(lines);
     }
 
 }
