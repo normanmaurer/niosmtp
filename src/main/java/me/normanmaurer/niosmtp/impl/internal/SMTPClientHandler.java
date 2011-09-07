@@ -18,7 +18,14 @@ import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.stream.ChunkedStream;
 
-public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements ChannelLocalSupport {
+/**
+ * {@link SimpleChannelUpstreamHandler} implementation which handles the SMTP communication with the SMTP
+ * Server
+ * 
+ * @author Norman Maurer
+ *
+ */
+class SMTPClientHandler extends SimpleChannelUpstreamHandler implements ChannelLocalSupport {
 
 
     public SMTPClientHandler() {

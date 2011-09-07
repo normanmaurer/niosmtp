@@ -4,12 +4,19 @@ import java.nio.charset.Charset;
 
 import me.normanmaurer.niosmtp.SMTPRequest;
 
+import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
 
-public class SMTPRequestEncoder extends OneToOneEncoder{
+/**
+ * {@link OneToOneEncoder} which encoded {@link SMTPRequest} objects to {@link ChannelBuffer}
+ * 
+ * @author Norman Maurer
+ *
+ */
+class SMTPRequestEncoder extends OneToOneEncoder{
     private final static Charset CHARSET = Charset.forName("US-ASCII");
 
     @Override
