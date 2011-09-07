@@ -24,10 +24,12 @@ class SMTPResponseDecoder extends FrameDecoder {
         buffer.markReaderIndex();
         int lineIndex = -1;
         SMTPResponseImpl response = null;
+        
+        // Loop over the lines
         while((lineIndex = buffer.bytesBefore(ChannelBufferIndexFinder.CRLF)) != -1) {
             ChannelBuffer line = buffer.readBytes(lineIndex);
             
-            // Consume the CRLF
+            // Consume the CRLF in all cases
             while (buffer.readable()) {
                 int c = buffer.getByte(buffer.readerIndex());
                 if (c == '\r' || c == '\n') {
@@ -51,6 +53,7 @@ class SMTPResponseDecoder extends FrameDecoder {
                 }
                 return response;
             } else if (separator == '-') {
+                // The '-' separator is used for multi-line responses so just add it to the response
                 if (response == null) {
                     int code = Integer.parseInt(line.readBytes(3).toString(CHARSET));
                     response = new SMTPResponseImpl(code);
@@ -58,9 +61,14 @@ class SMTPResponseDecoder extends FrameDecoder {
                 if (line.readable()) { 
                     response.addLine(line.toString(CHARSET));
                 }                
-            }            
+            } else {
+                // This should never happen but for now we just consume the line and ignore it
+                return null;
+            }
 
         }
+        
+        // reset the index as we not reached the end of the SMTPResponse
         buffer.resetReaderIndex();
         return response;
 
