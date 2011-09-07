@@ -21,7 +21,13 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
     private final List<DeliveryRecipientStatusImpl> status = Collections.synchronizedList(new ArrayList<DeliveryRecipientStatusImpl>());
     private final List<SMTPClientFutureListener> listeners = Collections.synchronizedList(new ArrayList<SMTPClientFutureListener>());
     private volatile Channel channel;
-    public synchronized void done() {
+    
+    /**
+     * Mark the future as DONE. This will notify all waiting threads which are blocked by the {@link #get()} or 
+     * {@link #get(long, TimeUnit)} methods.
+     * 
+     */
+    protected synchronized void done() {
         if (!isReady) {
             isReady = true;
             notify();
@@ -70,6 +76,11 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
         }
     }
 
+    /**
+     * Set the {@link Channel} which will be used for the {@link #cancel(boolean)} operation later
+     * 
+     * @param channel
+     */
     public void setChannel(Channel channel) {
         this.channel = channel;
     }
@@ -152,7 +163,7 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
 
         @Override
         public void remove() {
-            it.remove();
+            throw new UnsupportedOperationException("Read-Only");
             
         }
         
