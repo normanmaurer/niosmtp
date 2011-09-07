@@ -18,7 +18,7 @@ public interface SMTPResponse {
     public int getCode();
 
     /**
-     * Return all lines of the response. This may be null
+     * Return all lines of the response as an unmodifiable {@link List}. This may be null
      * 
      * @return lines
      */

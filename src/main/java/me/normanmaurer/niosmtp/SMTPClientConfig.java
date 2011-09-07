@@ -10,27 +10,6 @@ import java.net.InetAddress;
  */
 public interface SMTPClientConfig {
 
-    /**
-     * The type of the client
-     *
-     */
-    public static enum Type {
-        /**
-         * Plain SMTP 
-         */
-        Plain,
-        
-        /**
-         * Switch to TLS via STARTTLS if possible
-         * 
-         */
-        Starttls,
-        
-        /**
-         * Use SMTPS
-         */
-        Tls
-    }
     
     /**
      * Return the name which will get used for the HELO/EHLO
@@ -46,12 +25,6 @@ public interface SMTPClientConfig {
      */
     public int getTimeout();
 
-    /**
-     * Return the {@link Type} of the client
-     * 
-     * @return type
-     */
-    public Type getType();
     
     /**
      * Return the {@link InetAddress} which should get used to bind to or null if no specific should get used

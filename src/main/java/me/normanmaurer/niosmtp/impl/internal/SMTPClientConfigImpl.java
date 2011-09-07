@@ -15,7 +15,6 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
 
     private String heloName = "localhost";
     private int timeout = 60;
-    private Type type = Type.Plain;
     private InetAddress localAddress = null;
     private boolean usePipelining = true;
     
@@ -47,17 +46,6 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
         return timeout;
     }
     
-    public void setType(Type type) {
-        this.type = type;
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see me.normanmaurer.niosmtp.SMTPClientConfig#getType()
-     */
-    public Type getType() {
-        return type;
-    }
 
     /*
      * (non-Javadoc)
