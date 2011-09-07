@@ -40,9 +40,13 @@ import me.normanmaurer.niosmtp.impl.internal.SMTPClientPipelineFactory;
  */
 public class UnpooledSMTPClient implements SMTPClient, ChannelLocalSupport {
 
-    private final ClientBootstrap bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
+    protected final ClientBootstrap bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
     
     public UnpooledSMTPClient() {
+        initBootstrap(bootstrap);
+    }
+
+    protected void initBootstrap(ClientBootstrap bootstrap) {
         bootstrap.setPipelineFactory(new SMTPClientPipelineFactory());
     }
     
@@ -78,6 +82,7 @@ public class UnpooledSMTPClient implements SMTPClient, ChannelLocalSupport {
     public void destroy() {
         bootstrap.releaseExternalResources();
     }
+
     
     public static void main(String[] args) throws InterruptedException, ExecutionException {
         UnpooledSMTPClient client = new UnpooledSMTPClient();
