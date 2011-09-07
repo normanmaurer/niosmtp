@@ -1,6 +1,6 @@
 package me.normanmaurer.niosmtp.impl.internal;
 
-import java.net.InetAddress;
+import java.net.InetSocketAddress;
 
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 
@@ -15,7 +15,7 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
 
     private String heloName = "localhost";
     private int timeout = 60;
-    private InetAddress localAddress = null;
+    private InetSocketAddress localAddress = null;
     private boolean usePipelining = true;
     
     public SMTPClientConfigImpl() {
@@ -51,11 +51,11 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
      * (non-Javadoc)
      * @see me.normanmaurer.niosmtp.SMTPClientConfig#getLocalAddress()
      */
-    public InetAddress getLocalAddress() {
+    public InetSocketAddress getLocalAddress() {
         return localAddress;
     }
     
-    public void setLocalAddress(InetAddress localAddress) {
+    public void setLocalAddress(InetSocketAddress localAddress) {
         this.localAddress = localAddress;
     }
 

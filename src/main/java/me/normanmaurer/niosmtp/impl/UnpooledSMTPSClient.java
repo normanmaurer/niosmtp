@@ -10,7 +10,7 @@ import me.normanmaurer.niosmtp.SMTPClient;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.impl.internal.SMTPSClientPipelineFactory;
 
-import org.jboss.netty.bootstrap.ClientBootstrap;
+import org.jboss.netty.channel.ChannelPipelineFactory;
 
 /**
  * {@link SMTPClient} implementation which will create a new Connection for
@@ -28,12 +28,11 @@ public class UnpooledSMTPSClient extends UnpooledSMTPClient{
 
     public UnpooledSMTPSClient(SSLContext context) {
         this.context = context;
-        initBootstrap(bootstrap);
     }
 
     @Override
-    protected void initBootstrap(ClientBootstrap bootstrap) {
-        bootstrap.setPipelineFactory(new SMTPSClientPipelineFactory(context));
+    protected ChannelPipelineFactory createChannelPipelineFactory() {
+        return new SMTPSClientPipelineFactory(context);
     }
-
+    
 }

@@ -1,6 +1,7 @@
 package me.normanmaurer.niosmtp;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 
 /**
  * Configuration which is used to deliver email via SMTP
@@ -31,7 +32,7 @@ public interface SMTPClientConfig {
      * 
      * @return local
      */
-    public InetAddress getLocalAddress();
+    public InetSocketAddress getLocalAddress();
  
     /**
      * Return <code>true</code> if the client should use PIPELINING if possible

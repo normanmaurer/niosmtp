@@ -15,6 +15,7 @@ import java.util.concurrent.Executors;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
+import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 
 import me.normanmaurer.niosmtp.DeliveryRecipientStatus;
@@ -40,14 +41,11 @@ import me.normanmaurer.niosmtp.impl.internal.SMTPClientPipelineFactory;
  */
 public class UnpooledSMTPClient implements SMTPClient, ChannelLocalSupport {
 
-    protected final ClientBootstrap bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
-    
-    public UnpooledSMTPClient() {
-        initBootstrap(bootstrap);
-    }
+    protected final NioClientSocketChannelFactory socketFactory = new NioClientSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool());
 
-    protected void initBootstrap(ClientBootstrap bootstrap) {
-        bootstrap.setPipelineFactory(new SMTPClientPipelineFactory());
+
+    protected ChannelPipelineFactory createChannelPipelineFactory() {
+        return new SMTPClientPipelineFactory();
     }
     
     /*
@@ -56,7 +54,10 @@ public class UnpooledSMTPClient implements SMTPClient, ChannelLocalSupport {
      */
     public SMTPClientFuture deliver(InetSocketAddress host, final String mailFrom, final List<String> recipients, final InputStream msg, final SMTPClientConfig config) {
         final SMTPClientFutureImpl future = new SMTPClientFutureImpl();
-        bootstrap.connect(host).addListener(new ChannelFutureListener() {
+        ClientBootstrap bootstrap = new ClientBootstrap(socketFactory);
+        bootstrap.setPipelineFactory(createChannelPipelineFactory());
+        InetSocketAddress local = config.getLocalAddress();
+        bootstrap.connect(host, local).addListener(new ChannelFutureListener() {
             
             @Override
             public void operationComplete(ChannelFuture cf) throws Exception {
@@ -80,7 +81,7 @@ public class UnpooledSMTPClient implements SMTPClient, ChannelLocalSupport {
      * Call this method to destroy the {@link SMTPClient} and release all resources
      */
     public void destroy() {
-        bootstrap.releaseExternalResources();
+        socketFactory.releaseExternalResources();
     }
 
     
