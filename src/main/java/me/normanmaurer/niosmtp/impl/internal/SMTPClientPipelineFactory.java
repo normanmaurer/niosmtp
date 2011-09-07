@@ -16,7 +16,7 @@ import org.jboss.netty.handler.stream.ChunkedWriteHandler;
  */
 public class SMTPClientPipelineFactory implements ChannelPipelineFactory{
 
-    private final static DelimiterBasedFrameDecoder FRAMER = new DelimiterBasedFrameDecoder(8192, true, Delimiters.lineDelimiter());
+    private final static DelimiterBasedFrameDecoder FRAMER = new DelimiterBasedFrameDecoder(8192, false, Delimiters.lineDelimiter());
     private final static SMTPResponseDecoder SMTP_RESPONSE_DECODER = new SMTPResponseDecoder();
     private final static SMTPRequestEncoder SMTP_REQUEST_ENCODER = new SMTPRequestEncoder();
     private final static SMTPClientHandler SMTP_CLIENT_HANDLER = new SMTPClientHandler();
