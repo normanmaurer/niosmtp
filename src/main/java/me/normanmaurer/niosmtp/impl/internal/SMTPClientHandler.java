@@ -45,7 +45,6 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements C
 
             SMTPClientFutureImpl future = (SMTPClientFutureImpl) ATTRIBUTES.get(e.getChannel()).get(FUTURE_KEY);
             int code = response.getCode();
-
             switch (nextCommand) {
             case HELO:
                 if (code < 400) {

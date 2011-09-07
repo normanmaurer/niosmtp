@@ -21,6 +21,7 @@ class SMTPResponseDecoder extends OneToOneDecoder {
                 if (parts.length == 2) {
                     response.addLine(parts[1]);
                 }
+                return response;
             }
         }
         return msg;
