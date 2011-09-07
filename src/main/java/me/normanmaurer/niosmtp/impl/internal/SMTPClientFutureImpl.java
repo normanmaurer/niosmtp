@@ -8,6 +8,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.jboss.netty.channel.Channel;
+
 import me.normanmaurer.niosmtp.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPClientFutureListener;
@@ -18,6 +20,7 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
     private volatile boolean isCancelled = false;
     private final List<DeliveryRecipientStatusImpl> status = Collections.synchronizedList(new ArrayList<DeliveryRecipientStatusImpl>());
     private final List<SMTPClientFutureListener> listeners = Collections.synchronizedList(new ArrayList<SMTPClientFutureListener>());
+    private volatile Channel channel;
     public synchronized void done() {
         if (!isReady) {
             isReady = true;
@@ -55,10 +58,22 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
     }
     
     @Override
-    public boolean cancel(boolean arg0) {
-        return false;
+    public boolean cancel(boolean mayInterruptIfRunning) {
+        if (isCancelled || isDone()) {
+            return false;
+        } else {
+           if (channel != null) {
+               channel.close();
+           }
+           isCancelled = true;
+           return true;
+        }
     }
 
+    public void setChannel(Channel channel) {
+        this.channel = channel;
+    }
+    
     private synchronized void checkReady() throws InterruptedException {
         while (!isReady) {
             wait();
