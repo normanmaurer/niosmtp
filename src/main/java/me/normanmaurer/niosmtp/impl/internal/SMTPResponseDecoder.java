@@ -11,7 +11,8 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.frame.FrameDecoder;
 
 /**
- * {@link FrameDecoder} which decodes {@link SMTPResponse}'s. It also handles multi-line responses
+ * {@link FrameDecoder} which decodes {@link SMTPResponse}'s. It also handles multi-line responses.
+ * 
  * 
  * @author Norman Maurer
  *
