@@ -17,14 +17,14 @@ import org.jboss.netty.handler.codec.frame.FrameDecoder;
  * @author Norman Maurer
  *
  */
-class SMTPResponseDecoder extends FrameDecoder {
+class SMTPResponseDecoder extends FrameDecoder implements ChannelLocalSupport{
     private final static Charset CHARSET = Charset.forName("US-ASCII");
 
     @Override
     protected Object decode(ChannelHandlerContext ctx, Channel channel, ChannelBuffer buffer) throws Exception {
         buffer.markReaderIndex();
         int lineIndex = -1;
-        SMTPResponseImpl response = null;
+        SMTPResponseImpl response = (SMTPResponseImpl) ctx.getAttachment();
         
         // Loop over the lines
         while((lineIndex = buffer.bytesBefore(ChannelBufferIndexFinder.CRLF)) != -1) {
@@ -51,13 +51,18 @@ class SMTPResponseDecoder extends FrameDecoder {
                 }
                 if (line.readable()) { 
                     response.addLine(line.toString(CHARSET));
+                    
                 }
+                ctx.setAttachment(null);
+
                 return response;
             } else if (separator == '-') {
                 // The '-' separator is used for multi-line responses so just add it to the response
                 if (response == null) {
                     int code = Integer.parseInt(line.readBytes(3).toString(CHARSET));
                     response = new SMTPResponseImpl(code);
+                    ctx.setAttachment(response);
+
                 }
                 if (line.readable()) { 
                     response.addLine(line.toString(CHARSET));
@@ -69,9 +74,7 @@ class SMTPResponseDecoder extends FrameDecoder {
 
         }
         
-        // reset the index as we not reached the end of the SMTPResponse
-        buffer.resetReaderIndex();
-        return response;
+        return null;
 
     }
 
