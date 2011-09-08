@@ -5,80 +5,65 @@ import java.nio.charset.Charset;
 import me.normanmaurer.niosmtp.SMTPResponse;
 
 import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBufferIndexFinder;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.handler.codec.frame.FrameDecoder;
+import org.jboss.netty.handler.codec.oneone.OneToOneDecoder;
 
 /**
- * {@link FrameDecoder} which decodes {@link SMTPResponse}'s. It also handles multi-line responses.
+ * {@link OneToOneDecoder} which decodes {@link SMTPResponse}'s. It also handles
+ * multi-line responses.
  * 
  * 
  * @author Norman Maurer
- *
+ * 
  */
-class SMTPResponseDecoder extends FrameDecoder implements ChannelLocalSupport{
+class SMTPResponseDecoder extends OneToOneDecoder {
     private final static Charset CHARSET = Charset.forName("US-ASCII");
 
     @Override
-    protected Object decode(ChannelHandlerContext ctx, Channel channel, ChannelBuffer buffer) throws Exception {
-        buffer.markReaderIndex();
-        int lineIndex = -1;
-        SMTPResponseImpl response = (SMTPResponseImpl) ctx.getAttachment();
-        
-        // Loop over the lines
-        while((lineIndex = buffer.bytesBefore(ChannelBufferIndexFinder.CRLF)) != -1) {
-            ChannelBuffer line = buffer.readBytes(lineIndex);
-            
-            // Consume the CRLF in all cases
-            while (buffer.readable()) {
-                int c = buffer.getByte(buffer.readerIndex());
-                if (c == '\r' || c == '\n') {
-                    buffer.readByte();
-                } else {
-                    break;
-                }
-            }
-            
-            // The separator must be on index 3 as the return code has always 3 digits
+    protected Object decode(ChannelHandlerContext ctx, Channel channel, Object msg) throws Exception {
+        if (msg instanceof ChannelBuffer) {
+            ChannelBuffer line = (ChannelBuffer) msg;
+
+            SMTPResponseImpl response = (SMTPResponseImpl) ctx.getAttachment();
+
+            // The separator must be on index 3 as the return code has always 3
+            // digits
             int separator = line.getByte(3);
 
             if (separator == ' ') {
-                // Ok we had a ' ' separator which means this was the end of the SMTPResponse
+                // Ok we had a ' ' separator which means this was the end of the
+                // SMTPResponse
                 if (response == null) {
                     int code = Integer.parseInt(line.readBytes(3).toString(CHARSET));
                     response = new SMTPResponseImpl(code);
                 }
-                if (line.readable()) { 
+                if (line.readable()) {
                     response.addLine(line.toString(CHARSET));
-                    
+
                 }
                 ctx.setAttachment(null);
 
                 return response;
             } else if (separator == '-') {
-                // The '-' separator is used for multi-line responses so just add it to the response
+                // The '-' separator is used for multi-line responses so just
+                // add it to the response
                 if (response == null) {
                     int code = Integer.parseInt(line.readBytes(3).toString(CHARSET));
                     response = new SMTPResponseImpl(code);
                     ctx.setAttachment(response);
 
                 }
-                if (line.readable()) { 
+                if (line.readable()) {
                     response.addLine(line.toString(CHARSET));
-                }                
-            } else {
-                // This should never happen but for now we just consume the line and ignore it
-                return null;
+                }
             }
 
+            return null;
+        } else {
+            return msg;
         }
-        
-        return null;
 
     }
-
-
-
 
 }
