@@ -7,7 +7,6 @@ package me.normanmaurer.niosmtp;
  *
  */
 public enum SMTPCommand {
-    NONE,
     EHLO,
     HELO,
     MAIL,
@@ -17,5 +16,5 @@ public enum SMTPCommand {
     NOOP,
     QUIT, 
     RCPT, 
-    MESSAGE
+    DATA_POST
 }

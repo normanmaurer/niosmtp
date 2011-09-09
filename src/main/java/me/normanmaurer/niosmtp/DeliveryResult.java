@@ -2,6 +2,12 @@ package me.normanmaurer.niosmtp;
 
 import java.util.Iterator;
 
+/**
+ * Result of an email delivery
+ * 
+ * @author Norman Maurer
+ *
+ */
 public interface DeliveryResult {
 
     /**

@@ -156,14 +156,14 @@ class SMTPClientHandler extends SimpleChannelUpstreamHandler implements ChannelL
 
                         }
                     });
-                    states.put(NEXT_COMMAND_KEY, SMTPCommand.MESSAGE);
+                    states.put(NEXT_COMMAND_KEY, SMTPCommand.DATA_POST);
 
                 } else {
                     ctx.getChannel().write(new SMTPRequestImpl("QUIT", null)).addListener(ChannelFutureListener.CLOSE);
                 }
 
                 break;
-            case MESSAGE:
+            case DATA_POST:
                 if (code < 400) {
                     ctx.getChannel().write(new ChunkedStream(new DataTerminatingInputStream((InputStream) states.get(MSG_KEY)))).addListener(new ChannelFutureListener() {
 
