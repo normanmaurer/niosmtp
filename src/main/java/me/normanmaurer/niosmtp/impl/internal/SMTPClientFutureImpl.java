@@ -15,10 +15,10 @@ import org.jboss.netty.channel.Channel;
 
 public class SMTPClientFutureImpl implements SMTPClientFuture{
 
-    private volatile boolean isReady = false;
-    private volatile boolean isCancelled = false;
+    private boolean isReady = false;
+    private boolean isCancelled = false;
     private final List<SMTPClientFutureListener> listeners = Collections.synchronizedList(new ArrayList<SMTPClientFutureListener>());
-    private volatile Channel channel;
+    private Channel channel;
     private DeliveryResult result;
     protected synchronized void setDeliveryStatus(DeliveryResult result) {
         if (!isReady) {
@@ -37,7 +37,7 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
 
     
     @Override
-    public boolean cancel(boolean mayInterruptIfRunning) {
+    public synchronized boolean cancel(boolean mayInterruptIfRunning) {
         if (isCancelled || isDone()) {
             return false;
         } else {
@@ -54,7 +54,7 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
      * 
      * @param channel
      */
-    public void setChannel(Channel channel) {
+    public synchronized void setChannel(Channel channel) {
         this.channel = channel;
     }
     
@@ -72,12 +72,12 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
     }
     
     @Override
-    public boolean isCancelled() {
+    public synchronized boolean isCancelled() {
         return isCancelled;
     }
 
     @Override
-    public boolean isDone() {
+    public synchronized boolean isDone() {
         return isReady;
     }
 

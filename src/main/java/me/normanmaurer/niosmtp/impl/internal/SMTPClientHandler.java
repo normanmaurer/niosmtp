@@ -18,6 +18,7 @@ import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
+import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.stream.ChunkedStream;
@@ -204,6 +205,23 @@ class SMTPClientHandler extends SimpleChannelUpstreamHandler implements ChannelL
 
         }
         super.messageReceived(ctx, e);
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
+        SMTPClientFutureImpl future = (SMTPClientFutureImpl) ATTRIBUTES.get(e.getChannel()).get(FUTURE_KEY);
+        if (!future.isDone()) {
+            future.setDeliveryStatus(new DeliveryResultImpl(e.getCause()));
+        }
+        if (ctx.getChannel().isConnected()) {
+            ctx.getChannel().write(ChannelBuffers.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+        }
+    }
+
+    @Override
+    public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+        super.channelClosed(ctx, e);
+        ATTRIBUTES.remove(ctx.getChannel());
     }
     
 
