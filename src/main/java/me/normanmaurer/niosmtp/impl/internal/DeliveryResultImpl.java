@@ -28,7 +28,7 @@ public class DeliveryResultImpl implements DeliveryResult{
 
     @Override
     public Throwable getCause() {
-        return null;
+        return cause;
     }
 
     @Override
