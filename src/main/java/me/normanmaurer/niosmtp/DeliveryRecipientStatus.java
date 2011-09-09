@@ -8,6 +8,11 @@ package me.normanmaurer.niosmtp;
  */
 public interface DeliveryRecipientStatus {
 
+    public enum Status{
+        Ok,
+        PermanentError,
+        TemporaryError
+    }
     /**
      * Return the {@link SMTPResponse} which was returned for the recipient. 
      * 
@@ -15,13 +20,8 @@ public interface DeliveryRecipientStatus {
      */
     public SMTPResponse getResponse();
     
-    /**
-     * Return true if the delivery for the recipient was successful. This is the case if
-     * {@link #getReturnCode()} >= 200 && <=300
-     * 
-     * @return success
-     */
-    public boolean isSuccessful();
+
+    public Status getStatus();
     
     /**
      * Return the email-address of the recipient

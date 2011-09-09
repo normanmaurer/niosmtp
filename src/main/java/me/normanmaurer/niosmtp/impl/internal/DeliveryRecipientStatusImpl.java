@@ -21,11 +21,6 @@ class DeliveryRecipientStatusImpl implements DeliveryRecipientStatus{
 
 
     @Override
-    public boolean isSuccessful() {
-        return response.getCode() < 300 &&  response.getCode() > 200;
-    }
-
-    @Override
     public String getAddress() {
         return address;
     }
@@ -33,6 +28,18 @@ class DeliveryRecipientStatusImpl implements DeliveryRecipientStatus{
     @Override
     public SMTPResponse getResponse() {
         return response;
+    }
+
+    @Override
+    public Status getStatus() {
+        int code = response.getCode();
+        if (code >= 200 && code <= 299) {
+            return Status.Ok;
+        } else if (code >= 400 && code <= 499) {
+            return Status.TemporaryError;
+        } else {
+            return Status.PermanentError;
+        }
     }
 
 }

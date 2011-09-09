@@ -1,16 +1,15 @@
 package me.normanmaurer.niosmtp;
 
-import java.util.Iterator;
 import java.util.concurrent.Future;
 
 /**
  * A {@link Future} which allows to register {@link SMTPClientFutureListener} and also make it possible to
- * access an {@link Iterator} which holds {@link DeliveryRecipientStatus} objects in a blocking mode.
+ * access the {@link DeliveryResult} objects in a blocking fashion.
  * 
  * @author Norman Maurer
  *
  */
-public interface SMTPClientFuture extends Future<Iterator<DeliveryRecipientStatus>>{
+public interface SMTPClientFuture extends Future<DeliveryResult>{
 
     /**
      * Add the {@link SMTPClientFutureListener} which will notified one the delivery is complete.

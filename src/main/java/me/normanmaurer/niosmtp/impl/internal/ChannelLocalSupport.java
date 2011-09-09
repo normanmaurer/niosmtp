@@ -13,6 +13,7 @@ public interface ChannelLocalSupport {
     public static final String RECIPIENTS_KEY = "RECIPIENTS";
     public static final String SMTP_CONFIG_KEY = "SMTP_CONFIG";
     public static final String MSG_KEY = "MSG";
+    public static final String RECIPIENT_STATUS_LIST_KEY = "RECIPIENT_STATUS_LIST";
 
     public static final ChannelLocal<Map<String, Object>> ATTRIBUTES = new ChannelLocal<Map<String, Object>>();
 }
