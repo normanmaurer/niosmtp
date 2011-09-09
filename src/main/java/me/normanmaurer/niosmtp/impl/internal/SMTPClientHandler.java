@@ -187,6 +187,15 @@ class SMTPClientHandler extends SimpleChannelUpstreamHandler implements ChannelL
             case QUIT:
                 if (code < 400) {
                     ctx.getChannel().write(new SMTPRequestImpl("QUIT", null)).addListener(ChannelFutureListener.CLOSE);
+                   
+                    // Set the final status for successful recipients
+                    Iterator<DeliveryRecipientStatus> status = statusList.iterator();
+                    while(status.hasNext()) {
+                        DeliveryRecipientStatus s = status.next();
+                        if (s.getStatus() == Status.Ok) {
+                            ((DeliveryRecipientStatusImpl)s).setResponse(response);
+                        }
+                    }
                     future.setDeliveryStatus(new DeliveryResultImpl(statusList));
 
                 } else {
