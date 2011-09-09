@@ -70,8 +70,6 @@ public class UnpooledSMTPClient implements SMTPClient, ChannelLocalSupport {
                     attrs.put(MSG_KEY, msg);
                     attrs.put(SMTP_CONFIG_KEY, config);
                     ATTRIBUTES.set(cf.getChannel(), attrs);
-                } else {
-                    // TODO: Handle connection problems
                 }
                 // Set the channel so we can close it for cancel later
                 future.setChannel(cf.getChannel());

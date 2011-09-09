@@ -20,11 +20,11 @@ public interface SMTPClientConfig {
     public String getHeloName();
     
     /**
-     * Return the timeout (in seconds) for the client
+     * Return the connection timeout (in seconds) for the client
      * 
-     * @return timeout
+     * @return connectionTimeout
      */
-    public int getTimeout();
+    public int getConnectionTimeout();
 
     
     /**

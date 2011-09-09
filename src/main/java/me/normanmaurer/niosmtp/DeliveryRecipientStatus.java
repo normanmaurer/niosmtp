@@ -21,6 +21,11 @@ public interface DeliveryRecipientStatus {
     public SMTPResponse getResponse();
     
 
+    /**
+     * Return the status
+     * 
+     * @return status
+     */
     public Status getStatus();
     
     /**

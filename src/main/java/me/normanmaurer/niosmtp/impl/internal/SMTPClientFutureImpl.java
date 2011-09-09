@@ -20,6 +20,12 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
     private final List<SMTPClientFutureListener> listeners = Collections.synchronizedList(new ArrayList<SMTPClientFutureListener>());
     private Channel channel;
     private DeliveryResult result;
+    
+    /**
+     * Set the {@link DeliveryResult} for the future and notify all waiting threads + the listeners
+     * 
+     * @param result
+     */
     protected synchronized void setDeliveryStatus(DeliveryResult result) {
         if (!isDone()) {
             this.result = result;

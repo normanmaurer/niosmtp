@@ -14,7 +14,7 @@ import me.normanmaurer.niosmtp.SMTPClientConfig;
 public class SMTPClientConfigImpl implements SMTPClientConfig {
 
     private String heloName = "localhost";
-    private int timeout = 60;
+    private int connectionTimeout = 60;
     private InetSocketAddress localAddress = null;
     private boolean usePipelining = true;
     
@@ -34,16 +34,16 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
         return heloName;
     }
 
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
+    public void setConnectionTimeout(int connectionTimeout) {
+        this.connectionTimeout = connectionTimeout;
     }
-    
+
     /*
      * (non-Javadoc)
-     * @see me.normanmaurer.niosmtp.SMTPClientConfig#getTimeout()
+     * @see me.normanmaurer.niosmtp.SMTPClientConfig#getConnectionTimeout()
      */
-    public int getTimeout() {
-        return timeout;
+    public int getConnectionTimeout() {
+        return connectionTimeout;
     }
     
 
