@@ -21,27 +21,28 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
     private Channel channel;
     private DeliveryResult result;
     protected synchronized void setDeliveryStatus(DeliveryResult result) {
-        if (!isReady) {
+        if (!isDone()) {
             this.result = result;
             isReady = true;
             notify();
 
             
+            // notify the listeners
             for (int i = 0; i < listeners.size(); i++) {
                 listeners.get(i).operationComplete(result);
             }
         } else {
-            notify();
+            throw new IllegalStateException("Should not get called after future is ready");
         }
     }
 
     
     @Override
     public synchronized boolean cancel(boolean mayInterruptIfRunning) {
-        if (isCancelled || isDone()) {
+        if (isCancelled() || isDone()) {
             return false;
         } else {
-           if (channel != null) {
+           if (channel != null && channel.isConnected()) {
                channel.close();
            }
            isCancelled = true;
@@ -84,7 +85,7 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
     @Override
     public void addListener(SMTPClientFutureListener listener) {
         listeners.add(listener);
-        if (isReady) {
+        if (isDone()) {
             listener.operationComplete(result);
         }
     }
