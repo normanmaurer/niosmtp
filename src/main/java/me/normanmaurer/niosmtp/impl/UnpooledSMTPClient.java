@@ -55,6 +55,7 @@ public class UnpooledSMTPClient implements SMTPClient, ChannelLocalSupport {
     public SMTPClientFuture deliver(InetSocketAddress host, final String mailFrom, final List<String> recipients, final InputStream msg, final SMTPClientConfig config) {
         final SMTPClientFutureImpl future = new SMTPClientFutureImpl();
         ClientBootstrap bootstrap = new ClientBootstrap(socketFactory);
+        bootstrap.setOption("connectTimeoutMillis", config.getConnectionTimeout() * 1000);
         bootstrap.setPipelineFactory(createChannelPipelineFactory());
         InetSocketAddress local = config.getLocalAddress();
         bootstrap.connect(host, local).addListener(new ChannelFutureListener() {
