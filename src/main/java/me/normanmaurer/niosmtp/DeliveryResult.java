@@ -18,11 +18,11 @@ public interface DeliveryResult {
     public boolean isSuccess();
     
     /**
-     * Return the {@link Throwable} which was thrown while try to deliver
+     * Return the {@link SMTPException} which was thrown while try to deliver
      * 
-     * @return cause
+     * @return exception
      */
-    public Throwable getCause();
+    public SMTPException getException();
     
     /**
      * Return an {@link Iterator} which holds all {@link DeliveryRecipientStatus} objects for the 

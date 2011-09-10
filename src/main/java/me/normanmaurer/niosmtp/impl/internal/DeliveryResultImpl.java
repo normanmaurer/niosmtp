@@ -4,30 +4,31 @@ import java.util.Iterator;
 
 import me.normanmaurer.niosmtp.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.DeliveryResult;
+import me.normanmaurer.niosmtp.SMTPException;
 
 public class DeliveryResultImpl implements DeliveryResult{
 
     private final Iterable<DeliveryRecipientStatus> status;
-    private final Throwable cause;
+    private final SMTPException exception;
 
     public DeliveryResultImpl(Iterable<DeliveryRecipientStatus> status) {
         this.status = status;
-        this.cause = null;
+        this.exception = null;
     }
     
-    public DeliveryResultImpl(Throwable cause) {
-        this.cause = cause;
+    public DeliveryResultImpl(SMTPException exception) {
+        this.exception = exception;
         this.status = null;
     }
     
     @Override
     public boolean isSuccess() {
-        return cause == null;
+        return exception == null;
     }
 
     @Override
-    public Throwable getCause() {
-        return cause;
+    public SMTPException getException() {
+        return exception;
     }
 
     @Override

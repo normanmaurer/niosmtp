@@ -17,6 +17,10 @@ import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
+import org.jboss.netty.handler.timeout.IdleStateHandler;
+import org.jboss.netty.handler.timeout.ReadTimeoutHandler;
+import org.jboss.netty.util.HashedWheelTimer;
+import org.jboss.netty.util.Timer;
 
 import me.normanmaurer.niosmtp.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.SMTPClient;
@@ -42,7 +46,7 @@ import me.normanmaurer.niosmtp.impl.internal.SMTPClientPipelineFactory;
 public class UnpooledSMTPClient implements SMTPClient, ChannelLocalSupport {
 
     protected final NioClientSocketChannelFactory socketFactory = new NioClientSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool());
-
+    private final Timer timer = new HashedWheelTimer();
 
     protected ChannelPipelineFactory createChannelPipelineFactory() {
         return new SMTPClientPipelineFactory();
@@ -71,6 +75,9 @@ public class UnpooledSMTPClient implements SMTPClient, ChannelLocalSupport {
                     attrs.put(MSG_KEY, msg);
                     attrs.put(SMTP_CONFIG_KEY, config);
                     ATTRIBUTES.set(cf.getChannel(), attrs);
+                    
+                    // Add the idle timeout handler
+                    cf.getChannel().getPipeline().addFirst("idleHandler", new IdleStateHandler(timer, 0, 0, config.getResponseTimeout()));
                 }
                 // Set the channel so we can close it for cancel later
                 future.setChannel(cf.getChannel());

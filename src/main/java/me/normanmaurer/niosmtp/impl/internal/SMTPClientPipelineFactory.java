@@ -20,9 +20,11 @@ public class SMTPClientPipelineFactory implements ChannelPipelineFactory{
     private final static SMTPResponseDecoder SMTP_RESPONSE_DECODER = new SMTPResponseDecoder();
     private final static SMTPRequestEncoder SMTP_REQUEST_ENCODER = new SMTPRequestEncoder();
     private final static SMTPClientHandler SMTP_CLIENT_HANDLER = new SMTPClientHandler();
+    private final static SMTPClientIdleHandler SMTP_CLIENT_IDLE_HANDLER = new SMTPClientIdleHandler();
     @Override
     public ChannelPipeline getPipeline() throws Exception {
         ChannelPipeline pipeline = Channels.pipeline();
+        pipeline.addLast("smtpIdleHandler", SMTP_CLIENT_IDLE_HANDLER);
         pipeline.addLast("framer", FRAMER);
         pipeline.addLast("decoder", SMTP_RESPONSE_DECODER);
         pipeline.addLast("encoder", SMTP_REQUEST_ENCODER);

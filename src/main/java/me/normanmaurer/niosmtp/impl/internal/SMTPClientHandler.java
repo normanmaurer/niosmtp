@@ -1,6 +1,7 @@
 package me.normanmaurer.niosmtp.impl.internal;
 
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -11,6 +12,8 @@ import me.normanmaurer.niosmtp.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.DeliveryRecipientStatus.Status;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPCommand;
+import me.normanmaurer.niosmtp.SMTPConnectionException;
+import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPResponse;
 
 import org.jboss.netty.buffer.ChannelBuffers;
@@ -220,7 +223,17 @@ class SMTPClientHandler extends SimpleChannelUpstreamHandler implements ChannelL
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
         SMTPClientFutureImpl future = (SMTPClientFutureImpl) ATTRIBUTES.get(e.getChannel()).get(FUTURE_KEY);
         if (!future.isDone()) {
-            future.setDeliveryStatus(new DeliveryResultImpl(e.getCause()));
+            final SMTPException exception;
+            final Throwable t = e.getCause();
+            if (t instanceof SMTPException) {
+                exception = (SMTPException) t;
+            } else if (t instanceof ConnectException) {
+                exception = new SMTPConnectionException(t);
+            } else {
+                exception = new SMTPException("Exception while try to deliver msg", t);
+            }
+            
+            future.setDeliveryStatus(new DeliveryResultImpl(exception));
         }
         if (ctx.getChannel().isConnected()) {
             ctx.getChannel().write(ChannelBuffers.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);

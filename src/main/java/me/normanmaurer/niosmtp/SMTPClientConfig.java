@@ -25,6 +25,13 @@ public interface SMTPClientConfig {
      * @return connectionTimeout
      */
     public int getConnectionTimeout();
+    
+    /**
+     * Return the response timeout (in seconds) for the SMTP Server to send the response
+     * 
+     * @return responseTimeout
+     */
+    public int getResponseTimeout();
 
     
     /**

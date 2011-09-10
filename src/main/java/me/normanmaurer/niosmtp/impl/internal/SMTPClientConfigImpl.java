@@ -17,6 +17,7 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
     private int connectionTimeout = 60;
     private InetSocketAddress localAddress = null;
     private boolean usePipelining = true;
+    private int responseTimeout;
     
     public SMTPClientConfigImpl() {
     }
@@ -69,6 +70,19 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
     
     public void setUsePipelining(boolean usePipelining) {
         this.usePipelining = usePipelining;
+    }
+
+
+    /*
+     * (non-Javadoc)
+     * @see me.normanmaurer.niosmtp.SMTPClientConfig#getResponseTimeout()
+     */
+    public int getResponseTimeout() {
+        return responseTimeout;
+    }
+    
+    public void setResponseTimeout(int responseTimeout) {
+        this.responseTimeout = responseTimeout;
     }
 
 }
