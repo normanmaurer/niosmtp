@@ -1,16 +1,20 @@
 package me.normanmaurer.niosmtp.impl;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+
+import me.normanmaurer.niosmtp.SMTPClient;
+import me.normanmaurer.niosmtp.SMTPClientConfig;
+import me.normanmaurer.niosmtp.SMTPClientFuture;
+import me.normanmaurer.niosmtp.SMTPCommand;
+import me.normanmaurer.niosmtp.impl.internal.ChannelLocalSupport;
+import me.normanmaurer.niosmtp.impl.internal.SMTPClientFutureImpl;
+import me.normanmaurer.niosmtp.impl.internal.SMTPClientPipelineFactory;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.ChannelFuture;
@@ -20,16 +24,6 @@ import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.handler.timeout.IdleStateHandler;
 import org.jboss.netty.util.HashedWheelTimer;
 import org.jboss.netty.util.Timer;
-
-import me.normanmaurer.niosmtp.DeliveryRecipientStatus;
-import me.normanmaurer.niosmtp.SMTPClient;
-import me.normanmaurer.niosmtp.SMTPClientConfig;
-import me.normanmaurer.niosmtp.SMTPClientFuture;
-import me.normanmaurer.niosmtp.SMTPCommand;
-import me.normanmaurer.niosmtp.impl.internal.ChannelLocalSupport;
-import me.normanmaurer.niosmtp.impl.internal.SMTPClientConfigImpl;
-import me.normanmaurer.niosmtp.impl.internal.SMTPClientFutureImpl;
-import me.normanmaurer.niosmtp.impl.internal.SMTPClientPipelineFactory;
 
 /**
  * {@link SMTPClient} implementation which will create a new Connection for
@@ -91,16 +85,5 @@ public class UnpooledSMTPClient implements SMTPClient, ChannelLocalSupport {
     public void destroy() {
         socketFactory.releaseExternalResources();
         timer.stop();
-    }
-
-    
-    public static void main(String[] args) throws InterruptedException, ExecutionException {
-        UnpooledSMTPClient client = new UnpooledSMTPClient();
-        SMTPClientFuture future = client.deliver(new InetSocketAddress("192.168.0.254", 25), "test@test.de", Arrays.asList("nm@normanmaurer.me", "nm2@normanmaurer.me"), new ByteArrayInputStream("Subject: test\r\n\r\ntest".getBytes()), new SMTPClientConfigImpl());
-        Iterator<DeliveryRecipientStatus> statusIt = future.get().getRecipientStatus();
-        while(statusIt.hasNext()) {
-            DeliveryRecipientStatus rs = statusIt.next();
-            System.out.println(rs.getAddress() + "=> " + rs.getResponse().getCode() + " " + rs.getResponse().getLines().toString());
-        }
     }
 }
