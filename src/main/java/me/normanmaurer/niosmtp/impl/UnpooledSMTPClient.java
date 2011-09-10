@@ -18,7 +18,6 @@ import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.handler.timeout.IdleStateHandler;
-import org.jboss.netty.handler.timeout.ReadTimeoutHandler;
 import org.jboss.netty.util.HashedWheelTimer;
 import org.jboss.netty.util.Timer;
 
@@ -91,6 +90,7 @@ public class UnpooledSMTPClient implements SMTPClient, ChannelLocalSupport {
      */
     public void destroy() {
         socketFactory.releaseExternalResources();
+        timer.stop();
     }
 
     
