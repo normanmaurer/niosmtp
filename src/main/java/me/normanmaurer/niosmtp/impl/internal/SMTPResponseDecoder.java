@@ -8,6 +8,8 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.oneone.OneToOneDecoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link OneToOneDecoder} which decodes {@link SMTPResponse}'s. It also handles
@@ -19,7 +21,8 @@ import org.jboss.netty.handler.codec.oneone.OneToOneDecoder;
  */
 class SMTPResponseDecoder extends OneToOneDecoder {
     private final static Charset CHARSET = Charset.forName("US-ASCII");
-
+    private final Logger logger = LoggerFactory.getLogger(SMTPResponseDecoder.class);
+    
     @Override
     protected Object decode(ChannelHandlerContext ctx, Channel channel, Object msg) throws Exception {
         if (msg instanceof ChannelBuffer) {
@@ -43,7 +46,9 @@ class SMTPResponseDecoder extends OneToOneDecoder {
 
                 }
                 ctx.setAttachment(null);
-
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Channel " + ctx.getChannel().getId() + " received: [" + response.toString() + "]");
+                }
                 return response;
             } else if (separator == '-') {
                 // The '-' separator is used for multi-line responses so just

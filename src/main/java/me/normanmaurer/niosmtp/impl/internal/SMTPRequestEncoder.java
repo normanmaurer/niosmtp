@@ -9,6 +9,8 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link OneToOneEncoder} which encoded {@link SMTPRequest} objects to {@link ChannelBuffer}
@@ -18,11 +20,16 @@ import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
  */
 class SMTPRequestEncoder extends OneToOneEncoder{
     private final static Charset CHARSET = Charset.forName("US-ASCII");
+    private final Logger logger = LoggerFactory.getLogger(SMTPRequestEncoder.class);
 
     @Override
-    protected Object encode(ChannelHandlerContext arg0, Channel arg1, Object msg) throws Exception {
+    protected Object encode(ChannelHandlerContext ctx, Channel arg1, Object msg) throws Exception {
         if (msg instanceof SMTPRequest) {
             SMTPRequest req = (SMTPRequest) msg;
+            if (logger.isDebugEnabled()) {
+                logger.debug("Channel " + ctx.getChannel().getId() + " sent: [" + req.toString() + "]");
+            }
+            
             StringBuilder sb = new StringBuilder();
             sb.append(req.getCommand());
             
