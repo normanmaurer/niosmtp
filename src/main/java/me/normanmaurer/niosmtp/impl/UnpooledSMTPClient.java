@@ -62,11 +62,15 @@ public class UnpooledSMTPClient implements SMTPClient, ChannelLocalSupport {
                 if (cf.isSuccess()) {
                     Map<String, Object> attrs = new HashMap<String, Object>();
                     attrs.put(FUTURE_KEY, future);
-                    attrs.put(NEXT_COMMAND_KEY, SMTPCommand.HELO);
                     attrs.put(MAIL_FROM_KEY, mailFrom);
                     attrs.put(RECIPIENTS_KEY, new LinkedList<String>(recipients));
                     attrs.put(MSG_KEY, msg);
                     attrs.put(SMTP_CONFIG_KEY, config);
+                    if (config.usePipelining()) {
+                        attrs.put(NEXT_COMMAND_KEY, SMTPCommand.EHLO);
+                    } else {
+                        attrs.put(NEXT_COMMAND_KEY, SMTPCommand.HELO);
+                    }
                     ATTRIBUTES.set(cf.getChannel(), attrs);
                     
                     // Add the idle timeout handler

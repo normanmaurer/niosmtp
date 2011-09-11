@@ -61,6 +61,7 @@ class SMTPClientHandler extends SimpleChannelUpstreamHandler implements ChannelL
             final List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) states.get(RECIPIENT_STATUS_LIST_KEY);
             
             SMTPClientFutureImpl future = (SMTPClientFutureImpl) ATTRIBUTES.get(e.getChannel()).get(FUTURE_KEY);
+            boolean supportsPipelining = (Boolean) states.get(SUPPORTS_PIPELINING_KEY);
             int code = response.getCode();
             switch (nextCommand) {
             case HELO:
@@ -84,7 +85,33 @@ class SMTPClientHandler extends SimpleChannelUpstreamHandler implements ChannelL
 
                 }
                 break;
+            case EHLO:
+                if (code < 400) {
+                    ctx.getChannel().write(new SMTPRequestImpl("EHLO", config.getHeloName())).addListener(new ChannelFutureListener() {
+
+                        @Override
+                        public void operationComplete(ChannelFuture cf) throws Exception {
+                            states.put(CURRENT_COMMAND_KEY, nextCommand);
+
+                        }
+                    });
+                    states.put(NEXT_COMMAND_KEY, SMTPCommand.MAIL);
+                } else {
+                    while (!recipients.isEmpty()) {
+                        statusList.add(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response));
+                    }
+                    ctx.getChannel().write(new SMTPRequestImpl("QUIT", null)).addListener(ChannelFutureListener.CLOSE);
+
+                    future.setDeliveryStatus(new DeliveryResultImpl(statusList));
+
+                }
+                break;
             case MAIL:
+                
+                if (curCommand == SMTPCommand.EHLO) {
+                    states.put(SUPPORTS_PIPELINING_KEY, response.getLines().contains("PIPELINING"));
+                    supportsPipelining = true;
+                }
                 String mailFrom = (String) states.get(MAIL_FROM_KEY);
                 if (mailFrom == null) {
                     mailFrom = "";
