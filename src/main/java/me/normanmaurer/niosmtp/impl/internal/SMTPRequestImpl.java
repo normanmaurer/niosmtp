@@ -21,5 +21,10 @@ class SMTPRequestImpl implements SMTPRequest{
     public String getArgument() {
         return argument;
     }
+    
+    @Override
+    public String toString() {
+        return command + " " + argument;
+    }
 
 }
