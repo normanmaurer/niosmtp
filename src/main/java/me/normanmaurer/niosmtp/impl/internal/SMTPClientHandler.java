@@ -25,6 +25,8 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.stream.ChunkedStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link SimpleChannelUpstreamHandler} implementation which handles the SMTP communication with the SMTP
@@ -34,6 +36,7 @@ import org.jboss.netty.handler.stream.ChunkedStream;
  *
  */
 class SMTPClientHandler extends SimpleChannelUpstreamHandler implements ChannelLocalSupport {
+    private final Logger logger = LoggerFactory.getLogger(SMTPClientHandler.class);
 
 
 
@@ -251,8 +254,11 @@ class SMTPClientHandler extends SimpleChannelUpstreamHandler implements ChannelL
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Exception caught while handle SMTP/SMTPS", e.getCause());
+        }
         SMTPClientFutureImpl future = (SMTPClientFutureImpl) ATTRIBUTES.get(e.getChannel()).get(FUTURE_KEY);
-        e.getCause().printStackTrace();
+        
         if (!future.isDone()) {
             final SMTPException exception;
             final Throwable t = e.getCause();
