@@ -59,23 +59,22 @@ public class UnpooledSMTPClient implements SMTPClient, ChannelLocalSupport {
             
             @Override
             public void operationComplete(ChannelFuture cf) throws Exception {
-                if (cf.isSuccess()) {
-                    Map<String, Object> attrs = new HashMap<String, Object>();
-                    attrs.put(FUTURE_KEY, future);
-                    attrs.put(MAIL_FROM_KEY, mailFrom);
-                    attrs.put(RECIPIENTS_KEY, new LinkedList<String>(recipients));
-                    attrs.put(MSG_KEY, msg);
-                    attrs.put(SMTP_CONFIG_KEY, config);
-                    if (config.usePipelining()) {
-                        attrs.put(NEXT_COMMAND_KEY, SMTPCommand.EHLO);
-                    } else {
-                        attrs.put(NEXT_COMMAND_KEY, SMTPCommand.HELO);
-                    }
-                    ATTRIBUTES.set(cf.getChannel(), attrs);
-                    
-                    // Add the idle timeout handler
-                    cf.getChannel().getPipeline().addFirst("idleHandler", new IdleStateHandler(timer, 0, 0, config.getResponseTimeout()));
+                Map<String, Object> attrs = new HashMap<String, Object>();
+                attrs.put(FUTURE_KEY, future);
+                attrs.put(MAIL_FROM_KEY, mailFrom);
+                attrs.put(RECIPIENTS_KEY, new LinkedList<String>(recipients));
+                attrs.put(MSG_KEY, msg);
+                attrs.put(SMTP_CONFIG_KEY, config);
+                if (config.usePipelining()) {
+                    attrs.put(NEXT_COMMAND_KEY, SMTPCommand.EHLO);
+                } else {
+                    attrs.put(NEXT_COMMAND_KEY, SMTPCommand.HELO);
                 }
+                ATTRIBUTES.set(cf.getChannel(), attrs);
+
+                // Add the idle timeout handler
+                cf.getChannel().getPipeline().addFirst("idleHandler", new IdleStateHandler(timer, 0, 0, config.getResponseTimeout()));
+
                 // Set the channel so we can close it for cancel later
                 future.setChannel(cf.getChannel());
             }
