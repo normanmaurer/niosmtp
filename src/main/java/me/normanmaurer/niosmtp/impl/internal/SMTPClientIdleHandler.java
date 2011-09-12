@@ -24,12 +24,19 @@ import org.jboss.netty.handler.timeout.IdleStateAwareChannelUpstreamHandler;
 import org.jboss.netty.handler.timeout.IdleStateEvent;
 
 
+/**
+ * {@link IdleStateAwareChannelUpstreamHandler} implementation which will throw an {@link SMTPIdleException} if a connection
+ * was idle for to long time
+ * 
+ * @author Norman Maurer
+ *
+ */
 public class SMTPClientIdleHandler extends IdleStateAwareChannelUpstreamHandler{
 
     @Override
     public void channelIdle(ChannelHandlerContext ctx, IdleStateEvent e) throws Exception {
         if (e.getState() == IdleState.ALL_IDLE) {
-            throw new SMTPIdleException();
+            throw new SMTPIdleException("Connection was idling for " + (e.getLastActivityTimeMillis() - System.currentTimeMillis()) + " ms");
         }
         super.channelIdle(ctx, e);
     }

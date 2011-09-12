@@ -23,14 +23,48 @@ package me.normanmaurer.niosmtp;
  *
  */
 public enum SMTPCommand {
+    /**
+     * EHLO Command
+     */
     EHLO,
+    
+    /**
+     * HELO Command
+     */
     HELO,
+    
+    /**
+     * MAIL FROM Command
+     */
     MAIL,
-    FROM,
+    
+    /**
+     * DATA Command
+     */
     DATA,
+    
+    /**
+     * AUTH Command
+     */
     AUTH,
+    
+    /**
+     * NOOP Command
+     */
     NOOP,
+    
+    /**
+     * QUIT Command
+     */
     QUIT, 
+    
+    /**
+     * RCPT TO Command
+     */
     RCPT, 
+    
+    /**
+     * 
+     */
     DATA_POST
 }
