@@ -1,61 +1,121 @@
 package me.normanmaurer.niosmtp;
 
+import static org.junit.Assert.*;
+
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
-import static org.mockito.Mockito.*;
+
 
 import me.normanmaurer.niosmtp.impl.UnpooledSMTPClient;
 import me.normanmaurer.niosmtp.impl.internal.SMTPClientConfigImpl;
 
-import org.apache.commons.configuration.Configuration;
-import org.apache.james.dnsservice.api.DNSService;
-import org.apache.james.dnsservice.api.TemporaryResolutionException;
-import org.apache.james.filesystem.api.FileSystem;
-import org.apache.james.protocols.api.ProtocolHandler;
-import org.apache.james.protocols.api.ProtocolHandlerLoader;
-import org.apache.james.smtpserver.netty.SMTPServer;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.subethamail.smtp.MessageContext;
+import org.subethamail.smtp.MessageHandler;
+import org.subethamail.smtp.MessageHandlerFactory;
+import org.subethamail.smtp.RejectException;
+import org.subethamail.smtp.TooMuchDataException;
+import org.subethamail.smtp.server.SMTPServer;
 
 public class SMTPClientTest {
     
+
     @Test
     public void test() throws InterruptedException, ExecutionException {
-        SMTPServer s = new SMTPServer();
-        DNSService dnsService = mock(DNSService.class);
-        s.setDNSService(dnsService);
-        ProtocolHandlerLoader phl = mock(ProtocolHandlerLoader.class);
-        s.setProtocolHandlerLoader(phl);
-        FileSystem fs = mock(FileSystem.class);
-        s.setFileSystem(fs);
-        InetSocketAddress address = new InetSocketAddress(6028);
-        s.setListenAddresses(Arrays.asList(new InetSocketAddress[] { address }));
-        Logger logger = LoggerFactory.getLogger("prova");
-        s.setLog(logger);
-        s.start();
-        
+        int port = 6028;
+
+        SMTPServer smtpServer = new SMTPServer(new TestHandlerFactory() {
+
+            @Override
+            public void from(String sender) throws RejectException {
+                throw new RejectException("Sender " + sender + " rejected");
+            }
+            
+        });
+        smtpServer.setPort(port);
+        smtpServer.start();
+
+       
+        UnpooledSMTPClient c = new UnpooledSMTPClient();
+
         try {
-            SMTPClient c = new UnpooledSMTPClient();
             SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
             conf.setConnectionTimeout(4);
             conf.setResponseTimeout(5);
             System.out.println("delivering...");
-            SMTPClientFuture future = c.deliver(address, "from@example.com", Arrays.asList(new String[] {"to@example.com"}), new ByteArrayInputStream("msg".getBytes()), conf);
+            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), "from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new ByteArrayInputStream("msg".getBytes()), conf);
             DeliveryResult dr = future.get();
-            System.out.println(dr.isSuccess());
-            System.out.println(dr.getRecipientStatus());
+            assertTrue(dr.isSuccess());
+            assertNull(dr.getException());
+            Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
+            DeliveryRecipientStatus status = it.next();
+            assertEquals(DeliveryRecipientStatus.Status.PermanentError, status.getStatus());
+            assertEquals(554, status.getResponse().getCode());
+
+            status = it.next();
+            assertEquals(DeliveryRecipientStatus.Status.PermanentError, status.getStatus());
+            assertEquals(554, status.getResponse().getCode());
+            
+            assertFalse(it.hasNext());
         } finally {
-            s.stop();
+            smtpServer.stop();
+            c.destroy();
+        }
+        
+    }
+
+
+    
+    @Test
+    public void testConnectionRefused() throws InterruptedException, ExecutionException {
+        UnpooledSMTPClient c = new UnpooledSMTPClient();
+        SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
+        conf.setConnectionTimeout(4);
+        conf.setResponseTimeout(5);
+        SMTPClientFuture future = c.deliver(new InetSocketAddress(11111), "from@example.com", Arrays.asList(new String[] { "to@example.com" }), new ByteArrayInputStream("msg".getBytes()), conf);
+        try {
+            DeliveryResult dr = future.get();
+            assertFalse(dr.isSuccess());
+            assertNull(dr.getRecipientStatus());
+            assertEquals(SMTPConnectionException.class, dr.getException().getClass());
+        } finally {
+            c.destroy();
+        }
+    }
+    
+    protected class TestHandlerFactory implements MessageHandlerFactory, MessageHandler {
+
+        public TestHandlerFactory() {
+            
+        }
+        @Override
+        public void data(InputStream arg0) throws RejectException, TooMuchDataException, IOException {
+            
+        }
+
+        @Override
+        public void done() {
+            
+        }
+
+        @Override
+        public void from(String arg0) throws RejectException {
+            
+        }
+
+        @Override
+        public void recipient(String arg0) throws RejectException {
+            
+        }
+
+        @Override
+        public MessageHandler create(MessageContext arg0) {
+            return this;
         }
         
     }
