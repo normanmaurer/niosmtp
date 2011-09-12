@@ -118,6 +118,109 @@ public class SMTPClientTest {
     
     
     @Test
+    public void testRejectData() throws InterruptedException, ExecutionException {
+        int port = 6028;
+
+        SMTPServer smtpServer = new SMTPServer(new TestHandlerFactory() {
+
+            @Override
+            public void data(InputStream arg0) throws RejectException, TooMuchDataException, IOException {
+                throw new RejectException();
+            }
+
+
+            
+        });
+        smtpServer.setPort(port);
+        smtpServer.start();
+
+       
+        UnpooledSMTPClient c = new UnpooledSMTPClient();
+
+        try {
+            SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
+            conf.setConnectionTimeout(4);
+            conf.setResponseTimeout(5);
+            System.out.println("delivering...");
+            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), "from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new ByteArrayInputStream("msg".getBytes()), conf);
+            DeliveryResult dr = future.get();
+            assertTrue(dr.isSuccess());
+            assertNull(dr.getException());
+            Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
+            DeliveryRecipientStatus status = it.next();
+            assertEquals(DeliveryRecipientStatus.Status.PermanentError, status.getStatus());
+            assertEquals(554, status.getResponse().getCode());
+
+            status = it.next();
+            assertEquals(DeliveryRecipientStatus.Status.PermanentError, status.getStatus());
+            assertEquals(554, status.getResponse().getCode());
+            
+            assertFalse(it.hasNext());
+        } finally {
+            smtpServer.stop();
+            c.destroy();
+        }
+        
+    }
+    
+    
+    @Test
+    public void testRejectOneRecipient() throws InterruptedException, ExecutionException {
+        int port = 6028;
+
+        SMTPServer smtpServer = new SMTPServer(new TestHandlerFactory() {
+
+            @Override
+            public void recipient(String rcpt) throws RejectException {
+                if (rcpt.equals("to2@example.com"))  {
+                    throw new RejectException();
+                }
+            }
+
+
+            
+        });
+        smtpServer.setPort(port);
+        smtpServer.start();
+
+       
+        UnpooledSMTPClient c = new UnpooledSMTPClient();
+
+        try {
+            SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
+            conf.setConnectionTimeout(4);
+            conf.setResponseTimeout(5);
+            System.out.println("delivering...");
+            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), "from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com", "to3@example.com"}), new ByteArrayInputStream("msg".getBytes()), conf);
+            DeliveryResult dr = future.get();
+            assertTrue(dr.isSuccess());
+            assertNull(dr.getException());
+            Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
+            DeliveryRecipientStatus status = it.next();
+            assertEquals(DeliveryRecipientStatus.Status.Ok, status.getStatus());
+            assertEquals(250, status.getResponse().getCode());
+            assertEquals("to@example.com", status.getAddress());
+            
+            status = it.next();
+            assertEquals(DeliveryRecipientStatus.Status.PermanentError, status.getStatus());
+            assertEquals(554, status.getResponse().getCode());
+            assertEquals("to2@example.com", status.getAddress());
+
+            status = it.next();
+            assertEquals(DeliveryRecipientStatus.Status.Ok, status.getStatus());
+            assertEquals(250, status.getResponse().getCode());
+            assertEquals("to3@example.com", status.getAddress());
+            
+            assertFalse(it.hasNext());
+        } finally {
+            smtpServer.stop();
+            c.destroy();
+        }
+        
+    }
+    
+    
+    @Test
     public void testConnectionRefused() throws InterruptedException, ExecutionException {
         UnpooledSMTPClient c = new UnpooledSMTPClient();
         SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
