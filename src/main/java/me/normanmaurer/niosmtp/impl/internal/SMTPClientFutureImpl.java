@@ -29,6 +29,12 @@ import me.normanmaurer.niosmtp.SMTPClientFutureListener;
 
 import org.jboss.netty.channel.Channel;
 
+/**
+ * Basic implementation of {@link SMTPClientFuture}
+ * 
+ * @author Norman Maurer
+ *
+ */
 public class SMTPClientFutureImpl implements SMTPClientFuture{
 
     private boolean isReady = false;
