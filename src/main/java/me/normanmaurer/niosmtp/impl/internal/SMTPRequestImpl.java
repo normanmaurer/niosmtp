@@ -24,7 +24,11 @@ class SMTPRequestImpl implements SMTPRequest{
     
     @Override
     public String toString() {
-        return command + " " + argument;
+        if (argument == null) {
+            return command;
+        } else {
+            return command + " " + argument;
+        }
     }
 
 }
