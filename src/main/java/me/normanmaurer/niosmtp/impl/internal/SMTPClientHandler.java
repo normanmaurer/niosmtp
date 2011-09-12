@@ -61,7 +61,7 @@ class SMTPClientHandler extends SimpleChannelUpstreamHandler implements ChannelL
             final List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) states.get(RECIPIENT_STATUS_LIST_KEY);
             
             SMTPClientFutureImpl future = (SMTPClientFutureImpl) ATTRIBUTES.get(e.getChannel()).get(FUTURE_KEY);
-            boolean supportsPipelining = (Boolean) states.get(SUPPORTS_PIPELINING_KEY);
+            boolean supportsPipelining =  false;
             int code = response.getCode();
             switch (nextCommand) {
             case HELO:
@@ -249,6 +249,7 @@ class SMTPClientHandler extends SimpleChannelUpstreamHandler implements ChannelL
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
         SMTPClientFutureImpl future = (SMTPClientFutureImpl) ATTRIBUTES.get(e.getChannel()).get(FUTURE_KEY);
+        e.getCause().printStackTrace();
         if (!future.isDone()) {
             final SMTPException exception;
             final Throwable t = e.getCause();
