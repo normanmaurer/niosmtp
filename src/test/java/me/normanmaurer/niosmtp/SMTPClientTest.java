@@ -26,7 +26,7 @@ public class SMTPClientTest {
     
 
     @Test
-    public void test() throws InterruptedException, ExecutionException {
+    public void testRejectMailFrom() throws InterruptedException, ExecutionException {
         int port = 6028;
 
         SMTPServer smtpServer = new SMTPServer(new TestHandlerFactory() {
@@ -70,6 +70,52 @@ public class SMTPClientTest {
     }
 
 
+    @Test
+    public void testRejectAllRecipients() throws InterruptedException, ExecutionException {
+        int port = 6028;
+
+        SMTPServer smtpServer = new SMTPServer(new TestHandlerFactory() {
+
+            @Override
+            public void recipient(String rcpt) throws RejectException {
+                throw new RejectException();
+            }
+
+
+            
+        });
+        smtpServer.setPort(port);
+        smtpServer.start();
+
+       
+        UnpooledSMTPClient c = new UnpooledSMTPClient();
+
+        try {
+            SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
+            conf.setConnectionTimeout(4);
+            conf.setResponseTimeout(5);
+            System.out.println("delivering...");
+            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), "from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new ByteArrayInputStream("msg".getBytes()), conf);
+            DeliveryResult dr = future.get();
+            assertTrue(dr.isSuccess());
+            assertNull(dr.getException());
+            Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
+            DeliveryRecipientStatus status = it.next();
+            assertEquals(DeliveryRecipientStatus.Status.PermanentError, status.getStatus());
+            assertEquals(554, status.getResponse().getCode());
+
+            status = it.next();
+            assertEquals(DeliveryRecipientStatus.Status.PermanentError, status.getStatus());
+            assertEquals(554, status.getResponse().getCode());
+            
+            assertFalse(it.hasNext());
+        } finally {
+            smtpServer.stop();
+            c.destroy();
+        }
+        
+    }
+    
     
     @Test
     public void testConnectionRefused() throws InterruptedException, ExecutionException {

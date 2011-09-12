@@ -190,6 +190,9 @@ class SMTPClientHandler extends SimpleChannelUpstreamHandler implements ChannelL
 
                 } else {
                     ctx.getChannel().write(new SMTPRequestImpl("QUIT", null)).addListener(ChannelFutureListener.CLOSE);
+                    
+                    // all recipients failed so we should now complete the future
+                    future.setDeliveryStatus(new DeliveryResultImpl(statusList));
                 }
 
                 break;
