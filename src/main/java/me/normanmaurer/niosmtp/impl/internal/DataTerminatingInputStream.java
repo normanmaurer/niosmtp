@@ -16,11 +16,19 @@
 */
 package me.normanmaurer.niosmtp.impl.internal;
 
+import java.io.FileInputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 
+/**
+ * {@link FileInputStream} which takes care of correctly terminating the DATA command. This is done by append a CRLF.CRLF to wrapped
+ * {@link InputStream} if needed.
+ * 
+ * @author Norman Maurer
+ *
+ */
 public class DataTerminatingInputStream extends FilterInputStream {
 
     private int last;
@@ -45,8 +53,6 @@ public class DataTerminatingInputStream extends FilterInputStream {
 
                 return fillArray(b, off, len);
             } else {
-                // Make sure we respect the offset. Otherwise it could let the RETRCmdHandler
-                // hang forever. See JAMES-1222
                 last = b[off + r - 1];
                 return r;
             }
@@ -100,9 +106,9 @@ public class DataTerminatingInputStream extends FilterInputStream {
     private void calculateExtraData() {
         if (last == '\n') {
             extraData = new byte[3];
-            extraData[1] = '.';
-            extraData[2] = '\r';
-            extraData[3] = '\n';        
+            extraData[0] = '.';
+            extraData[1] = '\r';
+            extraData[2] = '\n';        
         } else if (last == '\r') {
             extraData = new byte[4];
             extraData[0] = '\n';
