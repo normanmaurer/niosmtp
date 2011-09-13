@@ -66,4 +66,8 @@ public class SMTPRequestImpl implements SMTPRequest{
     public static SMTPRequest data() {
         return new SMTPRequestImpl("DATA", null);
     }
+    
+    public static SMTPRequest startTls() {
+        return new SMTPRequestImpl("STARTTLS", null);
+    }
 }

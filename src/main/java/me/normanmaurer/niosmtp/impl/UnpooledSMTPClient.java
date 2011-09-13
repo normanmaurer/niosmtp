@@ -67,7 +67,7 @@ public class UnpooledSMTPClient implements SMTPClient, SMTPClientConstants {
      * Create the {@link ExecutorService} which is used for the BOSS Threads. 
      * 
      * @return bossExecutor
-     */
+     */ 
     protected ExecutorService createBossExecutor() {
         return Executors.newCachedThreadPool();
     }
