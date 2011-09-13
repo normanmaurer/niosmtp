@@ -21,9 +21,22 @@ import java.nio.charset.Charset;
 
 
 public interface SMTPClientConstants {
+    
+    /**
+     * The {@link Charset} used for the SMTP protocol. This is <code>US-ASCII</code> (per rfc)
+     */
     public final static Charset CHARSET = Charset.forName("US-ASCII");
+    
+    /**
+     * CLRF sequence
+     */
     public final static String CRLF = "\r\n";
+    
+    /**
+     * Identifier used to detect if the SMTP Server supports <code>PIPELINING</code>
+     */
     public final static String PIPELINING_EXTENSION = "PIPELINING";
+    
     
     public static final String FUTURE_KEY = "FUTURE";
     public static final String MAIL_FROM_KEY = "MAIL_FROM";

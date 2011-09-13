@@ -22,6 +22,12 @@ import me.normanmaurer.niosmtp.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.DeliveryResult;
 import me.normanmaurer.niosmtp.SMTPException;
 
+/**
+ * Simple {@link DeliveryResult} implementation 
+ * 
+ * @author Norman Maurer
+ *
+ */
 public class DeliveryResultImpl implements DeliveryResult{
 
     private final Iterable<DeliveryRecipientStatus> status;

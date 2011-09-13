@@ -266,6 +266,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
         if (logger.isDebugEnabled()) {
             logger.debug("Exception caught while handle SMTP/SMTPS", e.getCause());
         }
+        e.getCause().printStackTrace();
         SMTPClientFutureImpl future = (SMTPClientFutureImpl) ((Map<String, Object>) ctx.getAttachment()).get(FUTURE_KEY);
         
         if (!future.isDone()) {

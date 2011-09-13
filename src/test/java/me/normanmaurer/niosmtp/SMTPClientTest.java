@@ -1,3 +1,19 @@
+/**
+* Licensed to niosmtp developers ('niosmtp') under one or more
+* contributor license agreements. See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* Selene licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License. You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 package me.normanmaurer.niosmtp;
 
 import static org.junit.Assert.*;
@@ -20,18 +36,27 @@ import org.subethamail.smtp.MessageHandler;
 import org.subethamail.smtp.MessageHandlerFactory;
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.TooMuchDataException;
-import org.subethamail.smtp.command.HelloCommand;
+import org.subethamail.smtp.command.EhloCommand;
 import org.subethamail.smtp.server.SMTPServer;
 import org.subethamail.smtp.server.Session;
 
 public class SMTPClientTest {
     
 
+    protected SMTPServer create(MessageHandlerFactory factory) {
+        return new SMTPServer(factory);
+        
+    }
+    
+    protected UnpooledSMTPClient createSMTPClient() {
+        return new UnpooledSMTPClient();
+    }
+    
     @Test
     public void testRejectMailFrom() throws InterruptedException, ExecutionException {
         int port = 6028;
 
-        SMTPServer smtpServer = new SMTPServer(new TestHandlerFactory() {
+        SMTPServer smtpServer = create(new TestHandlerFactory() {
 
             @Override
             public void from(String sender) throws RejectException {
@@ -40,16 +65,16 @@ public class SMTPClientTest {
             
         });
         smtpServer.setPort(port);
+
         smtpServer.start();
 
        
-        UnpooledSMTPClient c = new UnpooledSMTPClient();
+        UnpooledSMTPClient c = createSMTPClient();
 
         try {
             SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
-            conf.setConnectionTimeout(4);
-            conf.setResponseTimeout(5);
-            System.out.println("delivering...");
+            conf.setConnectionTimeout(4500);
+            conf.setResponseTimeout(500);
             SMTPClientFuture future = c.deliver(new InetSocketAddress(port), "from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new ByteArrayInputStream("msg".getBytes()), conf);
             DeliveryResult dr = future.get();
             assertTrue(dr.isSuccess());
@@ -76,10 +101,10 @@ public class SMTPClientTest {
     public void testRejectHelo() throws InterruptedException, ExecutionException {
         int port = 6028;
 
-        SMTPServer smtpServer = new SMTPServer(new TestHandlerFactory());
+        SMTPServer smtpServer = create(new TestHandlerFactory());
         
-        // Reject on HELO
-        smtpServer.getCommandHandler().addCommand(new HelloCommand() {
+        // Reject on EHLO
+        smtpServer.getCommandHandler().addCommand(new EhloCommand() {
 
             @Override
             public void execute(String commandString, Session sess) throws IOException {
@@ -92,10 +117,11 @@ public class SMTPClientTest {
             
         });
         smtpServer.setPort(port);
+
         smtpServer.start();
 
        
-        UnpooledSMTPClient c = new UnpooledSMTPClient();
+        UnpooledSMTPClient c = createSMTPClient();
 
         try {
             SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
@@ -125,7 +151,7 @@ public class SMTPClientTest {
     public void testRejectAllRecipients() throws InterruptedException, ExecutionException {
         int port = 6028;
 
-        SMTPServer smtpServer = new SMTPServer(new TestHandlerFactory() {
+        SMTPServer smtpServer = create(new TestHandlerFactory() {
 
             @Override
             public void recipient(String rcpt) throws RejectException {
@@ -136,10 +162,11 @@ public class SMTPClientTest {
             
         });
         smtpServer.setPort(port);
+
         smtpServer.start();
 
        
-        UnpooledSMTPClient c = new UnpooledSMTPClient();
+        UnpooledSMTPClient c = createSMTPClient();
 
         try {
             SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
@@ -171,7 +198,7 @@ public class SMTPClientTest {
     public void testRejectData() throws InterruptedException, ExecutionException {
         int port = 6028;
 
-        SMTPServer smtpServer = new SMTPServer(new TestHandlerFactory() {
+        SMTPServer smtpServer = create(new TestHandlerFactory() {
 
             @Override
             public void data(InputStream arg0) throws RejectException, TooMuchDataException, IOException {
@@ -182,10 +209,11 @@ public class SMTPClientTest {
             
         });
         smtpServer.setPort(port);
+
         smtpServer.start();
 
        
-        UnpooledSMTPClient c = new UnpooledSMTPClient();
+        UnpooledSMTPClient c = createSMTPClient();
 
         try {
             SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
@@ -218,7 +246,7 @@ public class SMTPClientTest {
     public void testRejectOneRecipient() throws InterruptedException, ExecutionException {
         int port = 6028;
 
-        SMTPServer smtpServer = new SMTPServer(new TestHandlerFactory() {
+        SMTPServer smtpServer = create(new TestHandlerFactory() {
 
             @Override
             public void recipient(String rcpt) throws RejectException {
@@ -231,10 +259,11 @@ public class SMTPClientTest {
             
         });
         smtpServer.setPort(port);
+
         smtpServer.start();
 
        
-        UnpooledSMTPClient c = new UnpooledSMTPClient();
+        UnpooledSMTPClient c = createSMTPClient();
 
         try {
             SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
@@ -271,7 +300,7 @@ public class SMTPClientTest {
     
     @Test
     public void testConnectionRefused() throws InterruptedException, ExecutionException {
-        UnpooledSMTPClient c = new UnpooledSMTPClient();
+        UnpooledSMTPClient c = createSMTPClient();
         SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
         conf.setConnectionTimeout(4);
         conf.setResponseTimeout(5);
