@@ -66,5 +66,7 @@ public enum SMTPState {
     /**
      * 
      */
-    DATA_POST
+    DATA_POST,
+    
+    STARTTLS
 }

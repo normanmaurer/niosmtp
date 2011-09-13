@@ -19,10 +19,12 @@ package me.normanmaurer.niosmtp.impl.internal;
 import java.io.InputStream;
 import java.net.ConnectException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import me.normanmaurer.niosmtp.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.DeliveryRecipientStatus.Status;
@@ -79,7 +81,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
             
             SMTPClientFutureImpl future = (SMTPClientFutureImpl) states.get(FUTURE_KEY);
             boolean supportsPipelining =  states.containsKey(SUPPORTS_PIPELINING_KEY);
-            
+            boolean supportsStartTLS = states.containsKey(SUPPORTS_STARTTLS_KEY);
             
             int code = response.getCode();
             switch (stateMachine.getNextState()) {
@@ -100,7 +102,11 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
             case EHLO:
                 if (code < 400) {
                     ctx.getChannel().write(SMTPRequestImpl.ehlo(config.getHeloName()));
-                    stateMachine.nextState(SMTPState.MAIL);
+                    if (states.containsKey(USE_STARTTLS_KEY)) {
+                    	stateMachine.nextState(SMTPState.STARTTLS);
+                    } else {
+                        stateMachine.nextState(SMTPState.MAIL);
+                    }
                 } else {
                     while (!recipients.isEmpty()) {
                         statusList.add(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response));
@@ -111,19 +117,57 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
 
                 }
                 break;
+            case STARTTLS:
+                if (stateMachine.getLastState() == SMTPState.EHLO ) {
+                    // Check if the SMTPServer supports PIPELINING 
+                    Set<String> extensions = getSupportedExtensions(response);
+
+                    if (extensions.contains(PIPELINING_EXTENSION)) {
+                        states.put(SUPPORTS_PIPELINING_KEY, true);
+                        supportsPipelining = true;
+                    }
+                    if (extensions.contains(STARTTLS_EXTENSION)) {
+                        states.put(STARTTLS_EXTENSION, true);
+                        supportsStartTLS = true;
+                    }
+                    
+                }
+                
+                if (supportsStartTLS) {
+                    if (code < 400) {
+                        ctx.getChannel().write(SMTPRequestImpl.startTls());
+                        stateMachine.nextState(SMTPState.MAIL);
+                    } else {
+                        while (!recipients.isEmpty()) {
+                            statusList.add(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response));
+                        }
+                        ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
+
+                        future.setDeliveryStatus(new DeliveryResultImpl(statusList));
+                        
+                    }
+                    break;
+
+                } else {
+                    stateMachine.nextState(SMTPState.MAIL);
+                }
+                // if we not break yet we will fall back to MAIL
+                
             case MAIL:
                 
-                // Check if we need to check for PIPELINING support
-                if (stateMachine.getLastState() == SMTPState.EHLO && config.usePipelining()) {
+                if (stateMachine.getLastState() == SMTPState.EHLO ) {
                     // Check if the SMTPServer supports PIPELINING 
-                    Iterator<String> lines = response.getLines().iterator();
-                    while(lines.hasNext()) {
-                        if (lines.next().equalsIgnoreCase(PIPELINING_EXTENSION)) {
-                            states.put(SUPPORTS_PIPELINING_KEY, true);
-                            supportsPipelining = true;
-                            break;
-                        }
+                    Set<String> extensions = getSupportedExtensions(response);
+
+                    if (extensions.contains(PIPELINING_EXTENSION)) {
+                        states.put(SUPPORTS_PIPELINING_KEY, true);
+                        supportsPipelining = true;
                     }
+                    if (extensions.contains(STARTTLS_EXTENSION)) {
+                        states.put(STARTTLS_EXTENSION, true);
+                        supportsStartTLS = true;
+                    }
+                    
                 }
                 String mailFrom = (String) states.get(MAIL_FROM_KEY);
                
@@ -153,6 +197,8 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                     while (!recipients.isEmpty()) {
                         statusList.add(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response));
                     }
+                    ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
+
                     future.setDeliveryStatus(new DeliveryResultImpl(statusList));
                 }
                 break;
@@ -260,13 +306,25 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
         super.messageReceived(ctx, e);
     }
 
+    private Set<String> getSupportedExtensions(SMTPResponse response) {
+        Set<String> extensions = new HashSet<String>();
+        Iterator<String> lines = response.getLines().iterator();
+        while(lines.hasNext()) {
+            String line = lines.next();
+            if (line.equalsIgnoreCase(PIPELINING_EXTENSION)) {
+                extensions.add(SUPPORTS_PIPELINING_KEY);
+            } else if (line.equalsIgnoreCase(STARTTLS_EXTENSION)) {
+                extensions.add(STARTTLS_EXTENSION);
+            }
+        }
+        return extensions;
+    }
     @SuppressWarnings("unchecked")
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
         if (logger.isDebugEnabled()) {
             logger.debug("Exception caught while handle SMTP/SMTPS", e.getCause());
         }
-        e.getCause().printStackTrace();
         SMTPClientFutureImpl future = (SMTPClientFutureImpl) ((Map<String, Object>) ctx.getAttachment()).get(FUTURE_KEY);
         
         if (!future.isDone()) {
