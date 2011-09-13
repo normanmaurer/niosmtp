@@ -19,8 +19,11 @@ package me.normanmaurer.niosmtp.impl.internal;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
+import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
+import org.jboss.netty.channel.ChannelStateEvent;
+import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.ssl.SslHandler;
 
 /**
@@ -32,6 +35,8 @@ import org.jboss.netty.handler.ssl.SslHandler;
  */
 public class SMTPSClientPipelineFactory extends SMTPClientPipelineFactory{
 
+    private final static SslHandshakeHandler SSL_HANDSHAKE_HANDLER = new SslHandshakeHandler();
+    
     private final SSLContext context;
 
     public SMTPSClientPipelineFactory(SSLContext context) {
@@ -41,11 +46,22 @@ public class SMTPSClientPipelineFactory extends SMTPClientPipelineFactory{
     @Override
     public ChannelPipeline getPipeline() throws Exception {
         ChannelPipeline cp = super.getPipeline();
+        cp.addFirst("sslHandshakeHandler", SSL_HANDSHAKE_HANDLER);
         SSLEngine engine = context.createSSLEngine();
         engine.setUseClientMode(true);
-        SslHandler sslHandler = new SslHandler(engine);
+        final SslHandler sslHandler = new SslHandler(engine,false);
         cp.addFirst("sslHandler", sslHandler);
         return cp;
+    }
+    
+    private final static class SslHandshakeHandler extends SimpleChannelUpstreamHandler {
+
+        @Override
+        public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+            SslHandler sslHandler = ctx.getPipeline().get(SslHandler.class);
+            sslHandler.handshake();
+        }
+        
     }
 
 }

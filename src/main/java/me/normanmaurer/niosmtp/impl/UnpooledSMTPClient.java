@@ -46,10 +46,8 @@ import org.jboss.netty.util.HashedWheelTimer;
 import org.jboss.netty.util.Timer;
 
 /**
- * {@link SMTPClient} implementation which will create a new Connection for
- * every
- * {@link #deliver(InetSocketAddress, String, List, InputStream, SMTPClientConfig)}
- * call.
+ * {@link SMTPClient} implementation which will create a new Connection for every
+ * {@link #deliver(InetSocketAddress, String, List, InputStream, SMTPClientConfig)} call.
  * 
  * So no pooling is active
  * 
@@ -120,7 +118,7 @@ public class UnpooledSMTPClient implements SMTPClient, SMTPClientConstants {
                 context.setAttachment(attrs);
 
                 // Add the idle timeout handler
-                cf.getChannel().getPipeline().addFirst("idleHandler", new IdleStateHandler(timer, 0, 0, config.getResponseTimeout()));
+                cf.getChannel().getPipeline().addLast("idleHandler", new IdleStateHandler(timer, 0, 0, config.getResponseTimeout()));
 
                 // Set the channel so we can close it for cancel later
                 future.setChannel(cf.getChannel());
