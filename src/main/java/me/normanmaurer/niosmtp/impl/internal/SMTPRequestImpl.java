@@ -60,11 +60,11 @@ class SMTPRequestImpl implements SMTPRequest{
     }
     
     public static SMTPRequest rcpt(String rcpt) {
-        return new SMTPRequestImpl("RCPT TO:", rcpt);
+        return new SMTPRequestImpl("RCPT TO:", "<" + rcpt + ">");
     }
     
     public static SMTPRequest mail(String sender) {
-        return new SMTPRequestImpl("MAIL FROM:", sender);
+        return new SMTPRequestImpl("MAIL FROM:",  "<" + sender + ">");
     }
     
     public static SMTPRequest data() {
