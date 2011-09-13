@@ -16,11 +16,9 @@
 */
 package me.normanmaurer.niosmtp.impl.internal;
 
-import java.util.Map;
 
-import org.jboss.netty.channel.ChannelLocal;
 
-public interface ChannelLocalSupport {
+public interface SMTPClientConstants {
 
     public static final String FUTURE_KEY = "FUTURE";
     public static final String NEXT_COMMAND_KEY = "NEXT_COMMAND";
@@ -31,5 +29,6 @@ public interface ChannelLocalSupport {
     public static final String MSG_KEY = "MSG";
     public static final String RECIPIENT_STATUS_LIST_KEY = "RECIPIENT_STATUS_LIST";
     public static final String SUPPORTS_PIPELINING_KEY = "SUPPORTS_PIPELINING";
-    public static final ChannelLocal<Map<String, Object>> ATTRIBUTES = new ChannelLocal<Map<String, Object>>();
+    public static final String LAST_RECIPIENT_KEY = "LAST_RECIPIENT";
+
 }

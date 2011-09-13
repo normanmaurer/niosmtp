@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
  * @author Norman Maurer
  *
  */
-class SMTPClientHandler extends SimpleChannelUpstreamHandler implements ChannelLocalSupport {
+public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements SMTPClientConstants {
     private final Logger logger = LoggerFactory.getLogger(SMTPClientHandler.class);
 
 
@@ -59,10 +59,10 @@ class SMTPClientHandler extends SimpleChannelUpstreamHandler implements ChannelL
     public SMTPClientHandler() {
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void channelBound(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-        Map<String, Object> states = ATTRIBUTES.get(e.getChannel());
-        states.put(NEXT_COMMAND_KEY, SMTPCommand.HELO);
+        Map<String, Object> states = (Map<String, Object>) ctx.getAttachment();
         states.put(RECIPIENT_STATUS_LIST_KEY, new ArrayList<DeliveryRecipientStatus>());
         super.channelBound(ctx, e);
     }
@@ -71,7 +71,7 @@ class SMTPClientHandler extends SimpleChannelUpstreamHandler implements ChannelL
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
         if (e.getMessage() instanceof SMTPResponse) {
-            final Map<String, Object> states = ATTRIBUTES.get(e.getChannel());
+            final Map<String, Object> states =  (Map<String, Object>) ctx.getAttachment();
             SMTPResponse response = (SMTPResponse) e.getMessage();
             final SMTPCommand nextCommand = (SMTPCommand) states.get(NEXT_COMMAND_KEY);
             final SMTPCommand curCommand = (SMTPCommand) states.get(CURRENT_COMMAND_KEY);
@@ -79,7 +79,7 @@ class SMTPClientHandler extends SimpleChannelUpstreamHandler implements ChannelL
             final LinkedList<String> recipients = (LinkedList<String>) states.get(RECIPIENTS_KEY);
             final List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) states.get(RECIPIENT_STATUS_LIST_KEY);
             
-            SMTPClientFutureImpl future = (SMTPClientFutureImpl) ATTRIBUTES.get(e.getChannel()).get(FUTURE_KEY);
+            SMTPClientFutureImpl future = (SMTPClientFutureImpl) states.get(FUTURE_KEY);
             boolean supportsPipelining =  false;
             int code = response.getCode();
             switch (nextCommand) {
@@ -155,7 +155,7 @@ class SMTPClientHandler extends SimpleChannelUpstreamHandler implements ChannelL
                 break;
             case RCPT:
                 if (curCommand == SMTPCommand.RCPT) {
-                    statusList.add(new DeliveryRecipientStatusImpl((String) ctx.getAttachment(), response));
+                    statusList.add(new DeliveryRecipientStatusImpl((String) states.remove(LAST_RECIPIENT_KEY), response));
                 } else if (code > 400) {
                     while (!recipients.isEmpty()) {
                         statusList.add(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response));
@@ -169,7 +169,7 @@ class SMTPClientHandler extends SimpleChannelUpstreamHandler implements ChannelL
                 if (code < 400 || curCommand == SMTPCommand.RCPT) {
 
                     String rcpt = recipients.removeFirst();
-                    ctx.setAttachment(rcpt);
+                    states.put(LAST_RECIPIENT_KEY, rcpt);
                     ctx.getChannel().write(new SMTPRequestImpl("RCPT TO:", "<" + rcpt + ">")).addListener(new ChannelFutureListener() {
 
                         @Override
@@ -187,7 +187,7 @@ class SMTPClientHandler extends SimpleChannelUpstreamHandler implements ChannelL
                 }
                 break;
             case DATA:
-                statusList.add(new DeliveryRecipientStatusImpl((String) ctx.getAttachment(), response));
+                statusList.add(new DeliveryRecipientStatusImpl((String) states.remove(LAST_RECIPIENT_KEY), response));
 
                 boolean success = false;
                 for (int i = 0; i < statusList.size(); i++) {
@@ -273,7 +273,7 @@ class SMTPClientHandler extends SimpleChannelUpstreamHandler implements ChannelL
         if (logger.isDebugEnabled()) {
             logger.debug("Exception caught while handle SMTP/SMTPS", e.getCause());
         }
-        SMTPClientFutureImpl future = (SMTPClientFutureImpl) ATTRIBUTES.get(e.getChannel()).get(FUTURE_KEY);
+        SMTPClientFutureImpl future = (SMTPClientFutureImpl) ((Map<String, Object>) ctx.getAttachment()).get(FUTURE_KEY);
         
         if (!future.isDone()) {
             final SMTPException exception;
@@ -293,11 +293,6 @@ class SMTPClientHandler extends SimpleChannelUpstreamHandler implements ChannelL
         }
     }
 
-    @Override
-    public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-        super.channelClosed(ctx, e);
-        ATTRIBUTES.remove(ctx.getChannel());
-    }
     
 
 }

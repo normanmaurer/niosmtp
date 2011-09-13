@@ -32,7 +32,7 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
     private String heloName = "localhost";
     private int connectionTimeout = 60;
     private InetSocketAddress localAddress = null;
-    private boolean usePipelining = true;
+    private boolean usePipelining = false;
     private int responseTimeout;
     
     public SMTPClientConfigImpl() {
