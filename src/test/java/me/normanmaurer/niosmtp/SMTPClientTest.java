@@ -73,8 +73,8 @@ public class SMTPClientTest {
 
         try {
             SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
-            conf.setConnectionTimeout(4500);
-            conf.setResponseTimeout(500);
+            conf.setConnectionTimeout(4);
+            conf.setResponseTimeout(5);
             SMTPClientFuture future = c.deliver(new InetSocketAddress(port), "from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new ByteArrayInputStream("msg".getBytes()), conf);
             DeliveryResult dr = future.get();
             assertTrue(dr.isSuccess());
