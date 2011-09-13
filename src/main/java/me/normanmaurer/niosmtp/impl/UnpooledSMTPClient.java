@@ -28,7 +28,7 @@ import java.util.concurrent.Executors;
 import me.normanmaurer.niosmtp.SMTPClient;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPClientFuture;
-import me.normanmaurer.niosmtp.SMTPCommand;
+import me.normanmaurer.niosmtp.SMTPState;
 import me.normanmaurer.niosmtp.impl.internal.SMTPClientConstants;
 import me.normanmaurer.niosmtp.impl.internal.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.impl.internal.SMTPClientHandler;
@@ -105,9 +105,9 @@ public class UnpooledSMTPClient implements SMTPClient, SMTPClientConstants {
                 attrs.put(MSG_KEY, msg);
                 attrs.put(SMTP_CONFIG_KEY, config);
                 if (config.usePipelining()) {
-                    attrs.put(NEXT_COMMAND_KEY, SMTPCommand.EHLO);
+                    attrs.put(NEXT_COMMAND_KEY, SMTPState.EHLO);
                 } else {
-                    attrs.put(NEXT_COMMAND_KEY, SMTPCommand.HELO);
+                    attrs.put(NEXT_COMMAND_KEY, SMTPState.HELO);
                 }
                 context.setAttachment(attrs);
 

@@ -22,7 +22,7 @@ package me.normanmaurer.niosmtp;
  * @author Norman Maurer
  *
  */
-public enum SMTPCommand {
+public enum SMTPState {
     /**
      * EHLO Command
      */

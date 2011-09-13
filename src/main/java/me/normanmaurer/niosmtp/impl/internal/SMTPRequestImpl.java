@@ -46,5 +46,28 @@ class SMTPRequestImpl implements SMTPRequest{
             return command + " " + argument;
         }
     }
+    
+    public static SMTPRequest quit() {
+        return new SMTPRequestImpl("QUIT", null);
+    }
 
+    public static SMTPRequest helo(String heloName) {
+        return new SMTPRequestImpl("HELO", heloName);
+    }
+    
+    public static SMTPRequest ehlo(String heloName) {
+        return new SMTPRequestImpl("EHLO", heloName);
+    }
+    
+    public static SMTPRequest rcpt(String rcpt) {
+        return new SMTPRequestImpl("RCPT TO:", rcpt);
+    }
+    
+    public static SMTPRequest mail(String sender) {
+        return new SMTPRequestImpl("MAIL FROM:", sender);
+    }
+    
+    public static SMTPRequest data() {
+        return new SMTPRequestImpl("DATA", null);
+    }
 }
