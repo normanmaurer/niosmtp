@@ -36,7 +36,7 @@ public class SMTPClientIdleHandler extends IdleStateAwareChannelUpstreamHandler{
     @Override
     public void channelIdle(ChannelHandlerContext ctx, IdleStateEvent e) throws Exception {
         if (e.getState() == IdleState.ALL_IDLE) {
-            throw new SMTPIdleException("Connection was idling for " + (e.getLastActivityTimeMillis() - System.currentTimeMillis()) + " ms");
+            throw new SMTPIdleException("Connection was idling for " + (System.currentTimeMillis()- e.getLastActivityTimeMillis()) + " ms");
         }
         super.channelIdle(ctx, e);
     }
