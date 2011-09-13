@@ -18,7 +18,7 @@ package me.normanmaurer.niosmtp.impl.internal;
 
 import me.normanmaurer.niosmtp.SMTPRequest;
 
-class SMTPRequestImpl implements SMTPRequest{
+public class SMTPRequestImpl implements SMTPRequest{
 
     private String command;
     private String argument;
@@ -40,11 +40,7 @@ class SMTPRequestImpl implements SMTPRequest{
     
     @Override
     public String toString() {
-        if (argument == null) {
-            return command;
-        } else {
-            return command + " " + argument;
-        }
+        return StringUtils.toString(this);
     }
     
     public static SMTPRequest quit() {

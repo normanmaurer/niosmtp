@@ -37,6 +37,8 @@ public class SMTPClientPipelineFactory implements ChannelPipelineFactory{
     private final static SMTPRequestEncoder SMTP_REQUEST_ENCODER = new SMTPRequestEncoder();
     private final static SMTPClientHandler SMTP_CLIENT_HANDLER = new SMTPClientHandler();
     private final static SMTPClientIdleHandler SMTP_CLIENT_IDLE_HANDLER = new SMTPClientIdleHandler();
+    private final static SMTPPipelinedRequestEncoder SMTP_PIPELINE_REQUEST_ENCODER = new SMTPPipelinedRequestEncoder();
+    
     @Override
     public ChannelPipeline getPipeline() throws Exception {
         ChannelPipeline pipeline = Channels.pipeline();
@@ -44,6 +46,7 @@ public class SMTPClientPipelineFactory implements ChannelPipelineFactory{
         pipeline.addLast("framer", FRAMER);
         pipeline.addLast("decoder", SMTP_RESPONSE_DECODER);
         pipeline.addLast("encoder", SMTP_REQUEST_ENCODER);
+        pipeline.addLast("pipelinedEncoder", SMTP_PIPELINE_REQUEST_ENCODER);
         pipeline.addLast("chunk", new ChunkedWriteHandler());
         pipeline.addLast("coreHandler", SMTP_CLIENT_HANDLER);
         return pipeline;

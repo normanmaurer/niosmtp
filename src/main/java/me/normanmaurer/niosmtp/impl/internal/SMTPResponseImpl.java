@@ -18,12 +18,18 @@ package me.normanmaurer.niosmtp.impl.internal;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import me.normanmaurer.niosmtp.SMTPResponse;
 
-class SMTPResponseImpl implements SMTPResponse{
+/**
+ * {@link SMTPResponse} implementation which use a {@link ArrayList} to hold response lines
+ * 
+ * @author Norman Maurer
+ * 
+ *
+ */
+public class SMTPResponseImpl implements SMTPResponse{
 
     private int code;
     private final List<String> lines = new ArrayList<String>();
@@ -36,6 +42,11 @@ class SMTPResponseImpl implements SMTPResponse{
         return code;
     }
 
+    /**
+     * Add the given line to the {@link SMTPResponse}
+     * 
+     * @param line
+     */
     public void addLine(String line) {
         lines.add(line);
     }
@@ -47,28 +58,6 @@ class SMTPResponseImpl implements SMTPResponse{
 
     @Override
     public String toString() {
-        Iterator<String> it = lines.iterator();
-
-        if (it.hasNext()) {
-            StringBuilder sb = new StringBuilder();
-            while(it.hasNext()) {
-                String line = it.next();
-                boolean hasNext = it.hasNext();
-                sb.append(getCode());
-                if (hasNext) {
-                    sb.append("-");
-                } else {
-                    sb.append(" ");
-                }
-                sb.append(line);
-                if (hasNext) {
-                    sb.append("\r\n");
-                }
-                
-            }
-            return sb.toString();
-        }
-        return getCode() + "";
-        
+        return StringUtils.toString(this);
     }
 }

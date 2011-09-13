@@ -33,6 +33,7 @@ import me.normanmaurer.niosmtp.impl.internal.SMTPClientConstants;
 import me.normanmaurer.niosmtp.impl.internal.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.impl.internal.SMTPClientHandler;
 import me.normanmaurer.niosmtp.impl.internal.SMTPClientPipelineFactory;
+import me.normanmaurer.niosmtp.impl.internal.SMTPStateMachine;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.ChannelFuture;
@@ -88,6 +89,10 @@ public class UnpooledSMTPClient implements SMTPClient, SMTPClientConstants {
      * @see me.normanmaurer.niosmtp.SMTPClient#deliver(java.net.InetSocketAddress, java.lang.String, java.util.List, java.io.InputStream, me.normanmaurer.niosmtp.SMTPClientConfig)
      */
     public SMTPClientFuture deliver(InetSocketAddress host, final String mailFrom, final List<String> recipients, final InputStream msg, final SMTPClientConfig config) {
+        if (recipients == null || recipients.isEmpty()) {
+            throw new IllegalArgumentException("At least one recipient must be given");
+        }
+        
         final SMTPClientFutureImpl future = new SMTPClientFutureImpl();
         ClientBootstrap bootstrap = new ClientBootstrap(socketFactory);
         bootstrap.setOption("connectTimeoutMillis", config.getConnectionTimeout() * 1000);
@@ -104,11 +109,14 @@ public class UnpooledSMTPClient implements SMTPClient, SMTPClientConstants {
                 attrs.put(RECIPIENTS_KEY, new LinkedList<String>(recipients));
                 attrs.put(MSG_KEY, msg);
                 attrs.put(SMTP_CONFIG_KEY, config);
+                
+                SMTPStateMachine stateMatchine = new SMTPStateMachine();
                 if (config.usePipelining()) {
-                    attrs.put(NEXT_COMMAND_KEY, SMTPState.EHLO);
+                    stateMatchine.nextState(SMTPState.EHLO);
                 } else {
-                    attrs.put(NEXT_COMMAND_KEY, SMTPState.HELO);
+                    stateMatchine.nextState(SMTPState.HELO);
                 }
+                attrs.put(SMTP_STATE_KEY, stateMatchine);
                 context.setAttachment(attrs);
 
                 // Add the idle timeout handler

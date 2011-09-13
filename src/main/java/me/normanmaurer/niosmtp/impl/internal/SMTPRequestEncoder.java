@@ -16,8 +16,6 @@
 */
 package me.normanmaurer.niosmtp.impl.internal;
 
-import java.nio.charset.Charset;
-
 import me.normanmaurer.niosmtp.SMTPRequest;
 
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -34,27 +32,21 @@ import org.slf4j.LoggerFactory;
  * @author Norman Maurer
  *
  */
-class SMTPRequestEncoder extends OneToOneEncoder{
-    private final static Charset CHARSET = Charset.forName("US-ASCII");
+class SMTPRequestEncoder extends OneToOneEncoder implements SMTPClientConstants{
     private final Logger logger = LoggerFactory.getLogger(SMTPRequestEncoder.class);
 
     @Override
     protected Object encode(ChannelHandlerContext ctx, Channel arg1, Object msg) throws Exception {
         if (msg instanceof SMTPRequest) {
             SMTPRequest req = (SMTPRequest) msg;
+            String request = StringUtils.toString((SMTPRequest) req);
+            
             if (logger.isDebugEnabled()) {
-                logger.debug("Channel " + ctx.getChannel().getId() + " sent: [" + req.toString() + "]");
+                logger.debug("Channel " + ctx.getChannel().getId() + " sent: [" + request + "]");
             }
             
-            StringBuilder sb = new StringBuilder();
-            sb.append(req.getCommand());
-            
-            if (req.getArgument() != null) {
-                sb.append(" ");
-                sb.append(req.getArgument());
-            }
-            sb.append("\r\n");
-            return ChannelBuffers.wrappedBuffer(sb.toString().getBytes(CHARSET));
+          
+            return ChannelBuffers.wrappedBuffer(request.getBytes(CHARSET));
         }
         return msg;
     }

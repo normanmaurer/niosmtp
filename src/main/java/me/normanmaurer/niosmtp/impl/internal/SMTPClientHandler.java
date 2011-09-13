@@ -33,7 +33,6 @@ import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPResponse;
 
 import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
@@ -73,27 +72,21 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
         if (e.getMessage() instanceof SMTPResponse) {
             final Map<String, Object> states =  (Map<String, Object>) ctx.getAttachment();
             SMTPResponse response = (SMTPResponse) e.getMessage();
-            final SMTPState nextCommand = (SMTPState) states.get(NEXT_COMMAND_KEY);
-            final SMTPState curCommand = (SMTPState) states.get(CURRENT_COMMAND_KEY);
+            final SMTPStateMachine stateMachine = (SMTPStateMachine) states.get(SMTP_STATE_KEY);
             final SMTPClientConfig config = (SMTPClientConfig) states.get(SMTP_CONFIG_KEY);
             final LinkedList<String> recipients = (LinkedList<String>) states.get(RECIPIENTS_KEY);
             final List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) states.get(RECIPIENT_STATUS_LIST_KEY);
             
             SMTPClientFutureImpl future = (SMTPClientFutureImpl) states.get(FUTURE_KEY);
-            boolean supportsPipelining =  false;
+            boolean supportsPipelining =  states.containsKey(SUPPORTS_PIPELINING_KEY);
+            
+            
             int code = response.getCode();
-            switch (nextCommand) {
+            switch (stateMachine.getNextState()) {
             case HELO:
                 if (code < 400) {
-                    ctx.getChannel().write(SMTPRequestImpl.helo(config.getHeloName())).addListener(new ChannelFutureListener() {
-
-                        @Override
-                        public void operationComplete(ChannelFuture cf) throws Exception {
-                            states.put(CURRENT_COMMAND_KEY, nextCommand);
-
-                        }
-                    });
-                    states.put(NEXT_COMMAND_KEY, SMTPState.MAIL);
+                    ctx.getChannel().write(SMTPRequestImpl.helo(config.getHeloName()));
+                    stateMachine.nextState(SMTPState.MAIL);
                 } else {
                     while (!recipients.isEmpty()) {
                         statusList.add(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response));
@@ -106,15 +99,8 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                 break;
             case EHLO:
                 if (code < 400) {
-                    ctx.getChannel().write(SMTPRequestImpl.ehlo(config.getHeloName())).addListener(new ChannelFutureListener() {
-
-                        @Override
-                        public void operationComplete(ChannelFuture cf) throws Exception {
-                            states.put(CURRENT_COMMAND_KEY, nextCommand);
-
-                        }
-                    });
-                    states.put(NEXT_COMMAND_KEY, SMTPState.MAIL);
+                    ctx.getChannel().write(SMTPRequestImpl.ehlo(config.getHeloName()));
+                    stateMachine.nextState(SMTPState.MAIL);
                 } else {
                     while (!recipients.isEmpty()) {
                         statusList.add(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response));
@@ -127,25 +113,42 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                 break;
             case MAIL:
                 
-                if (curCommand == SMTPState.EHLO) {
-                    states.put(SUPPORTS_PIPELINING_KEY, response.getLines().contains("PIPELINING"));
-                    supportsPipelining = true;
+                // Check if we need to check for PIPELINING support
+                if (stateMachine.getLastState() == SMTPState.EHLO && config.usePipelining()) {
+                    // Check if the SMTPServer supports PIPELINING 
+                    Iterator<String> lines = response.getLines().iterator();
+                    while(lines.hasNext()) {
+                        if (lines.next().equalsIgnoreCase(PIPELINING_EXTENSION)) {
+                            states.put(SUPPORTS_PIPELINING_KEY, true);
+                            supportsPipelining = true;
+                            break;
+                        }
+                    }
                 }
                 String mailFrom = (String) states.get(MAIL_FROM_KEY);
+               
+                // handle null senders
                 if (mailFrom == null) {
                     mailFrom = "";
                 }
                 if (code < 400) {
 
-                    ctx.getChannel().write(SMTPRequestImpl.mail(mailFrom)).addListener(new ChannelFutureListener() {
-
-                        @Override
-                        public void operationComplete(ChannelFuture cf) throws Exception {
-                            states.put(CURRENT_COMMAND_KEY, nextCommand);
-
+                    // We use a SMTPPipelinedRequest if the SMTPServer supports PIPELINING. This will allow the NETTY to get
+                    // the MAX throughput as the encoder will write it out in one buffer if possible. This result in less system calls
+                    if (supportsPipelining) {
+                        SMTPPipelinedRequestImpl request = new SMTPPipelinedRequestImpl();
+                        request.add(SMTPRequestImpl.mail(mailFrom));
+                        for (int i = 0; i < recipients.size(); i++) {
+                            request.add(SMTPRequestImpl.rcpt(recipients.get(i)));
                         }
-                    });
-                    states.put(NEXT_COMMAND_KEY, SMTPState.RCPT);
+                        request.add(SMTPRequestImpl.data());
+                        ctx.getChannel().write(request);
+
+                    } else {
+                        ctx.getChannel().write(SMTPRequestImpl.mail(mailFrom));
+                    }
+                    stateMachine.nextState(SMTPState.RCPT);
+
                 } else {
                     while (!recipients.isEmpty()) {
                         statusList.add(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response));
@@ -154,7 +157,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                 }
                 break;
             case RCPT:
-                if (curCommand == SMTPState.RCPT) {
+                if (stateMachine.getLastState() == SMTPState.RCPT) {
                     statusList.add(new DeliveryRecipientStatusImpl((String) states.remove(LAST_RECIPIENT_KEY), response));
                 } else if (code > 400) {
                     while (!recipients.isEmpty()) {
@@ -166,24 +169,23 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                     break;
                 }
                 
-                if (code < 400 || curCommand == SMTPState.RCPT) {
+                if (code < 400 || stateMachine.getLastState() == SMTPState.RCPT) {
 
                     String rcpt = recipients.removeFirst();
                     states.put(LAST_RECIPIENT_KEY, rcpt);
-                    ctx.getChannel().write(SMTPRequestImpl.rcpt(rcpt)).addListener(new ChannelFutureListener() {
-
-                        @Override
-                        public void operationComplete(ChannelFuture cf) throws Exception {
-                            states.put(CURRENT_COMMAND_KEY, nextCommand);
-
-                        }
-                    });
+                    
+                    // only write the request if the SMTPServer does not support PIPELINING and we don't want to use it
+                    // as otherwise we already sent this 
+                    if (!supportsPipelining || !config.usePipelining()) {
+                        ctx.getChannel().write(SMTPRequestImpl.rcpt(rcpt));
+                    }
+                    
                 } 
               
                 if (recipients.isEmpty()) {
-                    states.put(NEXT_COMMAND_KEY, SMTPState.DATA);
+                    stateMachine.nextState(SMTPState.DATA);
                 } else {
-                    states.put(NEXT_COMMAND_KEY, SMTPState.RCPT);
+                    stateMachine.nextState(SMTPState.RCPT);
                 }
                 break;
             case DATA:
@@ -197,15 +199,12 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                    }
                 }
                 if (success) {
-                    ctx.getChannel().write(SMTPRequestImpl.data()).addListener(new ChannelFutureListener() {
-
-                        @Override
-                        public void operationComplete(ChannelFuture cf) throws Exception {
-                            states.put(CURRENT_COMMAND_KEY, nextCommand);
-
-                        }
-                    });
-                    states.put(NEXT_COMMAND_KEY, SMTPState.DATA_POST);
+                    // only write the request if the SMTPServer does not support PIPELINING and we don't want to use it
+                    // as otherwise we already sent this 
+                    if (!supportsPipelining || !config.usePipelining()) {
+                        ctx.getChannel().write(SMTPRequestImpl.data());
+                    }
+                    stateMachine.nextState(SMTPState.DATA_POST);
 
                 } else {
                     ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
@@ -217,15 +216,8 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                 break;
             case DATA_POST:
                 if (code < 400) {
-                    ctx.getChannel().write(new ChunkedStream(new DataTerminatingInputStream((InputStream) states.get(MSG_KEY)))).addListener(new ChannelFutureListener() {
-
-                        @Override
-                        public void operationComplete(ChannelFuture cf) throws Exception {
-                            states.put(CURRENT_COMMAND_KEY, nextCommand);
-
-                        }
-                    });
-                    states.put(NEXT_COMMAND_KEY, SMTPState.QUIT);
+                    ctx.getChannel().write(new ChunkedStream(new DataTerminatingInputStream((InputStream) states.get(MSG_KEY))));
+                    stateMachine.nextState(SMTPState.QUIT);
                 } else {
                     Iterator<DeliveryRecipientStatus> status = statusList.iterator();
                     while(status.hasNext()) {
