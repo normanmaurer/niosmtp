@@ -27,7 +27,7 @@ import java.util.Map;
 import me.normanmaurer.niosmtp.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.DeliveryRecipientStatus.Status;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
-import me.normanmaurer.niosmtp.SMTPCommand;
+import me.normanmaurer.niosmtp.SMTPState;
 import me.normanmaurer.niosmtp.SMTPConnectionException;
 import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPResponse;
@@ -73,8 +73,8 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
         if (e.getMessage() instanceof SMTPResponse) {
             final Map<String, Object> states =  (Map<String, Object>) ctx.getAttachment();
             SMTPResponse response = (SMTPResponse) e.getMessage();
-            final SMTPCommand nextCommand = (SMTPCommand) states.get(NEXT_COMMAND_KEY);
-            final SMTPCommand curCommand = (SMTPCommand) states.get(CURRENT_COMMAND_KEY);
+            final SMTPState nextCommand = (SMTPState) states.get(NEXT_COMMAND_KEY);
+            final SMTPState curCommand = (SMTPState) states.get(CURRENT_COMMAND_KEY);
             final SMTPClientConfig config = (SMTPClientConfig) states.get(SMTP_CONFIG_KEY);
             final LinkedList<String> recipients = (LinkedList<String>) states.get(RECIPIENTS_KEY);
             final List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) states.get(RECIPIENT_STATUS_LIST_KEY);
@@ -85,7 +85,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
             switch (nextCommand) {
             case HELO:
                 if (code < 400) {
-                    ctx.getChannel().write(new SMTPRequestImpl("HELO", config.getHeloName())).addListener(new ChannelFutureListener() {
+                    ctx.getChannel().write(SMTPRequestImpl.helo(config.getHeloName())).addListener(new ChannelFutureListener() {
 
                         @Override
                         public void operationComplete(ChannelFuture cf) throws Exception {
@@ -93,12 +93,12 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
 
                         }
                     });
-                    states.put(NEXT_COMMAND_KEY, SMTPCommand.MAIL);
+                    states.put(NEXT_COMMAND_KEY, SMTPState.MAIL);
                 } else {
                     while (!recipients.isEmpty()) {
                         statusList.add(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response));
                     }
-                    ctx.getChannel().write(new SMTPRequestImpl("QUIT", null)).addListener(ChannelFutureListener.CLOSE);
+                    ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
 
                     future.setDeliveryStatus(new DeliveryResultImpl(statusList));
 
@@ -106,7 +106,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                 break;
             case EHLO:
                 if (code < 400) {
-                    ctx.getChannel().write(new SMTPRequestImpl("EHLO", config.getHeloName())).addListener(new ChannelFutureListener() {
+                    ctx.getChannel().write(SMTPRequestImpl.ehlo(config.getHeloName())).addListener(new ChannelFutureListener() {
 
                         @Override
                         public void operationComplete(ChannelFuture cf) throws Exception {
@@ -114,12 +114,12 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
 
                         }
                     });
-                    states.put(NEXT_COMMAND_KEY, SMTPCommand.MAIL);
+                    states.put(NEXT_COMMAND_KEY, SMTPState.MAIL);
                 } else {
                     while (!recipients.isEmpty()) {
                         statusList.add(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response));
                     }
-                    ctx.getChannel().write(new SMTPRequestImpl("QUIT", null)).addListener(ChannelFutureListener.CLOSE);
+                    ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
 
                     future.setDeliveryStatus(new DeliveryResultImpl(statusList));
 
@@ -127,7 +127,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                 break;
             case MAIL:
                 
-                if (curCommand == SMTPCommand.EHLO) {
+                if (curCommand == SMTPState.EHLO) {
                     states.put(SUPPORTS_PIPELINING_KEY, response.getLines().contains("PIPELINING"));
                     supportsPipelining = true;
                 }
@@ -137,7 +137,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                 }
                 if (code < 400) {
 
-                    ctx.getChannel().write(new SMTPRequestImpl("MAIL FROM:", "<" + mailFrom + ">")).addListener(new ChannelFutureListener() {
+                    ctx.getChannel().write(SMTPRequestImpl.mail(mailFrom)).addListener(new ChannelFutureListener() {
 
                         @Override
                         public void operationComplete(ChannelFuture cf) throws Exception {
@@ -145,7 +145,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
 
                         }
                     });
-                    states.put(NEXT_COMMAND_KEY, SMTPCommand.RCPT);
+                    states.put(NEXT_COMMAND_KEY, SMTPState.RCPT);
                 } else {
                     while (!recipients.isEmpty()) {
                         statusList.add(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response));
@@ -154,23 +154,23 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                 }
                 break;
             case RCPT:
-                if (curCommand == SMTPCommand.RCPT) {
+                if (curCommand == SMTPState.RCPT) {
                     statusList.add(new DeliveryRecipientStatusImpl((String) states.remove(LAST_RECIPIENT_KEY), response));
                 } else if (code > 400) {
                     while (!recipients.isEmpty()) {
                         statusList.add(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response));
                     }
-                    ctx.getChannel().write(new SMTPRequestImpl("QUIT", null)).addListener(ChannelFutureListener.CLOSE);
+                    ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
 
                     future.setDeliveryStatus(new DeliveryResultImpl(statusList));
                     break;
                 }
                 
-                if (code < 400 || curCommand == SMTPCommand.RCPT) {
+                if (code < 400 || curCommand == SMTPState.RCPT) {
 
                     String rcpt = recipients.removeFirst();
                     states.put(LAST_RECIPIENT_KEY, rcpt);
-                    ctx.getChannel().write(new SMTPRequestImpl("RCPT TO:", "<" + rcpt + ">")).addListener(new ChannelFutureListener() {
+                    ctx.getChannel().write(SMTPRequestImpl.rcpt(rcpt)).addListener(new ChannelFutureListener() {
 
                         @Override
                         public void operationComplete(ChannelFuture cf) throws Exception {
@@ -181,9 +181,9 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                 } 
               
                 if (recipients.isEmpty()) {
-                    states.put(NEXT_COMMAND_KEY, SMTPCommand.DATA);
+                    states.put(NEXT_COMMAND_KEY, SMTPState.DATA);
                 } else {
-                    states.put(NEXT_COMMAND_KEY, SMTPCommand.RCPT);
+                    states.put(NEXT_COMMAND_KEY, SMTPState.RCPT);
                 }
                 break;
             case DATA:
@@ -197,7 +197,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                    }
                 }
                 if (success) {
-                    ctx.getChannel().write(new SMTPRequestImpl("DATA", null)).addListener(new ChannelFutureListener() {
+                    ctx.getChannel().write(SMTPRequestImpl.data()).addListener(new ChannelFutureListener() {
 
                         @Override
                         public void operationComplete(ChannelFuture cf) throws Exception {
@@ -205,10 +205,10 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
 
                         }
                     });
-                    states.put(NEXT_COMMAND_KEY, SMTPCommand.DATA_POST);
+                    states.put(NEXT_COMMAND_KEY, SMTPState.DATA_POST);
 
                 } else {
-                    ctx.getChannel().write(new SMTPRequestImpl("QUIT", null)).addListener(ChannelFutureListener.CLOSE);
+                    ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
                     
                     // all recipients failed so we should now complete the future
                     future.setDeliveryStatus(new DeliveryResultImpl(statusList));
@@ -225,20 +225,20 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
 
                         }
                     });
-                    states.put(NEXT_COMMAND_KEY, SMTPCommand.QUIT);
+                    states.put(NEXT_COMMAND_KEY, SMTPState.QUIT);
                 } else {
                     Iterator<DeliveryRecipientStatus> status = statusList.iterator();
                     while(status.hasNext()) {
                         ((DeliveryRecipientStatusImpl)status.next()).setResponse(response);
                     }
-                    ctx.getChannel().write(new SMTPRequestImpl("QUIT", null)).addListener(ChannelFutureListener.CLOSE);
+                    ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
                     future.setDeliveryStatus(new DeliveryResultImpl(statusList));
 
                 }
                 break;
             case QUIT:
                 if (code < 400) {
-                    ctx.getChannel().write(new SMTPRequestImpl("QUIT", null)).addListener(ChannelFutureListener.CLOSE);
+                    ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
                    
                     // Set the final status for successful recipients
                     Iterator<DeliveryRecipientStatus> status = statusList.iterator();
@@ -255,7 +255,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                     while(status.hasNext()) {
                         ((DeliveryRecipientStatusImpl)status.next()).setResponse(response);
                     }
-                    ctx.getChannel().write(new SMTPRequestImpl("QUIT", null)).addListener(ChannelFutureListener.CLOSE);
+                    ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
                     future.setDeliveryStatus(new DeliveryResultImpl(statusList));
                 }
                 break;
