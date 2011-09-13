@@ -28,13 +28,15 @@ import me.normanmaurer.niosmtp.SMTPClient;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPCommand;
-import me.normanmaurer.niosmtp.impl.internal.ChannelLocalSupport;
+import me.normanmaurer.niosmtp.impl.internal.SMTPClientConstants;
 import me.normanmaurer.niosmtp.impl.internal.SMTPClientFutureImpl;
+import me.normanmaurer.niosmtp.impl.internal.SMTPClientHandler;
 import me.normanmaurer.niosmtp.impl.internal.SMTPClientPipelineFactory;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
+import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.handler.timeout.IdleStateHandler;
@@ -52,7 +54,7 @@ import org.jboss.netty.util.Timer;
  * @author Norman Maurer
  * 
  */
-public class UnpooledSMTPClient implements SMTPClient, ChannelLocalSupport {
+public class UnpooledSMTPClient implements SMTPClient, SMTPClientConstants {
 
     protected final NioClientSocketChannelFactory socketFactory = new NioClientSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool());
     private final Timer timer = new HashedWheelTimer();
@@ -75,6 +77,7 @@ public class UnpooledSMTPClient implements SMTPClient, ChannelLocalSupport {
             
             @Override
             public void operationComplete(ChannelFuture cf) throws Exception {
+                ChannelHandlerContext context = cf.getChannel().getPipeline().getContext(SMTPClientHandler.class);
                 Map<String, Object> attrs = new HashMap<String, Object>();
                 attrs.put(FUTURE_KEY, future);
                 attrs.put(MAIL_FROM_KEY, mailFrom);
@@ -86,7 +89,7 @@ public class UnpooledSMTPClient implements SMTPClient, ChannelLocalSupport {
                 } else {
                     attrs.put(NEXT_COMMAND_KEY, SMTPCommand.HELO);
                 }
-                ATTRIBUTES.set(cf.getChannel(), attrs);
+                context.setAttachment(attrs);
 
                 // Add the idle timeout handler
                 cf.getChannel().getPipeline().addFirst("idleHandler", new IdleStateHandler(timer, 0, 0, config.getResponseTimeout()));
