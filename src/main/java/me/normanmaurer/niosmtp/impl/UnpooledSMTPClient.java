@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import me.normanmaurer.niosmtp.SMTPClient;
@@ -56,12 +57,31 @@ import org.jboss.netty.util.Timer;
  */
 public class UnpooledSMTPClient implements SMTPClient, SMTPClientConstants {
 
-    protected final NioClientSocketChannelFactory socketFactory = new NioClientSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool());
+    protected final NioClientSocketChannelFactory socketFactory = new NioClientSocketChannelFactory(createBossExecutor(), createWorkerExecutor());
     private final Timer timer = new HashedWheelTimer();
 
     protected ChannelPipelineFactory createChannelPipelineFactory() {
         return new SMTPClientPipelineFactory();
     }
+    
+    /**
+     * Create the {@link ExecutorService} which is used for the BOSS Threads. 
+     * 
+     * @return bossExecutor
+     */
+    protected ExecutorService createBossExecutor() {
+        return Executors.newCachedThreadPool();
+    }
+    
+    /**
+     * Create the {@link ExecutorService} which is used for the WORKER Threads
+     * 
+     * @return workerExecutor
+     */
+    protected ExecutorService createWorkerExecutor() {
+        return Executors.newCachedThreadPool();
+    }
+    
     
     /*
      * (non-Javadoc)
