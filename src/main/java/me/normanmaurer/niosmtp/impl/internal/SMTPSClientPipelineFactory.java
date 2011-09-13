@@ -54,6 +54,12 @@ public class SMTPSClientPipelineFactory extends SMTPClientPipelineFactory{
         return cp;
     }
     
+    /**
+     * {@link SimpleChannelUpstreamHandler} which takes care to call {@link SslHandler#handshake()} after the channel is connected
+     * 
+     * @author Norman Maurer
+     *
+     */
     private final static class SslHandshakeHandler extends SimpleChannelUpstreamHandler {
 
         @Override
