@@ -16,8 +16,6 @@
 */
 package me.normanmaurer.niosmtp.impl.internal;
 
-import java.nio.charset.Charset;
-
 import me.normanmaurer.niosmtp.SMTPResponse;
 
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -35,8 +33,7 @@ import org.slf4j.LoggerFactory;
  * @author Norman Maurer
  * 
  */
-class SMTPResponseDecoder extends OneToOneDecoder {
-    private final static Charset CHARSET = Charset.forName("US-ASCII");
+class SMTPResponseDecoder extends OneToOneDecoder implements SMTPClientConstants{
     private final Logger logger = LoggerFactory.getLogger(SMTPResponseDecoder.class);
     
     @Override
@@ -56,14 +53,20 @@ class SMTPResponseDecoder extends OneToOneDecoder {
                 if (response == null) {
                     int code = Integer.parseInt(line.readBytes(3).toString(CHARSET));
                     response = new SMTPResponseImpl(code);
+                    // skip the next space
+                    line.skipBytes(1);
+                } else {
+                    // skip the code and the next space
+                    line.skipBytes(4);
                 }
+                
                 if (line.readable()) {
                     response.addLine(line.toString(CHARSET));
 
                 }
                 ctx.setAttachment(null);
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Channel " + ctx.getChannel().getId() + " received: [" + response.toString() + "]");
+                if (logger.isInfoEnabled()) {
+                    logger.info("Channel " + ctx.getChannel().getId() + " received: [" + StringUtils.toString(response) + "]");
                 }
                 return response;
             } else if (separator == '-') {
@@ -73,7 +76,13 @@ class SMTPResponseDecoder extends OneToOneDecoder {
                     int code = Integer.parseInt(line.readBytes(3).toString(CHARSET));
                     response = new SMTPResponseImpl(code);
                     ctx.setAttachment(response);
+                    
+                    // skip the next space
+                    line.skipBytes(1);
 
+                } else {
+                    // skip the code and the next space
+                    line.skipBytes(4);
                 }
                 if (line.readable()) {
                     response.addLine(line.toString(CHARSET));

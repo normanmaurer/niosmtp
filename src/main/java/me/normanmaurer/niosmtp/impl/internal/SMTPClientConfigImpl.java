@@ -29,15 +29,24 @@ import me.normanmaurer.niosmtp.SMTPClientConfig;
  */
 public class SMTPClientConfigImpl implements SMTPClientConfig {
 
-    private String heloName = "localhost";
-    private int connectionTimeout = 60;
+    public static final int DEFAULT_CONNECTION_TIMEOUT = 60;
+    public static final String DEFAULT_HELO_NAME = "localhost";
+    public static final int DEFAULT_RESPONSE_TIMEOUT = 60;
+    
+    private String heloName = DEFAULT_HELO_NAME;
+    private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
     private InetSocketAddress localAddress = null;
-    private boolean usePipelining = false;
+    private boolean usePipelining = true;
     private int responseTimeout;
     
     public SMTPClientConfigImpl() {
     }
     
+    /**
+     * Set the name which will be used for EHLO/HELO. Default is {@link #DEFAULT_HELO_NAME}
+     * 
+     * @param heloName
+     */
     public void setHeloName(String heloName) {
         this.heloName = heloName;
     }
@@ -51,6 +60,11 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
         return heloName;
     }
 
+    /**
+     * Set the connection timeout in seconds to use. Default is {@link #DEFAULT_CONNECTION_TIMEOUT}
+     * 
+     * @param connectionTimeout
+     */
     public void setConnectionTimeout(int connectionTimeout) {
         this.connectionTimeout = connectionTimeout;
     }
@@ -72,6 +86,12 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
         return localAddress;
     }
     
+    /**
+     * Set the local address to which the SMTPClient should get bound. Default is auto-detect which is done by setting this
+     * to <code>null</code>
+     * 
+     * @param localAddress
+     */
     public void setLocalAddress(InetSocketAddress localAddress) {
         this.localAddress = localAddress;
     }
@@ -84,6 +104,11 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
         return usePipelining;
     }
     
+    /**
+     * Specify if <code>PIPELINING</code> should get used if possible. Default is <code>true</code>
+     * 
+     * @param usePipelining
+     */
     public void setUsePipelining(boolean usePipelining) {
         this.usePipelining = usePipelining;
     }
@@ -97,6 +122,11 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
         return responseTimeout;
     }
     
+    /**
+     * Set the response timeout to use. Default is {@link #DEFAULT_RESPONSE_TIMEOUT}
+     * 
+     * @param responseTimeout
+     */
     public void setResponseTimeout(int responseTimeout) {
         this.responseTimeout = responseTimeout;
     }
