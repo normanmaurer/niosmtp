@@ -268,6 +268,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
         super.messageReceived(ctx, e);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
         if (logger.isDebugEnabled()) {
