@@ -23,6 +23,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
 import me.normanmaurer.niosmtp.SMTPClientConfig;
+import me.normanmaurer.niosmtp.impl.UnpooledSecureSMTPClient;
+import me.normanmaurer.niosmtp.impl.UnpooledSecureSMTPClient.SecureMode;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -39,25 +41,31 @@ import org.jboss.netty.util.Timer;
  * 
  *
  */
-public class SMTPSClientPipelineFactory extends SMTPClientPipelineFactory{
-
-    public SMTPSClientPipelineFactory(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config, Timer timer, SSLContext context) {
-        super(future, mailFrom, recipients, msg, config, timer);
-        this.context = context;
-    }
+public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory{
 
     private final static SslHandshakeHandler SSL_HANDSHAKE_HANDLER = new SslHandshakeHandler();
     
     private final SSLContext context;
+    private final SecureMode secureMode;
+
+    public SecureSMTPClientPipelineFactory(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config, Timer timer, UnpooledSecureSMTPClient.SecureMode secureMode, SSLContext context) {
+        super(future, mailFrom, recipients, msg, config, timer);
+        this.context = context;
+        this.secureMode = secureMode;
+    }
+
 
     @Override
-    public ChannelPipeline getPipeline() throws Exception {
+    public ChannelPipeline getPipeline() throws Exception {        
         ChannelPipeline cp = super.getPipeline();
-        cp.addFirst("sslHandshakeHandler", SSL_HANDSHAKE_HANDLER);
-        SSLEngine engine = context.createSSLEngine();
-        engine.setUseClientMode(true);
-        final SslHandler sslHandler = new SslHandler(engine,false);
-        cp.addFirst("sslHandler", sslHandler);
+
+        if (secureMode == SecureMode.SMTPS) {
+            cp.addFirst("sslHandshakeHandler", SSL_HANDSHAKE_HANDLER);
+            SSLEngine engine = context.createSSLEngine();
+            engine.setUseClientMode(true);
+            final SslHandler sslHandler = new SslHandler(engine, false);
+            cp.addFirst("sslHandler", sslHandler);
+        }
         return cp;
     }
     

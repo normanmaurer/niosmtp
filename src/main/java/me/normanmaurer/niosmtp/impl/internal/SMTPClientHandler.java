@@ -60,18 +60,18 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
     private final String mailFrom;
     private final LinkedList<String> recipients;
     private final SMTPClientConfig config;
-    private final SSLEngine engine;
     private final InputStream msg;
     private final SMTPClientFutureImpl future;
     private final SMTPStateMachine stateMachine = new SMTPStateMachine();
+    
+    //TODO: Fix me
+    private SSLEngine engine;
 
 
-
-    public SMTPClientHandler(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config, SSLEngine engine) {
+    public SMTPClientHandler(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config) {
         this.mailFrom = mailFrom;
         this.recipients = recipients;
         this.config = config;
-        this.engine = engine;
         this.msg = msg;
         this.future = future;
         stateMachine.nextState(SMTPState.EHLO);
