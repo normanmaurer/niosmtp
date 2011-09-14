@@ -22,8 +22,8 @@ import java.util.LinkedList;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
+import me.normanmaurer.niosmtp.SMTPClient.DeliveryMode;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
-import me.normanmaurer.niosmtp.SecureMode;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -45,12 +45,12 @@ public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory{
     private final static SslHandshakeHandler SSL_HANDSHAKE_HANDLER = new SslHandshakeHandler();
     
     private final SSLContext context;
-    private final SecureMode secureMode;
+    private final DeliveryMode mode;
 
-    public SecureSMTPClientPipelineFactory(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config, Timer timer, SecureMode secureMode, SSLContext context) {
+    public SecureSMTPClientPipelineFactory(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config, Timer timer, DeliveryMode mode, SSLContext context) {
         super(future, mailFrom, recipients, msg, config, timer);
         this.context = context;
-        this.secureMode = secureMode;
+        this.mode = mode;
     }
 
 
@@ -58,7 +58,7 @@ public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory{
     public ChannelPipeline getPipeline() throws Exception {        
         ChannelPipeline cp = super.getPipeline();
 
-        if (secureMode == SecureMode.SMTPS) {
+        if (mode == DeliveryMode.SMTPS) {
             cp.addFirst("sslHandshakeHandler", SSL_HANDSHAKE_HANDLER);
             SSLEngine engine = context.createSSLEngine();
             engine.setUseClientMode(true);
@@ -70,10 +70,16 @@ public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory{
     
     @Override
     protected SMTPClientHandler createSMTPClientHandler(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config) {
-        if (secureMode == SecureMode.SMTPS) {
+        if (mode == DeliveryMode.SMTPS) {
             return super.createSMTPClientHandler(future, mailFrom, recipients, msg, config);
         } else {
-            return new SMTPClientHandler(future, mailFrom, recipients, msg, config, secureMode, context.createSSLEngine());
+            boolean dependOnStartTLS;
+            if (mode == DeliveryMode.STARTTLS_DEPEND) {
+                dependOnStartTLS = true;
+            } else {
+                dependOnStartTLS = false;
+            }
+            return new SMTPClientHandler(future, mailFrom, recipients, msg, config, dependOnStartTLS, context.createSSLEngine());
         }
     }
 

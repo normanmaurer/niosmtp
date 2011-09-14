@@ -49,7 +49,7 @@ public class SMTPClientTest {
     }
     
     protected UnpooledSMTPClient createSMTPClient() {
-        return new UnpooledSMTPClient();
+        return UnpooledSMTPClient.createPlain();
     }
     
     @Test

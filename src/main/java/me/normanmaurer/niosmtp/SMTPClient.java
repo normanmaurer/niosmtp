@@ -28,6 +28,13 @@ import java.util.Collection;
  */
 public interface SMTPClient {
 
+    public static enum DeliveryMode {
+        PLAIN,
+        SMTPS,
+        STARTTLS_TRY,
+        STARTTLS_DEPEND
+    }
+    
     /**
      * Deliver an email to the given {@link Collection} of recipients. The {@link InputStream} must be a valid email (valid encoding).
      * 
@@ -42,4 +49,12 @@ public interface SMTPClient {
      * @return future
      */
     public SMTPClientFuture deliver(InetSocketAddress host, String mailFrom, Collection<String> recipients, InputStream msg, SMTPClientConfig config);
+
+    /**
+     * Return the {@link DeliveryMode} which the {@link SMTPClient} use
+     * 
+     * @return mode
+     */
+    public DeliveryMode getDeliveryMode();
+
 }

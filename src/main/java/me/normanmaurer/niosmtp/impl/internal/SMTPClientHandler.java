@@ -35,7 +35,6 @@ import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.SMTPState;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPUnsupportedExtensionException;
-import me.normanmaurer.niosmtp.SecureMode;
 
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelFutureListener;
@@ -66,20 +65,20 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
     private final SMTPStateMachine stateMachine = new SMTPStateMachine();
     
     private final SSLEngine engine;
-    private final SecureMode secureMode;
+    private final boolean dependOnStartTLS;;
 
 
     public SMTPClientHandler(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config) {
-        this(future, mailFrom, recipients, msg, config, null, null);
+        this(future, mailFrom, recipients, msg, config, false, null);
     }
     
-    public SMTPClientHandler(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config, SecureMode secureMode, SSLEngine engine) {
+    public SMTPClientHandler(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config, boolean dependOnStartTLS, SSLEngine engine) {
         this.mailFrom = mailFrom;
         this.recipients = recipients;
         this.config = config;
         this.msg = msg;
         this.future = future;
-        this.secureMode = secureMode;
+        this.dependOnStartTLS = dependOnStartTLS;
         this.engine = engine;
         stateMachine.nextState(SMTPState.EHLO);
         
@@ -125,7 +124,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
             case EHLO:
                 if (code < 400) {
                     ctx.getChannel().write(SMTPRequestImpl.ehlo(config.getHeloName()));
-                    if (secureMode == null || secureMode == SecureMode.NONE) {
+                    if (engine == null) {
                         stateMachine.nextState(SMTPState.MAIL);
                     } else {
                         stateMachine.nextState(SMTPState.STARTTLS);
@@ -156,7 +155,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                     
                 }
                 
-                if (!supportsStartTLS && secureMode == SecureMode.STARTTLS_DEPEND) {
+                if (!supportsStartTLS && engine != null &&  dependOnStartTLS == true) {
                     throw new SMTPUnsupportedExtensionException("Extension STARTTLS is not supported");
                 }
                
