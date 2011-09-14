@@ -25,6 +25,7 @@ import javax.net.ssl.SSLContext;
 
 import me.normanmaurer.niosmtp.SMTPClient;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
+import me.normanmaurer.niosmtp.SecureMode;
 import me.normanmaurer.niosmtp.impl.internal.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.impl.internal.SecureSMTPClientPipelineFactory;
 
@@ -45,12 +46,7 @@ public class UnpooledSecureSMTPClient extends UnpooledSMTPClient{
     private final SSLContext context;
     private final SecureMode secureMode;
     
-    
-    public static enum SecureMode {
-        SMTPS,
-        STARTTLS_TRY,
-        STARTTLS_DEPEND
-    }
+
 
     public UnpooledSecureSMTPClient(SSLContext context, SecureMode secureMode) {
         this.context = context;

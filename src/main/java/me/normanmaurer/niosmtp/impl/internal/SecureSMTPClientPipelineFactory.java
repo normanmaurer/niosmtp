@@ -23,8 +23,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
 import me.normanmaurer.niosmtp.SMTPClientConfig;
-import me.normanmaurer.niosmtp.impl.UnpooledSecureSMTPClient;
-import me.normanmaurer.niosmtp.impl.UnpooledSecureSMTPClient.SecureMode;
+import me.normanmaurer.niosmtp.SecureMode;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -48,7 +47,7 @@ public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory{
     private final SSLContext context;
     private final SecureMode secureMode;
 
-    public SecureSMTPClientPipelineFactory(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config, Timer timer, UnpooledSecureSMTPClient.SecureMode secureMode, SSLContext context) {
+    public SecureSMTPClientPipelineFactory(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config, Timer timer, SecureMode secureMode, SSLContext context) {
         super(future, mailFrom, recipients, msg, config, timer);
         this.context = context;
         this.secureMode = secureMode;
@@ -69,6 +68,15 @@ public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory{
         return cp;
     }
     
+    @Override
+    protected SMTPClientHandler createSMTPClientHandler(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config) {
+        if (secureMode == SecureMode.SMTPS) {
+            return super.createSMTPClientHandler(future, mailFrom, recipients, msg, config);
+        } else {
+            return new SMTPClientHandler(future, mailFrom, recipients, msg, config, secureMode, context.createSSLEngine());
+        }
+    }
+
     /**
      * {@link SimpleChannelUpstreamHandler} which takes care to call {@link SslHandler#handshake()} after the channel is connected
      * 
