@@ -36,7 +36,7 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
     private String heloName = DEFAULT_HELO_NAME;
     private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
     private InetSocketAddress localAddress = null;
-    private boolean usePipelining = true;
+    private PipeliningMode pipeliningMode = PipeliningMode.TRY;;
     private int responseTimeout;
     
     public SMTPClientConfigImpl() {
@@ -100,17 +100,17 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
      * (non-Javadoc)
      * @see me.normanmaurer.niosmtp.SMTPClientConfig#usePipelining()
      */
-    public boolean usePipelining() {
-        return usePipelining;
+    public PipeliningMode getPipeliningMode() {
+        return pipeliningMode;
     }
     
     /**
-     * Specify if <code>PIPELINING</code> should get used if possible. Default is <code>true</code>
+     * Specify if <code>PIPELINING</code> should get used if possible. Default is {@link PipeliningMode#TRY}
      * 
-     * @param usePipelining
+     * @param pipeliningMode
      */
-    public void setUsePipelining(boolean usePipelining) {
-        this.usePipelining = usePipelining;
+    public void setPipeliningMode(PipeliningMode pipeliningMode) {
+        this.pipeliningMode = pipeliningMode;
     }
 
 

@@ -16,8 +16,13 @@
 */
 package me.normanmaurer.niosmtp.impl.internal;
 
+import java.io.InputStream;
+import java.util.LinkedList;
+
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
+
+import me.normanmaurer.niosmtp.SMTPClientConfig;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -25,6 +30,7 @@ import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.ssl.SslHandler;
+import org.jboss.netty.util.Timer;
 
 /**
  * {@link ChannelPipelineFactory} which is used for SMTPS connections
@@ -35,14 +41,15 @@ import org.jboss.netty.handler.ssl.SslHandler;
  */
 public class SMTPSClientPipelineFactory extends SMTPClientPipelineFactory{
 
+    public SMTPSClientPipelineFactory(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config, Timer timer, SSLContext context) {
+        super(future, mailFrom, recipients, msg, config, timer);
+        this.context = context;
+    }
+
     private final static SslHandshakeHandler SSL_HANDSHAKE_HANDLER = new SslHandshakeHandler();
     
     private final SSLContext context;
 
-    public SMTPSClientPipelineFactory(SSLContext context) {
-        this.context = context;
-    }
-    
     @Override
     public ChannelPipeline getPipeline() throws Exception {
         ChannelPipeline cp = super.getPipeline();

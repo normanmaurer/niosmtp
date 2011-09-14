@@ -17,8 +17,8 @@
 package me.normanmaurer.niosmtp.impl.internal;
 
 import java.io.InputStream;
-import java.net.ConnectException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -26,13 +26,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.net.ssl.SSLEngine;
+
 import me.normanmaurer.niosmtp.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.DeliveryRecipientStatus.Status;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
+import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.SMTPState;
-import me.normanmaurer.niosmtp.SMTPConnectionException;
-import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPResponse;
+import me.normanmaurer.niosmtp.SMTPUnsupportedExtensionException;
 
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelFutureListener;
@@ -41,6 +43,7 @@ import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
+import org.jboss.netty.handler.ssl.SslHandler;
 import org.jboss.netty.handler.stream.ChunkedStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,17 +57,34 @@ import org.slf4j.LoggerFactory;
  */
 public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements SMTPClientConstants {
     private final Logger logger = LoggerFactory.getLogger(SMTPClientHandler.class);
+    private final String mailFrom;
+    private final LinkedList<String> recipients;
+    private final SMTPClientConfig config;
+    private final SSLEngine engine;
+    private final InputStream msg;
+    private final SMTPClientFutureImpl future;
+    private final SMTPStateMachine stateMachine = new SMTPStateMachine();
 
 
 
-    public SMTPClientHandler() {
+    public SMTPClientHandler(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config, SSLEngine engine) {
+        this.mailFrom = mailFrom;
+        this.recipients = recipients;
+        this.config = config;
+        this.engine = engine;
+        this.msg = msg;
+        this.future = future;
+        stateMachine.nextState(SMTPState.EHLO);
+        
     }
+    
 
-    @SuppressWarnings("unchecked")
     @Override
     public void channelBound(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-        Map<String, Object> states = (Map<String, Object>) ctx.getAttachment();
+        Map<String, Object> states = new HashMap<String, Object>();
         states.put(RECIPIENT_STATUS_LIST_KEY, new ArrayList<DeliveryRecipientStatus>());
+        
+        ctx.setAttachment(states);
         super.channelBound(ctx, e);
     }
 
@@ -74,12 +94,8 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
         if (e.getMessage() instanceof SMTPResponse) {
             final Map<String, Object> states =  (Map<String, Object>) ctx.getAttachment();
             SMTPResponse response = (SMTPResponse) e.getMessage();
-            final SMTPStateMachine stateMachine = (SMTPStateMachine) states.get(SMTP_STATE_KEY);
-            final SMTPClientConfig config = (SMTPClientConfig) states.get(SMTP_CONFIG_KEY);
-            final LinkedList<String> recipients = (LinkedList<String>) states.get(RECIPIENTS_KEY);
             final List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) states.get(RECIPIENT_STATUS_LIST_KEY);
             
-            SMTPClientFutureImpl future = (SMTPClientFutureImpl) states.get(FUTURE_KEY);
             boolean supportsPipelining =  states.containsKey(SUPPORTS_PIPELINING_KEY);
             boolean supportsStartTLS = states.containsKey(SUPPORTS_STARTTLS_KEY);
             
@@ -133,6 +149,11 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                     
                 }
                 
+                // Check if we depend on pipelining 
+                if (!supportsPipelining && config.getPipeliningMode() == PipeliningMode.DEPEND) {
+                    throw new SMTPUnsupportedExtensionException("Extension PIPELINING is not supported");
+                }
+                
                 if (supportsStartTLS) {
                     if (code < 400) {
                         ctx.getChannel().write(SMTPRequestImpl.startTls());
@@ -169,19 +190,31 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                     }
                     
                 }
-                String mailFrom = (String) states.get(MAIL_FROM_KEY);
+                
+                // Check if we depend on pipelining 
+                if (!supportsPipelining && config.getPipeliningMode() == PipeliningMode.DEPEND) {
+                    throw new SMTPUnsupportedExtensionException("Extension PIPELINING is not supported");
+                }
+                
+                String mail = mailFrom;
                
                 // handle null senders
-                if (mailFrom == null) {
-                    mailFrom = "";
+                if (mail == null) {
+                    mail = "";
                 }
                 if (code < 400) {
 
+                    // Check if we need to add the SslHandler for STARTTLS
+                    if (stateMachine.getLastState() == SMTPState.STARTTLS) {
+                        SslHandler sslHandler =  new SslHandler(engine, false);
+                        ctx.getChannel().getPipeline().addFirst("sslHandler", sslHandler);
+                        sslHandler.handshake();
+                    }
                     // We use a SMTPPipelinedRequest if the SMTPServer supports PIPELINING. This will allow the NETTY to get
                     // the MAX throughput as the encoder will write it out in one buffer if possible. This result in less system calls
                     if (supportsPipelining) {
                         SMTPPipelinedRequestImpl request = new SMTPPipelinedRequestImpl();
-                        request.add(SMTPRequestImpl.mail(mailFrom));
+                        request.add(SMTPRequestImpl.mail(mail));
                         for (int i = 0; i < recipients.size(); i++) {
                             request.add(SMTPRequestImpl.rcpt(recipients.get(i)));
                         }
@@ -222,7 +255,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                     
                     // only write the request if the SMTPServer does not support PIPELINING and we don't want to use it
                     // as otherwise we already sent this 
-                    if (!supportsPipelining || !config.usePipelining()) {
+                    if (!supportsPipelining || config.getPipeliningMode() == PipeliningMode.NO) {
                         ctx.getChannel().write(SMTPRequestImpl.rcpt(rcpt));
                     }
                     
@@ -247,7 +280,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                 if (success) {
                     // only write the request if the SMTPServer does not support PIPELINING and we don't want to use it
                     // as otherwise we already sent this 
-                    if (!supportsPipelining || !config.usePipelining()) {
+                    if (!supportsPipelining || config.getPipeliningMode() == PipeliningMode.NO) {
                         ctx.getChannel().write(SMTPRequestImpl.data());
                     }
                     stateMachine.nextState(SMTPState.DATA_POST);
@@ -262,7 +295,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                 break;
             case DATA_POST:
                 if (code < 400) {
-                    ctx.getChannel().write(new ChunkedStream(new DataTerminatingInputStream((InputStream) states.get(MSG_KEY))));
+                    ctx.getChannel().write(new ChunkedStream(new DataTerminatingInputStream(msg)));
                     stateMachine.nextState(SMTPState.QUIT);
                 } else {
                     Iterator<DeliveryRecipientStatus> status = statusList.iterator();
@@ -319,30 +352,19 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
         }
         return extensions;
     }
-    @SuppressWarnings("unchecked")
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
         if (logger.isDebugEnabled()) {
             logger.debug("Exception caught while handle SMTP/SMTPS", e.getCause());
         }
-        SMTPClientFutureImpl future = (SMTPClientFutureImpl) ((Map<String, Object>) ctx.getAttachment()).get(FUTURE_KEY);
         
         if (!future.isDone()) {
-            final SMTPException exception;
-            final Throwable t = e.getCause();
-            if (t instanceof SMTPException) {
-                exception = (SMTPException) t;
-            } else if (t instanceof ConnectException) {
-                exception = new SMTPConnectionException(t);
-            } else {
-                exception = new SMTPException("Exception while try to deliver msg", t);
-            }
-            
-            future.setDeliveryStatus(new DeliveryResultImpl(exception));
+            future.setDeliveryStatus(DeliveryResultImpl.create(e.getCause()));
         }
         if (ctx.getChannel().isConnected()) {
             ctx.getChannel().write(ChannelBuffers.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
         }
+
     }
 
     

@@ -48,7 +48,7 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
      * 
      * @param result
      */
-    protected synchronized void setDeliveryStatus(DeliveryResult result) {
+    public synchronized void setDeliveryStatus(DeliveryResult result) {
         if (!isDone()) {
             this.result = result;
             isReady = true;

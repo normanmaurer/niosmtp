@@ -16,10 +16,12 @@
 */
 package me.normanmaurer.niosmtp.impl.internal;
 
+import java.net.ConnectException;
 import java.util.Iterator;
 
 import me.normanmaurer.niosmtp.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.DeliveryResult;
+import me.normanmaurer.niosmtp.SMTPConnectionException;
 import me.normanmaurer.niosmtp.SMTPException;
 
 /**
@@ -59,6 +61,25 @@ public class DeliveryResultImpl implements DeliveryResult{
             return null;
         }
         return status.iterator();
+    }
+    
+    /**
+     * Create a new {@link DeliveryResultImpl} by taking care to wrap or cast the given {@link Throwable} to the right {@link SMTPException}
+     * 
+     * @param t
+     * @return result
+     */
+    public static DeliveryResultImpl create(Throwable t) {
+        final SMTPException exception;
+        if (t instanceof SMTPException) {
+            exception = (SMTPException) t;
+        } else if (t instanceof ConnectException) {
+            exception = new SMTPConnectionException(t);
+        } else {
+            exception = new SMTPException("Exception while try to deliver msg", t);
+        }
+        return new DeliveryResultImpl(exception);
+        
     }
 
 }

@@ -18,7 +18,7 @@ package me.normanmaurer.niosmtp;
 
 import java.io.InputStream;
 import java.net.InetSocketAddress;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * A client which deliver email via SMTP
@@ -29,7 +29,7 @@ import java.util.List;
 public interface SMTPClient {
 
     /**
-     * Deliver an email to the given {@link List} of recipients. The {@link InputStream} must be a valid email (valid encoding).
+     * Deliver an email to the given {@link Collection} of recipients. The {@link InputStream} must be a valid email (valid encoding).
      * 
      * The delivery is done in an non-blocking fashion, so this method will return as fast as possible and then allow to get the result
      * via the {@link SMTPClientFuture}.
@@ -41,5 +41,5 @@ public interface SMTPClient {
      * @param config
      * @return future
      */
-    public SMTPClientFuture deliver(InetSocketAddress host, String mailFrom, List<String> recipients, InputStream msg, SMTPClientConfig config);
+    public SMTPClientFuture deliver(InetSocketAddress host, String mailFrom, Collection<String> recipients, InputStream msg, SMTPClientConfig config);
 }
