@@ -80,6 +80,6 @@ public class SMTPClientPipelineFactory implements ChannelPipelineFactory{
     }
 
     protected SMTPClientHandler createSMTPClientHandler(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config) {
-        return new SMTPClientHandler(future, mailFrom, recipients, msg, config, null);
+        return new SMTPClientHandler(future, mailFrom, recipients, msg, config);
     }
 }

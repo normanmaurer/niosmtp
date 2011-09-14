@@ -26,7 +26,7 @@ import javax.net.ssl.SSLContext;
 import me.normanmaurer.niosmtp.SMTPClient;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.impl.internal.SMTPClientFutureImpl;
-import me.normanmaurer.niosmtp.impl.internal.SMTPSClientPipelineFactory;
+import me.normanmaurer.niosmtp.impl.internal.SecureSMTPClientPipelineFactory;
 
 import org.jboss.netty.channel.ChannelPipelineFactory;
 
@@ -40,17 +40,29 @@ import org.jboss.netty.channel.ChannelPipelineFactory;
  * @author Norman Maurer
  * 
  */
-public class UnpooledSMTPSClient extends UnpooledSMTPClient{
+public class UnpooledSecureSMTPClient extends UnpooledSMTPClient{
 
     private final SSLContext context;
-
-    public UnpooledSMTPSClient(SSLContext context) {
-        this.context = context;
+    private final SecureMode secureMode;
+    
+    
+    public static enum SecureMode {
+        SMTPS,
+        STARTTLS_TRY,
+        STARTTLS_DEPEND
     }
 
+    public UnpooledSecureSMTPClient(SSLContext context, SecureMode secureMode) {
+        this.context = context;
+        this.secureMode = secureMode;
+    }
+
+    public UnpooledSecureSMTPClient(SSLContext context) {
+        this(context, SecureMode.SMTPS);
+    }
     @Override
     protected ChannelPipelineFactory createChannelPipelineFactory(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config) {
-        return new SMTPSClientPipelineFactory(future, mailFrom, recipients, msg, config, timer, context);
+        return new SecureSMTPClientPipelineFactory(future, mailFrom, recipients, msg, config, timer, secureMode, context);
     }
 
 
