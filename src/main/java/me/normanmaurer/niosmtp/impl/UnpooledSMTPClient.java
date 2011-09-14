@@ -23,12 +23,16 @@ import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.net.ssl.SSLContext;
+
 import me.normanmaurer.niosmtp.SMTPClient;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPClientFuture;
+import me.normanmaurer.niosmtp.SMTPUnsupportedExtensionException;
 import me.normanmaurer.niosmtp.impl.internal.SMTPClientConstants;
 import me.normanmaurer.niosmtp.impl.internal.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.impl.internal.SMTPClientPipelineFactory;
+import me.normanmaurer.niosmtp.impl.internal.SecureSMTPClientPipelineFactory;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.ChannelPipelineFactory;
@@ -47,12 +51,16 @@ import org.jboss.netty.util.Timer;
  */
 public class UnpooledSMTPClient implements SMTPClient, SMTPClientConstants {
 
-    protected final NioClientSocketChannelFactory socketFactory = new NioClientSocketChannelFactory(createBossExecutor(), createWorkerExecutor());
-    protected final Timer timer = new HashedWheelTimer();
+    private final NioClientSocketChannelFactory socketFactory = new NioClientSocketChannelFactory(createBossExecutor(), createWorkerExecutor());
+    private final Timer timer = new HashedWheelTimer();
+    private SSLContext context;
+    private DeliveryMode mode;
 
-    protected ChannelPipelineFactory createChannelPipelineFactory(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config) {
-        return new SMTPClientPipelineFactory(future, mailFrom, recipients, msg, config, timer);
+    private UnpooledSMTPClient(DeliveryMode mode, SSLContext context) {
+        this.context = context;
+        this.mode = mode;
     }
+
     
     /**
      * Create the {@link ExecutorService} which is used for the BOSS Threads. 
@@ -73,6 +81,43 @@ public class UnpooledSMTPClient implements SMTPClient, SMTPClientConstants {
     }
     
 
+    /**
+     * Create a {@link UnpooledSMTPClient} instance which use plain SMTP 
+     * 
+     * @return plainClient
+     */
+    public static UnpooledSMTPClient createPlain() {
+        return new UnpooledSMTPClient(DeliveryMode.PLAIN, null);
+    }
+    
+    /**
+     * Return a {@link UnpooledSMTPClient} which use SMTPS (encrypted)
+     * 
+     * @param context
+     * @return smtpsClient
+     */
+    public static UnpooledSMTPClient createSMTPS(SSLContext context) {
+        return new UnpooledSMTPClient(DeliveryMode.SMTPS, context);
+    }
+    
+    
+    /**
+     * Create {@link UnpooledSMTPClient} which uses plain SMTP but switch to encryption later via the STARTTLS extension
+     * 
+     * @param context
+     * @param failOnNoSupport if true the client will throw an {@link SMTPUnsupportedExtensionException} if STARTTLS is not supported.
+     *                        If false it will just continue in plain mode (no encryption)
+     * @return starttlsClient
+     */
+    public static UnpooledSMTPClient createStartTLS(SSLContext context, boolean failOnNoSupport) {
+        DeliveryMode mode;
+        if (failOnNoSupport) {
+            mode = DeliveryMode.STARTTLS_DEPEND;
+        } else {
+            mode = DeliveryMode.STARTTLS_TRY;
+        }
+        return new UnpooledSMTPClient(mode, context);
+    }
     /*
      * (non-Javadoc)
      * @see me.normanmaurer.niosmtp.SMTPClient#deliver(java.net.InetSocketAddress, java.lang.String, java.util.Collection, java.io.InputStream, me.normanmaurer.niosmtp.SMTPClientConfig)
@@ -82,10 +127,29 @@ public class UnpooledSMTPClient implements SMTPClient, SMTPClientConstants {
             throw new IllegalArgumentException("At least one recipient must be given");
         }
         
+        LinkedList<String> rcpts = new LinkedList<String>(recipients);
+        
+
         final SMTPClientFutureImpl future = new SMTPClientFutureImpl();
         ClientBootstrap bootstrap = new ClientBootstrap(socketFactory);
         bootstrap.setOption("connectTimeoutMillis", config.getConnectionTimeout() * 1000);
-        bootstrap.setPipelineFactory(createChannelPipelineFactory(future, mailFrom, new LinkedList<String>(recipients), msg, config));
+        ChannelPipelineFactory cp;
+        switch (mode) {
+        case PLAIN:
+            cp = new SMTPClientPipelineFactory(future, mailFrom, rcpts, msg, config, timer);
+            break;
+        case SMTPS:
+            // just move on to STARTTLS_DEPEND
+        case STARTTLS_TRY:
+            // just move on to STARTTLS_DEPEND
+        case STARTTLS_DEPEND:
+            cp = new SecureSMTPClientPipelineFactory(future, mailFrom, rcpts, msg, config, timer, mode, context);
+            break;
+        default:
+            throw new IllegalArgumentException("Unknown DeliveryMode " + mode);
+        }
+
+        bootstrap.setPipelineFactory(cp);
         InetSocketAddress local = config.getLocalAddress();
         bootstrap.connect(host, local);
         return future;
@@ -97,5 +161,10 @@ public class UnpooledSMTPClient implements SMTPClient, SMTPClientConstants {
     public void destroy() {
         socketFactory.releaseExternalResources();
         timer.stop();
+    }
+
+    @Override
+    public DeliveryMode getDeliveryMode() {
+        return mode;
     }
 }

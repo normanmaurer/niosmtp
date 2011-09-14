@@ -22,7 +22,6 @@ import java.net.ServerSocket;
 import javax.net.ssl.SSLServerSocket;
 
 import me.normanmaurer.niosmtp.impl.UnpooledSMTPClient;
-import me.normanmaurer.niosmtp.impl.UnpooledSecureSMTPClient;
 
 import org.subethamail.smtp.MessageHandlerFactory;
 import org.subethamail.smtp.server.SMTPServer;
@@ -51,7 +50,7 @@ public class SMTPSClientTest extends SMTPClientTest{
 
     @Override
     protected UnpooledSMTPClient createSMTPClient() {
-        return new UnpooledSecureSMTPClient(BogusSslContextFactory.getClientContext());
+        return UnpooledSMTPClient.createSMTPS(BogusSslContextFactory.getClientContext());
     }
 
 }
