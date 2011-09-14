@@ -42,11 +42,6 @@ public interface SMTPClientConstants {
      */
     public final static String STARTTLS_EXTENSION = "STARTTLS_EXTENSION";
 
-    public static final String FUTURE_KEY = "FUTURE";
-    public static final String MAIL_FROM_KEY = "MAIL_FROM";
-    public static final String RECIPIENTS_KEY = "RECIPIENTS";
-    public static final String SMTP_CONFIG_KEY = "SMTP_CONFIG";
-    public static final String MSG_KEY = "MSG";
     public static final String RECIPIENT_STATUS_LIST_KEY = "RECIPIENT_STATUS_LIST";
     public static final String SUPPORTS_PIPELINING_KEY = "SUPPORTS_PIPELINING";
     public static final String LAST_RECIPIENT_KEY = "LAST_RECIPIENT";

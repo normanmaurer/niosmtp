@@ -27,6 +27,23 @@ import java.net.InetSocketAddress;
  */
 public interface SMTPClientConfig {
 
+    public enum PipeliningMode {
+        
+        /**
+         * Don't use PIPELINING
+         */
+        NO,
+        
+        /**
+         * Use PIPELINING if the server supports it
+         */
+        TRY,
+        
+        /**
+         * Use PIPELINING if the server supports it otherwise fail
+         */
+        DEPEND
+    }
     
     /**
      * Return the name which will get used for the HELO/EHLO
@@ -58,9 +75,9 @@ public interface SMTPClientConfig {
     public InetSocketAddress getLocalAddress();
  
     /**
-     * Return <code>true</code> if the client should use PIPELINING if possible
+     * Return {@link PipeliningMode} if the client should use PIPELINING if possible
      * 
      * @return pipelining
      */
-    public boolean usePipelining();
+    public PipeliningMode getPipeliningMode();
 }

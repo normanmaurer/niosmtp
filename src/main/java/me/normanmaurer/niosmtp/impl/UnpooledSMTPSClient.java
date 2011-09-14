@@ -18,12 +18,14 @@ package me.normanmaurer.niosmtp.impl;
 
 import java.io.InputStream;
 import java.net.InetSocketAddress;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.net.ssl.SSLContext;
 
 import me.normanmaurer.niosmtp.SMTPClient;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
+import me.normanmaurer.niosmtp.impl.internal.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.impl.internal.SMTPSClientPipelineFactory;
 
 import org.jboss.netty.channel.ChannelPipelineFactory;
@@ -47,8 +49,9 @@ public class UnpooledSMTPSClient extends UnpooledSMTPClient{
     }
 
     @Override
-    protected ChannelPipelineFactory createChannelPipelineFactory() {
-        return new SMTPSClientPipelineFactory(context);
+    protected ChannelPipelineFactory createChannelPipelineFactory(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config) {
+        return new SMTPSClientPipelineFactory(future, mailFrom, recipients, msg, config, timer, context);
     }
-    
+
+
 }

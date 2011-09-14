@@ -16,12 +16,20 @@
 */
 package me.normanmaurer.niosmtp.impl.internal;
 
+import java.io.InputStream;
+import java.util.LinkedList;
+
+
+import me.normanmaurer.niosmtp.SMTPClientConfig;
+
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.handler.codec.frame.DelimiterBasedFrameDecoder;
 import org.jboss.netty.handler.codec.frame.Delimiters;
 import org.jboss.netty.handler.stream.ChunkedWriteHandler;
+import org.jboss.netty.handler.timeout.IdleStateHandler;
+import org.jboss.netty.util.Timer;
 
 /**
  * {@link ChannelPipelineFactory} which is used for the SMTP Client
@@ -35,9 +43,24 @@ public class SMTPClientPipelineFactory implements ChannelPipelineFactory{
     private final static DelimiterBasedFrameDecoder FRAMER = new DelimiterBasedFrameDecoder(8192, true, Delimiters.lineDelimiter());
     private final static SMTPResponseDecoder SMTP_RESPONSE_DECODER = new SMTPResponseDecoder();
     private final static SMTPRequestEncoder SMTP_REQUEST_ENCODER = new SMTPRequestEncoder();
-    private final static SMTPClientHandler SMTP_CLIENT_HANDLER = new SMTPClientHandler();
     private final static SMTPClientIdleHandler SMTP_CLIENT_IDLE_HANDLER = new SMTPClientIdleHandler();
     private final static SMTPPipelinedRequestEncoder SMTP_PIPELINE_REQUEST_ENCODER = new SMTPPipelinedRequestEncoder();
+    private final String mailFrom;
+    private final LinkedList<String> recipients;
+    private final SMTPClientConfig config;
+    private final InputStream msg;
+    private final SMTPClientFutureImpl future;
+    private Timer timer;
+    
+    public SMTPClientPipelineFactory(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config, Timer timer) {
+        this.mailFrom = mailFrom;
+        this.recipients = recipients;
+        this.config = config;
+        this.msg = msg;
+        this.future = future;
+        this.timer = timer;
+    }
+    
     
     @Override
     public ChannelPipeline getPipeline() throws Exception {
@@ -48,8 +71,15 @@ public class SMTPClientPipelineFactory implements ChannelPipelineFactory{
         pipeline.addLast("encoder", SMTP_REQUEST_ENCODER);
         pipeline.addLast("pipelinedEncoder", SMTP_PIPELINE_REQUEST_ENCODER);
         pipeline.addLast("chunk", new ChunkedWriteHandler());
-        pipeline.addLast("coreHandler", SMTP_CLIENT_HANDLER);
+        pipeline.addLast("coreHandler", createSMTPClientHandler(future, mailFrom, recipients, msg, config));
+        
+        // Add the idle timeout handler
+        pipeline.addLast("idleHandler", new IdleStateHandler(timer, 0, 0, config.getResponseTimeout()));
+
         return pipeline;
     }
 
+    protected SMTPClientHandler createSMTPClientHandler(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config) {
+        return new SMTPClientHandler(future, mailFrom, recipients, msg, config, null);
+    }
 }
