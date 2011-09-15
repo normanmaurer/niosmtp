@@ -16,6 +16,8 @@
 */
 package me.normanmaurer.niosmtp;
 
+import static org.junit.Assert.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
@@ -27,11 +29,7 @@ import me.normanmaurer.niosmtp.impl.internal.DataTerminatingInputStream;
 
 public class DataTerminatingInputStreamTest {
     
-    @Test
-    public void testNoCRLF() throws IOException {
-        String msg = "Subject: test\r\ntest";
-        String expected = "Subject: test\r\ntest\r\n.\r\n";
-
+    private void checkStream(String expected, String msg) throws IOException {
         DataTerminatingInputStream in = new DataTerminatingInputStream(new ByteArrayInputStream(msg.getBytes()));
         try {
             int i = -1;
@@ -39,9 +37,20 @@ public class DataTerminatingInputStreamTest {
             while ((i = in.read()) != -1) {
                 Assert.assertEquals(expected.charAt(a++), (char)i);
             }
+            assertEquals(expected.length(), a);
+
         } finally {
             in.close();
         }
+        
+    }
+    @Test
+    public void testNoCRLF() throws IOException {
+        String msg = "Subject: test\r\ntest";
+        String expected = "Subject: test\r\ntest\r\n.\r\n";
+
+        checkStream(expected, msg);
+      
     }
 
     
@@ -50,16 +59,8 @@ public class DataTerminatingInputStreamTest {
         String msg = "Subject: test\r\ntest\r";
         String expected = "Subject: test\r\ntest\r\n.\r\n";
 
-        DataTerminatingInputStream in = new DataTerminatingInputStream(new ByteArrayInputStream(msg.getBytes()));
-        try {
-            int i = -1;
-            int a = 0;
-            while ((i = in.read()) != -1) {
-                Assert.assertEquals(expected.charAt(a++), (char)i);
-            }
-        } finally {
-            in.close();
-        }
+        checkStream(expected, msg);
+
     }
     
     @Test
@@ -67,16 +68,8 @@ public class DataTerminatingInputStreamTest {
         String msg = "Subject: test\r\ntest\r\n";
         String expected = "Subject: test\r\ntest\r\n.\r\n";
 
-        DataTerminatingInputStream in = new DataTerminatingInputStream(new ByteArrayInputStream(msg.getBytes()));
-        try {
-            int i = -1;
-            int a = 0;
-            while ((i = in.read()) != -1) {
-                Assert.assertEquals(expected.charAt(a++), (char)i);
-            }
-        } finally {
-            in.close();
-        }
+        checkStream(expected, msg);
+
     }
 
     
@@ -85,15 +78,7 @@ public class DataTerminatingInputStreamTest {
         String msg = "Subject: test\r\n.\r\ntest\r\n";
         String expected = "Subject: test\r\n..\r\ntest\r\n.\r\n";
 
-        DataTerminatingInputStream in = new DataTerminatingInputStream(new ByteArrayInputStream(msg.getBytes()));
-        try {
-            int i = -1;
-            int a = 0;
-            while ((i = in.read()) != -1) {
-                Assert.assertEquals(expected.charAt(a++), (char)i);
-            }
-        } finally {
-            in.close();
-        }
+        checkStream(expected, msg);
+
     }
 }
