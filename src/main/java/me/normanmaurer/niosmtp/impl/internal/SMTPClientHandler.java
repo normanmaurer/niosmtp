@@ -52,7 +52,13 @@ import org.slf4j.LoggerFactory;
  * {@link SimpleChannelUpstreamHandler} implementation which handles the SMTP communication with the SMTP
  * Server
  * 
+ * 
+ * TODO: The handling of the specific {@link SMTPState} should better be pluggable to make the impl more clean 
+ * 
+ * 
  * @author Norman Maurer
+ * 
+ * 
  *
  */
 public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements SMTPClientConstants {
@@ -115,9 +121,9 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                     while (!recipients.isEmpty()) {
                         statusList.add(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response));
                     }
-                    ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
-
                     future.setDeliveryStatus(new DeliveryResultImpl(statusList));
+
+                    ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
 
                 }
                 break;
@@ -133,9 +139,9 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                     while (!recipients.isEmpty()) {
                         statusList.add(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response));
                     }
-                    ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
-
                     future.setDeliveryStatus(new DeliveryResultImpl(statusList));
+
+                    ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
 
                 }
                 break;
@@ -154,28 +160,29 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                     }
                     
                 }
-                
-                if (!supportsStartTLS && engine != null &&  dependOnStartTLS == true) {
-                    throw new SMTPUnsupportedExtensionException("Extension STARTTLS is not supported");
-                }
+
                
-                if (supportsStartTLS) {
-                    if (code < 400) {
+                if (code < 400) {
+                    if (supportsStartTLS) {
                         ctx.getChannel().write(SMTPRequestImpl.startTls());
-                        stateMachine.nextState(SMTPState.MAIL);
-                    } else {
-                        while (!recipients.isEmpty()) {
-                            statusList.add(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response));
-                        }
-                        ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
-
-                        future.setDeliveryStatus(new DeliveryResultImpl(statusList));
+                        stateMachine.nextState(SMTPState.MAIL); 
+                        break;
+                    } else if (!supportsStartTLS && engine != null &&  dependOnStartTLS == true) {
+                        throw new SMTPUnsupportedExtensionException("Extension STARTTLS is not supported");
                         
+                    } else {
+                        stateMachine.nextState(SMTPState.MAIL);
                     }
-                    break;
-
                 } else {
-                    stateMachine.nextState(SMTPState.MAIL);
+                    while (!recipients.isEmpty()) {
+                        statusList.add(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response));
+                    }
+
+                    future.setDeliveryStatus(new DeliveryResultImpl(statusList));
+                    
+                    ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
+
+                    break;
                 }
                 // if we not break yet we will fall back to MAIL
                 
@@ -196,10 +203,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                     
                 }
                 
-                // Check if we depend on pipelining 
-                if (!supportsPipelining && config.getPipeliningMode() == PipeliningMode.DEPEND) {
-                    throw new SMTPUnsupportedExtensionException("Extension PIPELINING is not supported");
-                }
+                
                 
                 String mail = mailFrom;
                
@@ -208,12 +212,17 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                     mail = "";
                 }
                 if (code < 400) {
-
+                    
+                    // Check if we depend on pipelining 
+                    if (!supportsPipelining && config.getPipeliningMode() == PipeliningMode.DEPEND) {
+                        throw new SMTPUnsupportedExtensionException("Extension PIPELINING is not supported");
+                    }
                     // Check if we need to add the SslHandler for STARTTLS
                     if (stateMachine.getLastState() == SMTPState.STARTTLS) {
                         SslHandler sslHandler =  new SslHandler(engine, false);
                         ctx.getChannel().getPipeline().addFirst("sslHandler", sslHandler);
                         sslHandler.handshake();
+
                     }
                     // We use a SMTPPipelinedRequest if the SMTPServer supports PIPELINING. This will allow the NETTY to get
                     // the MAX throughput as the encoder will write it out in one buffer if possible. This result in less system calls
@@ -235,9 +244,11 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                     while (!recipients.isEmpty()) {
                         statusList.add(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response));
                     }
-                    ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
 
                     future.setDeliveryStatus(new DeliveryResultImpl(statusList));
+                    
+                    ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
+
                 }
                 break;
             case RCPT:
@@ -247,9 +258,11 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                     while (!recipients.isEmpty()) {
                         statusList.add(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response));
                     }
-                    ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
 
                     future.setDeliveryStatus(new DeliveryResultImpl(statusList));
+                    
+                    ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
+
                     break;
                 }
                 
@@ -291,10 +304,12 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                     stateMachine.nextState(SMTPState.DATA_POST);
 
                 } else {
-                    ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
                     
                     // all recipients failed so we should now complete the future
                     future.setDeliveryStatus(new DeliveryResultImpl(statusList));
+                    
+                    ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
+
                 }
 
                 break;
@@ -307,14 +322,13 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                     while(status.hasNext()) {
                         ((DeliveryRecipientStatusImpl)status.next()).setResponse(response);
                     }
-                    ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
                     future.setDeliveryStatus(new DeliveryResultImpl(statusList));
+                    ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
 
                 }
                 break;
             case QUIT:
                 if (code < 400) {
-                    ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
                    
                     // Set the final status for successful recipients
                     Iterator<DeliveryRecipientStatus> status = statusList.iterator();
@@ -325,14 +339,18 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                         }
                     }
                     future.setDeliveryStatus(new DeliveryResultImpl(statusList));
+                    
+                    ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
+
 
                 } else {
                     Iterator<DeliveryRecipientStatus> status = statusList.iterator();
                     while(status.hasNext()) {
                         ((DeliveryRecipientStatusImpl)status.next()).setResponse(response);
                     }
-                    ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
                     future.setDeliveryStatus(new DeliveryResultImpl(statusList));
+
+                    ctx.getChannel().write(SMTPRequestImpl.quit()).addListener(ChannelFutureListener.CLOSE);
                 }
                 break;
             default:
@@ -362,7 +380,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
         if (logger.isDebugEnabled()) {
             logger.debug("Exception caught while handle SMTP/SMTPS", e.getCause());
         }
-        
+                
         if (!future.isDone()) {
             future.setDeliveryStatus(DeliveryResultImpl.create(e.getCause()));
         }

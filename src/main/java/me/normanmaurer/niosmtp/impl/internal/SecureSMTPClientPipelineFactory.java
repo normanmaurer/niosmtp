@@ -60,14 +60,14 @@ public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory{
 
         if (mode == DeliveryMode.SMTPS) {
             cp.addFirst("sslHandshakeHandler", SSL_HANDSHAKE_HANDLER);
-            SSLEngine engine = context.createSSLEngine();
-            engine.setUseClientMode(true);
-            final SslHandler sslHandler = new SslHandler(engine, false);
+
+            final SslHandler sslHandler = new SslHandler(createSSLClientEngine(), false);
             cp.addFirst("sslHandler", sslHandler);
         }
         return cp;
     }
     
+
     @Override
     protected SMTPClientHandler createSMTPClientHandler(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config) {
         if (mode == DeliveryMode.SMTPS) {
@@ -79,9 +79,16 @@ public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory{
             } else {
                 dependOnStartTLS = false;
             }
-            return new SMTPClientHandler(future, mailFrom, recipients, msg, config, dependOnStartTLS, context.createSSLEngine());
+            return new SMTPClientHandler(future, mailFrom, recipients, msg, config, dependOnStartTLS, createSSLClientEngine());
         }
     }
+    
+    private SSLEngine createSSLClientEngine() {
+        SSLEngine engine = context.createSSLEngine();
+        engine.setUseClientMode(true);
+        return engine;
+    }
+    
 
     /**
      * {@link SimpleChannelUpstreamHandler} which takes care to call {@link SslHandler#handshake()} after the channel is connected

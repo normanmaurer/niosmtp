@@ -40,7 +40,7 @@ public interface SMTPClientConstants {
     /**
      * 
      */
-    public final static String STARTTLS_EXTENSION = "STARTTLS_EXTENSION";
+    public final static String STARTTLS_EXTENSION = "STARTTLS";
 
     public static final String RECIPIENT_STATUS_LIST_KEY = "RECIPIENT_STATUS_LIST";
     public static final String SUPPORTS_PIPELINING_KEY = "SUPPORTS_PIPELINING";
