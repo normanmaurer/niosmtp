@@ -16,79 +16,58 @@
 */
 package me.normanmaurer.niosmtp.impl.internal;
 
-import java.io.FileInputStream;
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PushbackInputStream;
 
 
 /**
- * {@link FileInputStream} which takes care of correctly terminating the DATA command. This is done by append a CRLF.CRLF to wrapped
+ * {@link InputStream} which takes care of correctly terminating the DATA command. This is done by append a CRLF.CRLF to wrapped
  * {@link InputStream} if needed.
+ * 
+ * This {@link InputStream} also does the dot-stuffing as stated in the SMTP-spec
  * 
  * @author Norman Maurer
  *
  */
-public class DataTerminatingInputStream extends FilterInputStream {
+public class DataTerminatingInputStream extends InputStream {
 
     private int last;
     private byte[] extraData;
     private int pos = 0;
-    private boolean complete = false;
-
+    boolean startLine = true;
     private boolean endOfStream = false;
+    private PushbackInputStream in;
 
     public DataTerminatingInputStream(InputStream in) {
-        super(in);
+        this.in = new PushbackInputStream(in, 2);
+        startLine = true;
+
     }
+    
 
-    @Override
-    public int read(byte[] b, int off, int len) throws IOException {
-        if (endOfStream == false) {
 
-            int r = in.read(b, off, len);
-            if (r == -1) {
-                endOfStream = true;
-                calculateExtraData();
-
-                return fillArray(b, off, len);
-            } else {
-                last = b[off + r - 1];
-                return r;
-            }
-        } else {
-            return fillArray(b, off, len);
-        }
-    }
-
-    private int fillArray(byte[] b, int off, int len) {
-        int a = -1;
-        int i = 0;
-        if (complete) {
-            return -1;
-        }
-        while (i < len) {
-            a = readNext();
-            if (a == -1) {
-                complete = true;
-                break;
-            } else {
-                b[off + i++] = (byte) a;
-
-            }
-        }
-        return i;
-    }
-
-    @Override
-    public int read(byte[] b) throws IOException {
-        return read(b, 0, b.length);
-    }
+    
 
     @Override
     public int read() throws IOException {
+        
+        PushbackInputStream pin = (PushbackInputStream) in;
+        int i = pin.read();
+        if (startLine && endOfStream == false) {
+            startLine = false;
+            if (i == '.') {
+                pin.unread(i);
+                return '.';
+            }
+            
+        }
+       
+        if (last == '\r' && i == '\n') {
+            startLine = true;
+        }
+        
         if (endOfStream == false) {
-            int i = super.read();
             if (i == -1) {
                 endOfStream = true;
                 calculateExtraData();
@@ -101,6 +80,8 @@ public class DataTerminatingInputStream extends FilterInputStream {
         } else {
             return readNext();
         }
+                
+       
     }
 
     private void calculateExtraData() {
@@ -134,4 +115,48 @@ public class DataTerminatingInputStream extends FilterInputStream {
             return extraData[pos++];
         }
     }
+
+
+
+    @Override
+    public int available() throws IOException {
+        if (endOfStream) {
+            return extraData.length - pos;
+        } else {
+            return in.available();
+        }
+    }
+
+
+
+
+
+    @Override
+    public void close() throws IOException {
+        in.close();
+    }
+
+
+
+
+
+    @Override
+    public  void mark(int readlimit) {
+    }
+
+
+
+
+
+    @Override
+    public void reset() throws IOException {
+    }
+
+
+    @Override
+    public boolean markSupported() {
+        return false;
+    }
+    
+    
 }

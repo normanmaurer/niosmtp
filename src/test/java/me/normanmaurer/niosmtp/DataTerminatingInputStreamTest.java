@@ -79,4 +79,21 @@ public class DataTerminatingInputStreamTest {
         }
     }
 
+    
+    @Test
+    public void testCRLFPresentAndDotStuffingNeeded() throws IOException {
+        String msg = "Subject: test\r\n.\r\ntest\r\n";
+        String expected = "Subject: test\r\n..\r\ntest\r\n.\r\n";
+
+        DataTerminatingInputStream in = new DataTerminatingInputStream(new ByteArrayInputStream(msg.getBytes()));
+        try {
+            int i = -1;
+            int a = 0;
+            while ((i = in.read()) != -1) {
+                Assert.assertEquals(expected.charAt(a++), (char)i);
+            }
+        } finally {
+            in.close();
+        }
+    }
 }
