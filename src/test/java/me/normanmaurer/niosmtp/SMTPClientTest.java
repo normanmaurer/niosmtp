@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutionException;
 
 
 import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
+import me.normanmaurer.niosmtp.impl.SimpleMessageInput;
 import me.normanmaurer.niosmtp.impl.UnpooledSMTPClient;
 import me.normanmaurer.niosmtp.impl.internal.SMTPClientConfigImpl;
 
@@ -81,7 +82,7 @@ public class SMTPClientTest {
             SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
             conf.setConnectionTimeout(4);
             conf.setResponseTimeout(5);
-            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), "from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new ByteArrayInputStream("msg".getBytes()), conf);
+            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), "from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes())), conf);
             DeliveryResult dr = future.get();
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());
@@ -128,7 +129,7 @@ public class SMTPClientTest {
             SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
             conf.setConnectionTimeout(4);
             conf.setResponseTimeout(5);
-            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), "from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new ByteArrayInputStream("msg".getBytes()), conf);
+            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), "from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes())), conf);
             DeliveryResult dr = future.get();
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());
@@ -176,7 +177,7 @@ public class SMTPClientTest {
             conf.setConnectionTimeout(4);
             conf.setResponseTimeout(5);
             conf.setPipeliningMode(PipeliningMode.NO);;
-            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), "from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new ByteArrayInputStream("msg".getBytes()), conf);
+            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), "from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes())), conf);
             DeliveryResult dr = future.get();
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());
@@ -223,7 +224,7 @@ public class SMTPClientTest {
             SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
             conf.setConnectionTimeout(4);
             conf.setResponseTimeout(5);
-            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), "from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new ByteArrayInputStream("msg".getBytes()), conf);
+            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), "from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes())), conf);
             DeliveryResult dr = future.get();
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());
@@ -275,7 +276,7 @@ public class SMTPClientTest {
             SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
             conf.setConnectionTimeout(4);
             conf.setResponseTimeout(5);
-            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), "from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com", "to3@example.com"}), new ByteArrayInputStream("msg".getBytes()), conf);
+            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), "from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com", "to3@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes())), conf);
             DeliveryResult dr = future.get();
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());
@@ -310,7 +311,7 @@ public class SMTPClientTest {
         SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
         conf.setConnectionTimeout(4);
         conf.setResponseTimeout(5);
-        SMTPClientFuture future = c.deliver(new InetSocketAddress(11111), "from@example.com", Arrays.asList(new String[] { "to@example.com" }), new ByteArrayInputStream("msg".getBytes()), conf);
+        SMTPClientFuture future = c.deliver(new InetSocketAddress(11111), "from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes())), conf);
         try {
             DeliveryResult dr = future.get();
             assertFalse(dr.isSuccess());

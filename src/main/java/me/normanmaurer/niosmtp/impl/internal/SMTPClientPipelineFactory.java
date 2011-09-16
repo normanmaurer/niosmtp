@@ -16,10 +16,10 @@
 */
 package me.normanmaurer.niosmtp.impl.internal;
 
-import java.io.InputStream;
 import java.util.LinkedList;
 
 
+import me.normanmaurer.niosmtp.MessageInput;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 
 import org.jboss.netty.channel.ChannelPipeline;
@@ -48,11 +48,11 @@ public class SMTPClientPipelineFactory implements ChannelPipelineFactory{
     private final String mailFrom;
     private final LinkedList<String> recipients;
     private final SMTPClientConfig config;
-    private final InputStream msg;
+    private final MessageInput msg;
     private final SMTPClientFutureImpl future;
     private Timer timer;
     
-    public SMTPClientPipelineFactory(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config, Timer timer) {
+    public SMTPClientPipelineFactory(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, MessageInput msg, SMTPClientConfig config, Timer timer) {
         this.mailFrom = mailFrom;
         this.recipients = recipients;
         this.config = config;
@@ -79,7 +79,7 @@ public class SMTPClientPipelineFactory implements ChannelPipelineFactory{
         return pipeline;
     }
 
-    protected SMTPClientHandler createSMTPClientHandler(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config) {
+    protected SMTPClientHandler createSMTPClientHandler(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, MessageInput msg, SMTPClientConfig config) {
         return new SMTPClientHandler(future, mailFrom, recipients, msg, config);
     }
 }
