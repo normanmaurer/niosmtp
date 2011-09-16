@@ -25,6 +25,7 @@ import java.util.concurrent.Executors;
 
 import javax.net.ssl.SSLContext;
 
+import me.normanmaurer.niosmtp.MessageInput;
 import me.normanmaurer.niosmtp.SMTPClient;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPClientFuture;
@@ -122,7 +123,7 @@ public class UnpooledSMTPClient implements SMTPClient, SMTPClientConstants {
      * (non-Javadoc)
      * @see me.normanmaurer.niosmtp.SMTPClient#deliver(java.net.InetSocketAddress, java.lang.String, java.util.Collection, java.io.InputStream, me.normanmaurer.niosmtp.SMTPClientConfig)
      */
-    public SMTPClientFuture deliver(InetSocketAddress host, final String mailFrom, final Collection<String> recipients, final InputStream msg, final SMTPClientConfig config) {
+    public SMTPClientFuture deliver(InetSocketAddress host, final String mailFrom, final Collection<String> recipients, final MessageInput msg, final SMTPClientConfig config) {
         if (recipients == null || recipients.isEmpty()) {
             throw new IllegalArgumentException("At least one recipient must be given");
         }

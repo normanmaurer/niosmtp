@@ -30,6 +30,7 @@ import javax.net.ssl.SSLEngine;
 
 import me.normanmaurer.niosmtp.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.DeliveryRecipientStatus.Status;
+import me.normanmaurer.niosmtp.MessageInput;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.SMTPState;
@@ -66,7 +67,7 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
     private final String mailFrom;
     private final LinkedList<String> recipients;
     private final SMTPClientConfig config;
-    private final InputStream msg;
+    private final MessageInput msg;
     private final SMTPClientFutureImpl future;
     private final SMTPStateMachine stateMachine = new SMTPStateMachine();
     
@@ -74,11 +75,11 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
     private final boolean dependOnStartTLS;;
 
 
-    public SMTPClientHandler(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config) {
+    public SMTPClientHandler(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, MessageInput msg, SMTPClientConfig config) {
         this(future, mailFrom, recipients, msg, config, false, null);
     }
     
-    public SMTPClientHandler(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config, boolean dependOnStartTLS, SSLEngine engine) {
+    public SMTPClientHandler(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, MessageInput msg, SMTPClientConfig config, boolean dependOnStartTLS, SSLEngine engine) {
         this.mailFrom = mailFrom;
         this.recipients = recipients;
         this.config = config;
@@ -157,6 +158,10 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                     if (extensions.contains(STARTTLS_EXTENSION)) {
                         states.put(STARTTLS_EXTENSION, true);
                         supportsStartTLS = true;
+                    }
+                    
+                    if (extensions.contains(_8BITMIME_EXTENSION)) {
+                        states.put(SUPPORTS_8BITMIME_KEY, true);
                     }
                     
                 }
@@ -315,7 +320,13 @@ public class SMTPClientHandler extends SimpleChannelUpstreamHandler implements S
                 break;
             case DATA_POST:
                 if (code < 400) {
-                    ctx.getChannel().write(new ChunkedStream(new DataTerminatingInputStream(msg)));
+                    InputStream msgIn;
+                    if (states.containsKey(SUPPORTS_8BITMIME_KEY)) {
+                        msgIn = msg.get8Bit();
+                    } else {
+                        msgIn = msg.get7bit();
+                    }
+                    ctx.getChannel().write(new ChunkedStream(new DataTerminatingInputStream(msgIn)));
                     stateMachine.nextState(SMTPState.QUIT);
                 } else {
                     Iterator<DeliveryRecipientStatus> status = statusList.iterator();

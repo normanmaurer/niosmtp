@@ -41,6 +41,9 @@ public interface SMTPClientConstants {
      * 
      */
     public final static String STARTTLS_EXTENSION = "STARTTLS";
+    
+    public final static String _8BITMIME_EXTENSION = "8BITMIME";
+    public final static String SUPPORTS_8BITMIME_KEY = "SUPPORTS_8BITMIME";
 
     public static final String RECIPIENT_STATUS_LIST_KEY = "RECIPIENT_STATUS_LIST";
     public static final String SUPPORTS_PIPELINING_KEY = "SUPPORTS_PIPELINING";

@@ -16,12 +16,12 @@
 */
 package me.normanmaurer.niosmtp.impl.internal;
 
-import java.io.InputStream;
 import java.util.LinkedList;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
+import me.normanmaurer.niosmtp.MessageInput;
 import me.normanmaurer.niosmtp.SMTPClient.DeliveryMode;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 
@@ -47,7 +47,7 @@ public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory{
     private final SSLContext context;
     private final DeliveryMode mode;
 
-    public SecureSMTPClientPipelineFactory(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config, Timer timer, DeliveryMode mode, SSLContext context) {
+    public SecureSMTPClientPipelineFactory(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, MessageInput msg, SMTPClientConfig config, Timer timer, DeliveryMode mode, SSLContext context) {
         super(future, mailFrom, recipients, msg, config, timer);
         this.context = context;
         this.mode = mode;
@@ -69,7 +69,7 @@ public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory{
     
 
     @Override
-    protected SMTPClientHandler createSMTPClientHandler(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, InputStream msg, SMTPClientConfig config) {
+    protected SMTPClientHandler createSMTPClientHandler(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, MessageInput msg, SMTPClientConfig config) {
         if (mode == DeliveryMode.SMTPS) {
             return super.createSMTPClientHandler(future, mailFrom, recipients, msg, config);
         } else {
