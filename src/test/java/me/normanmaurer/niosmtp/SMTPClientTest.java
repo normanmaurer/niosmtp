@@ -19,32 +19,38 @@ package me.normanmaurer.niosmtp;
 import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 
 
+import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.impl.UnpooledSMTPClient;
 import me.normanmaurer.niosmtp.impl.internal.SMTPClientConfigImpl;
 
+import org.apache.james.protocols.api.WiringException;
+import org.apache.james.protocols.smtp.MailEnvelope;
+import org.apache.james.protocols.smtp.SMTPConfigurationImpl;
+import org.apache.james.protocols.smtp.SMTPProtocolHandlerChain;
+import org.apache.james.protocols.smtp.SMTPSession;
+import org.apache.james.protocols.smtp.hook.Hook;
+import org.apache.james.protocols.smtp.hook.HookResult;
+import org.apache.james.protocols.smtp.hook.HookReturnCode;
+import org.apache.james.protocols.smtp.hook.SimpleHook;
+import org.apache.james.protocols.smtp.netty.SMTPServer;
+import org.apache.mailet.MailAddress;
 import org.junit.Test;
-import org.subethamail.smtp.MessageContext;
-import org.subethamail.smtp.MessageHandler;
-import org.subethamail.smtp.MessageHandlerFactory;
-import org.subethamail.smtp.RejectException;
-import org.subethamail.smtp.TooMuchDataException;
-import org.subethamail.smtp.command.EhloCommand;
-import org.subethamail.smtp.server.SMTPServer;
-import org.subethamail.smtp.server.Session;
+
 
 public class SMTPClientTest {
     
 
-    protected SMTPServer create(MessageHandlerFactory factory) {
-        return new SMTPServer(factory);
+    protected SMTPServer create(Hook hook) throws WiringException {
+        SMTPConfigurationImpl config = new SMTPConfigurationImpl();
+        SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain();
+        chain.addHook(hook);
+        return new SMTPServer(config, chain);
         
     }
     
@@ -53,20 +59,20 @@ public class SMTPClientTest {
     }
     
     @Test
-    public void testRejectMailFrom() throws InterruptedException, ExecutionException {
+    public void testRejectMailFrom() throws Exception {
         int port = 6028;
 
-        SMTPServer smtpServer = create(new TestHandlerFactory() {
+        SMTPServer smtpServer = create(new SimpleHook() {
 
             @Override
-            public void from(String sender) throws RejectException {
-                throw new RejectException("Sender " + sender + " rejected");
+            public HookResult doMail(SMTPSession session, MailAddress sender) {
+                return new HookResult(HookReturnCode.DENY);
             }
             
         });
-        smtpServer.setPort(port);
+        smtpServer.setListenAddresses(Arrays.asList(new InetSocketAddress(port)));
 
-        smtpServer.start();
+        smtpServer.bind();
 
        
         UnpooledSMTPClient c = createSMTPClient();
@@ -90,7 +96,7 @@ public class SMTPClientTest {
             
             assertFalse(it.hasNext());
         } finally {
-            smtpServer.stop();
+            smtpServer.unbind();
             c.destroy();
         }
         
@@ -98,27 +104,22 @@ public class SMTPClientTest {
 
 
     @Test
-    public void testRejectHelo() throws InterruptedException, ExecutionException {
+    public void testRejectHelo() throws Exception{
         int port = 6028;
 
-        SMTPServer smtpServer = create(new TestHandlerFactory());
-        
-        // Reject on EHLO
-        smtpServer.getCommandHandler().addCommand(new EhloCommand() {
+        SMTPServer smtpServer = create(new SimpleHook() {
 
             @Override
-            public void execute(String commandString, Session sess) throws IOException {
-                String[] args = this.getArgs(commandString);
-
-                sess.setHelo(args[1]);
-                sess.sendResponse("554 " + sess.getServer().getHostName() + " rejected");
-
+            public HookResult doHelo(SMTPSession session, String helo) {
+                return new HookResult(HookReturnCode.DENY);
             }
+
             
         });
-        smtpServer.setPort(port);
+        smtpServer.setListenAddresses(Arrays.asList(new InetSocketAddress(port)));
 
-        smtpServer.start();
+        smtpServer.bind();
+
 
        
         UnpooledSMTPClient c = createSMTPClient();
@@ -142,28 +143,78 @@ public class SMTPClientTest {
             
             assertFalse(it.hasNext());
         } finally {
-            smtpServer.stop();
+            smtpServer.unbind();
             c.destroy();
         }
         
     }
     @Test
-    public void testRejectAllRecipients() throws InterruptedException, ExecutionException {
+    public void testRejectAllRecipients() throws Exception {
         int port = 6028;
 
-        SMTPServer smtpServer = create(new TestHandlerFactory() {
+
+        SMTPServer smtpServer = create(new SimpleHook() {
 
             @Override
-            public void recipient(String rcpt) throws RejectException {
-                throw new RejectException();
+            public HookResult doRcpt(SMTPSession session, MailAddress sender, MailAddress rcpt) {
+                return new HookResult(HookReturnCode.DENY);
+            }
+            
+            
+        });
+        smtpServer.setListenAddresses(Arrays.asList(new InetSocketAddress(port)));
+
+        smtpServer.bind();
+
+
+
+       
+        UnpooledSMTPClient c = createSMTPClient();
+
+        try {
+            SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
+            conf.setConnectionTimeout(4);
+            conf.setResponseTimeout(5);
+            conf.setPipeliningMode(PipeliningMode.NO);;
+            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), "from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new ByteArrayInputStream("msg".getBytes()), conf);
+            DeliveryResult dr = future.get();
+            assertTrue(dr.isSuccess());
+            assertNull(dr.getException());
+            Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
+            DeliveryRecipientStatus status = it.next();
+            assertEquals(DeliveryRecipientStatus.Status.PermanentError, status.getStatus());
+            assertEquals(554, status.getResponse().getCode());
+
+            status = it.next();
+            assertEquals(DeliveryRecipientStatus.Status.PermanentError, status.getStatus());
+            assertEquals(554, status.getResponse().getCode());
+            
+            assertFalse(it.hasNext());
+        } finally {
+            smtpServer.unbind();
+            c.destroy();
+        }
+        
+    }
+    
+    
+    @Test
+    public void testRejectData() throws Exception {
+        int port = 6028;
+
+        SMTPServer smtpServer = create(new SimpleHook() {
+
+            @Override
+            public HookResult onMessage(SMTPSession session, MailEnvelope mail) {
+                return new HookResult(HookReturnCode.DENY);
             }
 
 
-            
         });
-        smtpServer.setPort(port);
+        smtpServer.setListenAddresses(Arrays.asList(new InetSocketAddress(port)));
 
-        smtpServer.start();
+        smtpServer.bind();
+
 
        
         UnpooledSMTPClient c = createSMTPClient();
@@ -187,54 +238,7 @@ public class SMTPClientTest {
             
             assertFalse(it.hasNext());
         } finally {
-            smtpServer.stop();
-            c.destroy();
-        }
-        
-    }
-    
-    
-    @Test
-    public void testRejectData() throws InterruptedException, ExecutionException {
-        int port = 6028;
-
-        SMTPServer smtpServer = create(new TestHandlerFactory() {
-
-            @Override
-            public void data(InputStream arg0) throws RejectException, TooMuchDataException, IOException {
-                throw new RejectException();
-            }
-
-
-            
-        });
-        smtpServer.setPort(port);
-
-        smtpServer.start();
-
-       
-        UnpooledSMTPClient c = createSMTPClient();
-
-        try {
-            SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
-            conf.setConnectionTimeout(4);
-            conf.setResponseTimeout(5);
-            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), "from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new ByteArrayInputStream("msg".getBytes()), conf);
-            DeliveryResult dr = future.get();
-            assertTrue(dr.isSuccess());
-            assertNull(dr.getException());
-            Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
-            DeliveryRecipientStatus status = it.next();
-            assertEquals(DeliveryRecipientStatus.Status.PermanentError, status.getStatus());
-            assertEquals(554, status.getResponse().getCode());
-
-            status = it.next();
-            assertEquals(DeliveryRecipientStatus.Status.PermanentError, status.getStatus());
-            assertEquals(554, status.getResponse().getCode());
-            
-            assertFalse(it.hasNext());
-        } finally {
-            smtpServer.stop();
+            smtpServer.unbind();
             c.destroy();
         }
         
@@ -243,24 +247,26 @@ public class SMTPClientTest {
     
     
     @Test
-    public void testRejectOneRecipient() throws InterruptedException, ExecutionException {
+    public void testRejectOneRecipient() throws Exception {
         int port = 6028;
 
-        SMTPServer smtpServer = create(new TestHandlerFactory() {
+
+        SMTPServer smtpServer = create(new SimpleHook() {
 
             @Override
-            public void recipient(String rcpt) throws RejectException {
-                if (rcpt.equals("to2@example.com"))  {
-                    throw new RejectException();
+            public HookResult doRcpt(SMTPSession session, MailAddress sender, MailAddress rcpt) {
+                if (rcpt.toString().equals("to2@example.com"))  {
+                    return new HookResult(HookReturnCode.DENY);
+                } else {
+                    return super.doRcpt(session, sender, rcpt);
                 }
             }
 
-
-            
         });
-        smtpServer.setPort(port);
+        smtpServer.setListenAddresses(Arrays.asList(new InetSocketAddress(port)));
 
-        smtpServer.start();
+        smtpServer.bind();
+
 
        
         UnpooledSMTPClient c = createSMTPClient();
@@ -291,7 +297,7 @@ public class SMTPClientTest {
             
             assertFalse(it.hasNext());
         } finally {
-            smtpServer.stop();
+            smtpServer.unbind();
             c.destroy();
         }
         
@@ -315,36 +321,6 @@ public class SMTPClientTest {
         }
     }
     
-    protected class TestHandlerFactory implements MessageHandlerFactory, MessageHandler {
-
-        public TestHandlerFactory() {
-            
-        }
-        @Override
-        public void data(InputStream arg0) throws RejectException, TooMuchDataException, IOException {
-            
-        }
-
-        @Override
-        public void done() {
-            
-        }
-
-        @Override
-        public void from(String arg0) throws RejectException {
-            
-        }
-
-        @Override
-        public void recipient(String arg0) throws RejectException {
-            
-        }
-
-        @Override
-        public MessageHandler create(MessageContext arg0) {
-            return this;
-        }
-        
-    }
+   
 
 }

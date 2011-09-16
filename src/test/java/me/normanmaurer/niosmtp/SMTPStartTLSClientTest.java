@@ -17,43 +17,26 @@
 package me.normanmaurer.niosmtp;
 
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
+import org.apache.james.protocols.api.WiringException;
+import org.apache.james.protocols.smtp.SMTPConfigurationImpl;
+import org.apache.james.protocols.smtp.SMTPProtocolHandlerChain;
+import org.apache.james.protocols.smtp.hook.Hook;
+import org.apache.james.protocols.smtp.netty.SMTPServer;
 
 import me.normanmaurer.niosmtp.impl.UnpooledSMTPClient;
 
-import org.subethamail.smtp.MessageHandlerFactory;
-import org.subethamail.smtp.server.SMTPServer;
 
 public class SMTPStartTLSClientTest extends SMTPClientTest{
 
 
     @Override
-    protected SMTPServer create(MessageHandlerFactory factory) {
-        
-        SMTPServer smtpserver = new SMTPServer(factory) {
-
-            @Override
-            public SSLSocket createSSLSocket(Socket socket) throws IOException {
-                SSLSocketFactory sf = BogusSslContextFactory.getServerContext().getSocketFactory();
-                InetSocketAddress remoteAddress =
-                        (InetSocketAddress) socket.getRemoteSocketAddress();
-                
-                SSLSocket s = (SSLSocket) (sf.createSocket(
-                        socket, remoteAddress.getHostName(), socket.getPort(), true));
-                s.setUseClientMode(false);
-                return s;
-            }
-            
-        };
-        smtpserver.setEnableTLS(true);
-        return smtpserver;
+    protected SMTPServer create(Hook hook) throws WiringException {
+        SMTPConfigurationImpl config = new SMTPConfigurationImpl();
+        SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain();
+        chain.addHook(hook);
+        return new SMTPServer(config, chain, BogusSslContextFactory.getServerContext(), true);
     }
-
 
     @Override
     protected UnpooledSMTPClient createSMTPClient() {

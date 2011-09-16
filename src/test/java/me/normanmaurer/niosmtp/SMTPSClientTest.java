@@ -16,37 +16,26 @@
 */
 package me.normanmaurer.niosmtp;
 
-import java.io.IOException;
-import java.net.ServerSocket;
-
-import javax.net.ssl.SSLServerSocket;
 
 import me.normanmaurer.niosmtp.impl.UnpooledSMTPClient;
 
-import org.subethamail.smtp.MessageHandlerFactory;
-import org.subethamail.smtp.server.SMTPServer;
+import org.apache.james.protocols.api.WiringException;
+import org.apache.james.protocols.smtp.SMTPConfigurationImpl;
+import org.apache.james.protocols.smtp.SMTPProtocolHandlerChain;
+import org.apache.james.protocols.smtp.hook.Hook;
+import org.apache.james.protocols.smtp.netty.SMTPServer;
 
 public class SMTPSClientTest extends SMTPClientTest{
 
+   
+
     @Override
-    protected SMTPServer create(MessageHandlerFactory factory) {
-        
-        // Create a SMTPServer instance which server SMTPS requests
-        return new SMTPServer(factory) {
-
-            @Override
-            protected ServerSocket createServerSocket() throws IOException {
-
-
-                SSLServerSocket s = (SSLServerSocket) BogusSslContextFactory.getServerContext().getServerSocketFactory().createServerSocket(getPort(), getBacklog());
-                s.setUseClientMode(false);
-                s.setReuseAddress(true);
-                return s;
-            }
-            
-        };
+    protected SMTPServer create(Hook hook) throws WiringException {
+        SMTPConfigurationImpl config = new SMTPConfigurationImpl();
+        SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain();
+        chain.addHook(hook);
+        return new SMTPServer(config, chain, BogusSslContextFactory.getServerContext(), false);
     }
-
 
     @Override
     protected UnpooledSMTPClient createSMTPClient() {

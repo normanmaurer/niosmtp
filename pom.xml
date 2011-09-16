@@ -354,15 +354,15 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.subethamail</groupId>
-      <artifactId>subethasmtp</artifactId>
-      <version>3.1.6</version>
+      <groupId>org.apache.james.protocols</groupId>
+      <artifactId>protocols-smtp-netty</artifactId>
+      <version>1.6-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-simple</artifactId>
-        <version>1.5.6</version>
+        <version>1.6.1</version>
         <scope>test</scope>
     </dependency>
     <dependency>
