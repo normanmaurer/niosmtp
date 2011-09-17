@@ -366,7 +366,13 @@
     </dependency>
     <dependency>
       <groupId>org.apache.james.protocols</groupId>
-      <artifactId>protocols-smtp-netty</artifactId>
+      <artifactId>protocols-impl</artifactId>
+      <version>1.6-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.james.protocols</groupId>
+      <artifactId>protocols-smtp</artifactId>
       <version>1.6-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>

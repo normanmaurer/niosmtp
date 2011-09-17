@@ -20,21 +20,23 @@ package me.normanmaurer.niosmtp;
 import me.normanmaurer.niosmtp.impl.UnpooledSMTPClient;
 
 import org.apache.james.protocols.api.WiringException;
+import org.apache.james.protocols.impl.NettyServer;
 import org.apache.james.protocols.smtp.SMTPConfigurationImpl;
+import org.apache.james.protocols.smtp.SMTPProtocol;
 import org.apache.james.protocols.smtp.SMTPProtocolHandlerChain;
 import org.apache.james.protocols.smtp.hook.Hook;
-import org.apache.james.protocols.smtp.netty.SMTPServer;
 
 public class SMTPSClientTest extends SMTPClientTest{
 
    
 
     @Override
-    protected SMTPServer create(Hook hook) throws WiringException {
+    protected NettyServer create(Hook hook) throws WiringException {
         SMTPConfigurationImpl config = new SMTPConfigurationImpl();
         SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain();
         chain.addHook(hook);
-        return new SMTPServer(config, chain, BogusSslContextFactory.getServerContext(), false);
+        return new NettyServer(new SMTPProtocol(chain, config),BogusSslContextFactory.getServerContext());
+
     }
 
     @Override
