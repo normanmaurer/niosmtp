@@ -31,15 +31,16 @@ import me.normanmaurer.niosmtp.impl.UnpooledSMTPClient;
 import me.normanmaurer.niosmtp.impl.internal.SMTPClientConfigImpl;
 
 import org.apache.james.protocols.api.WiringException;
+import org.apache.james.protocols.impl.NettyServer;
 import org.apache.james.protocols.smtp.MailEnvelope;
 import org.apache.james.protocols.smtp.SMTPConfigurationImpl;
+import org.apache.james.protocols.smtp.SMTPProtocol;
 import org.apache.james.protocols.smtp.SMTPProtocolHandlerChain;
 import org.apache.james.protocols.smtp.SMTPSession;
 import org.apache.james.protocols.smtp.hook.Hook;
 import org.apache.james.protocols.smtp.hook.HookResult;
 import org.apache.james.protocols.smtp.hook.HookReturnCode;
 import org.apache.james.protocols.smtp.hook.SimpleHook;
-import org.apache.james.protocols.smtp.netty.SMTPServer;
 import org.apache.mailet.MailAddress;
 import org.junit.Test;
 
@@ -47,11 +48,11 @@ import org.junit.Test;
 public class SMTPClientTest {
     
 
-    protected SMTPServer create(Hook hook) throws WiringException {
+    protected NettyServer create(Hook hook) throws WiringException {
         SMTPConfigurationImpl config = new SMTPConfigurationImpl();
         SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain();
         chain.addHook(hook);
-        return new SMTPServer(config, chain);
+        return new NettyServer(new SMTPProtocol(chain, config));
         
     }
     
@@ -63,7 +64,7 @@ public class SMTPClientTest {
     public void testRejectMailFrom() throws Exception {
         int port = 6028;
 
-        SMTPServer smtpServer = create(new SimpleHook() {
+        NettyServer smtpServer = create(new SimpleHook() {
 
             @Override
             public HookResult doMail(SMTPSession session, MailAddress sender) {
@@ -108,7 +109,7 @@ public class SMTPClientTest {
     public void testRejectHelo() throws Exception{
         int port = 6028;
 
-        SMTPServer smtpServer = create(new SimpleHook() {
+        NettyServer smtpServer = create(new SimpleHook() {
 
             @Override
             public HookResult doHelo(SMTPSession session, String helo) {
@@ -154,7 +155,7 @@ public class SMTPClientTest {
         int port = 6028;
 
 
-        SMTPServer smtpServer = create(new SimpleHook() {
+        NettyServer smtpServer = create(new SimpleHook() {
 
             @Override
             public HookResult doRcpt(SMTPSession session, MailAddress sender, MailAddress rcpt) {
@@ -203,7 +204,7 @@ public class SMTPClientTest {
     public void testRejectData() throws Exception {
         int port = 6028;
 
-        SMTPServer smtpServer = create(new SimpleHook() {
+        NettyServer smtpServer = create(new SimpleHook() {
 
             @Override
             public HookResult onMessage(SMTPSession session, MailEnvelope mail) {
@@ -252,7 +253,7 @@ public class SMTPClientTest {
         int port = 6028;
 
 
-        SMTPServer smtpServer = create(new SimpleHook() {
+        NettyServer smtpServer = create(new SimpleHook() {
 
             @Override
             public HookResult doRcpt(SMTPSession session, MailAddress sender, MailAddress rcpt) {

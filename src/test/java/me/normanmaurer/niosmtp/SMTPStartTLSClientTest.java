@@ -19,10 +19,11 @@ package me.normanmaurer.niosmtp;
 
 
 import org.apache.james.protocols.api.WiringException;
+import org.apache.james.protocols.impl.NettyServer;
 import org.apache.james.protocols.smtp.SMTPConfigurationImpl;
+import org.apache.james.protocols.smtp.SMTPProtocol;
 import org.apache.james.protocols.smtp.SMTPProtocolHandlerChain;
 import org.apache.james.protocols.smtp.hook.Hook;
-import org.apache.james.protocols.smtp.netty.SMTPServer;
 
 import me.normanmaurer.niosmtp.impl.UnpooledSMTPClient;
 
@@ -31,11 +32,18 @@ public class SMTPStartTLSClientTest extends SMTPClientTest{
 
 
     @Override
-    protected SMTPServer create(Hook hook) throws WiringException {
-        SMTPConfigurationImpl config = new SMTPConfigurationImpl();
+    protected NettyServer create(Hook hook) throws WiringException {
+        SMTPConfigurationImpl config = new SMTPConfigurationImpl() {
+
+            @Override
+            public boolean isStartTLSSupported() {
+                return true;
+            }
+            
+        };
         SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain();
         chain.addHook(hook);
-        return new SMTPServer(config, chain, BogusSslContextFactory.getServerContext(), true);
+        return new NettyServer(new SMTPProtocol(chain, config), BogusSslContextFactory.getServerContext());
     }
 
     @Override
