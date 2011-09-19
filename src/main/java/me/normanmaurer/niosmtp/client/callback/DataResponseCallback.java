@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import me.normanmaurer.niosmtp.MessageInput;
+import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus;
@@ -29,6 +30,15 @@ import me.normanmaurer.niosmtp.client.SMTPClientFuture;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
+/**
+ * {@link AbstractResponseCallback} implementation which will handle the <code>DATA</code> {@link SMTPResponse}
+ * 
+ * It will write the next {@link SMTPRequest} to the {@link SMTPClientSession} with the right {@link SMTPResponseCallback} added.
+ * 
+ * 
+ * @author Norman Maurer
+ *
+ */
 public class DataResponseCallback extends AbstractResponseCallback {
     private List<DeliveryRecipientStatus> statusList;
     private MessageInput msg;
