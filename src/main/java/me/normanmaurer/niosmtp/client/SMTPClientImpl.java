@@ -50,6 +50,7 @@ import me.normanmaurer.niosmtp.transport.impl.internal.NettySMTPClientFuture;
  * 
  */
 public class SMTPClientImpl implements SMTPClientConstants,SMTPClient {
+    private final static String PIPELINING_ACTIVE_KEY = "PIPELINING_ACTIVE";
 
     private SMTPClientTransport transport;
 
@@ -190,10 +191,10 @@ public class SMTPClientImpl implements SMTPClientConstants,SMTPClient {
                     session.send(SMTPRequestImpl.mail(mailFrom), new MailResponseCallback(future, statusList, recipients, msg, config));
                     for (int i = 0; i < recipients.size(); i++) {
                         String rcpt = recipients.get(i);                      
-                        session.send(SMTPRequestImpl.rcpt(rcpt), new PipeliningSMTPResponseCallback(future, new RcptResponseCallback(future, statusList, recipients, msg, rcpt, config)));
+                        session.send(SMTPRequestImpl.rcpt(rcpt), new RcptResponseCallback(future, statusList, recipients, msg, rcpt, config));
 
                     }
-                    session.send(SMTPRequestImpl.data(), new PipeliningSMTPResponseCallback(future,new DataResponseCallback(future, statusList, msg)));
+                    session.send(SMTPRequestImpl.data(), new DataResponseCallback(future, statusList, msg));
                 } else {
                     session.send(SMTPRequestImpl.mail(mailFrom), new MailResponseCallback(future, statusList, recipients, msg, config));
                 }
@@ -396,31 +397,6 @@ public class SMTPClientImpl implements SMTPClientConstants,SMTPClient {
         
     }
     
-    protected class PipeliningSMTPResponseCallback implements SMTPResponseCallback {
-
-        private SMTPClientFuture future;
-        private SMTPResponseCallback callback;
-
-        public PipeliningSMTPResponseCallback(SMTPClientFuture future, SMTPResponseCallback callback) {
-            this.future = future;
-            this.callback = callback;
-        }
-        @Override
-        public void onResponse(SMTPClientSession session, SMTPResponse response) {
-            if (!future.isDone()) {
-                callback.onResponse(session, response);
-            }
-            
-        }
-
-        @Override
-        public void onException(SMTPClientSession session, Throwable t) {
-            if(!future.isDone()) {
-                callback.onException(session, t);
-            }
-        }
-        
-    }
     /**
      * Abstract base implementation of {@link SMTPResponseCallback} which comple the {@link SMTPClientFuture} on an {@link Exception}
      * 

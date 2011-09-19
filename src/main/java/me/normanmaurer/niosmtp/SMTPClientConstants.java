@@ -53,8 +53,5 @@ public interface SMTPClientConstants {
     public final static String _8BITMIME_EXTENSION = "8BITMIME";
     
     
-    public final static String CURRENT_RECIPIENT_INDEX_KEY = "CURRENT_RECIPIENT_INDEX_KEY";
-
-    public final static String PIPELINING_ACTIVE_KEY = "PIPELINING_ACTIVE";
 
 }

@@ -89,7 +89,7 @@ public class NettySMTPClientSession implements SMTPClientSession, SMTPClientCons
     
     @Override
     public void send(SMTPRequest request, SMTPResponseCallback callback) {
-        channel.getPipeline().addAfter("decoder", "callback" + callbackCount++, new SMTPCallbackHandlerAdapter(this, callback));
+        channel.getPipeline().addBefore("idleHandler", "callback" + callbackCount++, new SMTPCallbackHandlerAdapter(this, callback));
         channel.write(request);
     }
     
@@ -100,7 +100,7 @@ public class NettySMTPClientSession implements SMTPClientSession, SMTPClientCons
     public void send(MessageInput msg, SMTPResponseCallback callback) {
         ChannelPipeline cp = channel.getPipeline();
         
-        channel.getPipeline().addAfter("decoder", "callback" + callbackCount++, new SMTPCallbackHandlerAdapter(this,callback));
+        channel.getPipeline().addBefore("idleHandler", "callback" + callbackCount++, new SMTPCallbackHandlerAdapter(this,callback));
         if (cp.get(MessageInputEncoder.class) == null) {
             channel.getPipeline().addAfter("chunk", "messageDataEncoder", new MessageInputEncoder(this));
         }
