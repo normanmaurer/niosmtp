@@ -22,6 +22,7 @@ import java.util.List;
 
 import me.normanmaurer.niosmtp.MessageInput;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
+import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus;
@@ -31,6 +32,17 @@ import me.normanmaurer.niosmtp.client.SMTPClientFuture;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
+
+/**
+ * {@link AbstractResponseCallback} implementation which will handle the <code>WELCOME</code> {@link SMTPResponse} which is triggered
+ * after the connection is established to the SMTP Server
+ * 
+ * It will write the next {@link SMTPRequest} to the {@link SMTPClientSession} with the right {@link SMTPResponseCallback} added.
+ * 
+ * 
+ * @author Norman Maurer
+ *
+ */
 public class WelcomeResponseCallback extends AbstractResponseCallback {
 
     private SMTPClientConfig config;

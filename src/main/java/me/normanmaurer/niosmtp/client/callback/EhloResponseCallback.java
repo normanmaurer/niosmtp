@@ -25,6 +25,7 @@ import java.util.Set;
 import me.normanmaurer.niosmtp.MessageInput;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPClientConstants;
+import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.SMTPUnsupportedExtensionException;
@@ -36,6 +37,16 @@ import me.normanmaurer.niosmtp.client.SMTPClientFuture;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
+/**
+ * {@link AbstractResponseCallback} implementation which will handle the <code>EHLO</code> {@link SMTPResponse}
+ * 
+ * It will write the next {@link SMTPRequest} to the {@link SMTPClientSession} with the right {@link SMTPResponseCallback} added.
+ * 
+ * This implementation also handles the <code>PIPELINING</code> extension
+ * 
+ * @author Norman Maurer
+ *
+ */
 public class EhloResponseCallback extends AbstractResponseCallback implements ResponseCallbackConstants, SMTPClientConstants{
     private SMTPClientConfig config;
     private LinkedList<String> recipients;
@@ -126,6 +137,13 @@ public class EhloResponseCallback extends AbstractResponseCallback implements Re
     }
     
     
+    
+    /**
+     * Return all supported extensions which are included in the {@link SMTPResponse}
+     * 
+     * @param response
+     * @return extensions
+     */
     private Set<String> getSupportedExtensions(SMTPResponse response) {
         Set<String> extensions = new HashSet<String>();
         Iterator<String> lines = response.getLines().iterator();
