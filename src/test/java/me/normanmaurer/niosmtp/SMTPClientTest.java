@@ -28,7 +28,7 @@ import java.util.concurrent.ExecutionException;
 import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.client.DeliveryResult;
-import me.normanmaurer.niosmtp.client.SMTPClient;
+import me.normanmaurer.niosmtp.client.SMTPClientImpl;
 import me.normanmaurer.niosmtp.client.SMTPClientFuture;
 import me.normanmaurer.niosmtp.core.SMTPClientConfigImpl;
 import me.normanmaurer.niosmtp.core.SimpleMessageInput;
@@ -82,7 +82,7 @@ public class SMTPClientTest {
 
        
         NettySMTPClientTransport transport = createSMTPClient();
-        SMTPClient c = new SMTPClient(transport);
+        SMTPClientImpl c = new SMTPClientImpl(transport);
 
         try {
             SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
@@ -131,7 +131,7 @@ public class SMTPClientTest {
        
         
         NettySMTPClientTransport transport = createSMTPClient();
-        SMTPClient c = new SMTPClient(transport);
+        SMTPClientImpl c = new SMTPClientImpl(transport);
 
 
         try {
@@ -181,7 +181,7 @@ public class SMTPClientTest {
        
         
         NettySMTPClientTransport transport = createSMTPClient();
-        SMTPClient c = new SMTPClient(transport);
+        SMTPClientImpl c = new SMTPClientImpl(transport);
 
         try {
             SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
@@ -231,7 +231,7 @@ public class SMTPClientTest {
        
         
         NettySMTPClientTransport transport = createSMTPClient();
-        SMTPClient c = new SMTPClient(transport);
+        SMTPClientImpl c = new SMTPClientImpl(transport);
 
         try {
             SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
@@ -285,7 +285,7 @@ public class SMTPClientTest {
        
         
         NettySMTPClientTransport transport = createSMTPClient();
-        SMTPClient c = new SMTPClient(transport);
+        SMTPClientImpl c = new SMTPClientImpl(transport);
 
         try {
             SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
@@ -324,7 +324,7 @@ public class SMTPClientTest {
     public void testConnectionRefused() throws InterruptedException, ExecutionException {
         
         NettySMTPClientTransport transport = createSMTPClient();
-        SMTPClient c = new SMTPClient(transport);
+        SMTPClientImpl c = new SMTPClientImpl(transport);
 
         SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
         conf.setConnectionTimeout(4);

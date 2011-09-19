@@ -19,7 +19,12 @@ package me.normanmaurer.niosmtp;
 import java.nio.charset.Charset;
 
 
-
+/**
+ * Constants which are used within the SMTP context
+ * 
+ * @author Norman Mauurer
+ *
+ */
 public interface SMTPClientConstants {
     
     /**
