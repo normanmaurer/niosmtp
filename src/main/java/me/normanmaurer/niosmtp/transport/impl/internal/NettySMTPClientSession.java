@@ -17,6 +17,8 @@
 package me.normanmaurer.niosmtp.transport.impl.internal;
 
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import javax.net.ssl.SSLEngine;
@@ -48,6 +50,7 @@ public class NettySMTPClientSession implements SMTPClientSession, SMTPClientCons
     private SSLEngine engine;
     private Set<String> extensions;
     private Logger logger;
+    private Map<String, Object> attrs = new HashMap<String, Object>();
 
     public NettySMTPClientSession(Channel channel, Logger logger, boolean startTLS,  SSLEngine engine) {
         this.logger = logger;
@@ -115,6 +118,12 @@ public class NettySMTPClientSession implements SMTPClientSession, SMTPClientCons
     @Override
     public boolean isEncrypted() {
         return channel.getPipeline().get(SslHandler.class) != null;
+    }
+
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return attrs;
     }
     
 }

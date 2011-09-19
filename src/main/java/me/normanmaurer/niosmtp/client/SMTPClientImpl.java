@@ -181,22 +181,22 @@ public class SMTPClientImpl implements SMTPClientConstants,SMTPClient {
 
                 }
                 */
-                /*
+                
+
                 // We use a SMTPPipelinedRequest if the SMTPServer supports PIPELINING. This will allow the NETTY to get
                 // the MAX throughput as the encoder will write it out in one buffer if possible. This result in less system calls
-                if (supportsPipelining) {
-                    SMTPPipelinedRequestImpl request = new SMTPPipelinedRequestImpl();
-                    request.add(SMTPRequestImpl.mail(mail));
+                if (supportsPipelining && config.getPipeliningMode() != PipeliningMode.NO) {
+                    session.getAttributes().put(PIPELINING_ACTIVE_KEY, true);
+                    session.send(SMTPRequestImpl.mail(mailFrom), new MailResponseCallback(future, statusList, recipients, msg, config));
                     for (int i = 0; i < recipients.size(); i++) {
-                        request.add(SMTPRequestImpl.rcpt(recipients.get(i)));
-                    }
-                    request.add(SMTPRequestImpl.data());
-                    //ctx.getChannel().write(request);
+                        String rcpt = recipients.get(i);                      
+                        session.send(SMTPRequestImpl.rcpt(rcpt), new PipeliningSMTPResponseCallback(future, new RcptResponseCallback(future, statusList, recipients, msg, rcpt, config)));
 
+                    }
+                    session.send(SMTPRequestImpl.data(), new PipeliningSMTPResponseCallback(future,new DataResponseCallback(future, statusList, msg)));
                 } else {
-                    transport.send(session, SMTPRequestImpl.mail(mailFrom), new MailResponseCallback(future, statusList, mail, recipients, msg, config));
-                }*/
-                session.send(SMTPRequestImpl.mail(mailFrom), new MailResponseCallback(future, statusList, recipients, msg, config));
+                    session.send(SMTPRequestImpl.mail(mailFrom), new MailResponseCallback(future, statusList, recipients, msg, config));
+                }
 
             } else {
                 while (!recipients.isEmpty()) {
@@ -260,9 +260,9 @@ public class SMTPClientImpl implements SMTPClientConstants,SMTPClient {
                 
                 // only write the request if the SMTPServer does not support PIPELINING and we don't want to use it
                 // as otherwise we already sent this 
-                //if (!supportsPipelining || config.getPipeliningMode() == PipeliningMode.NO) {
-                session.send(SMTPRequestImpl.rcpt(rcpt), new RcptResponseCallback(future, statusList, recipients, msg, rcpt, config));
-               // }
+                if (!session.getAttributes().containsKey(PIPELINING_ACTIVE_KEY) || config.getPipeliningMode() == PipeliningMode.NO) {
+                    session.send(SMTPRequestImpl.rcpt(rcpt), new RcptResponseCallback(future, statusList, recipients, msg, rcpt, config));
+                }
             }
           
         }
@@ -294,10 +294,9 @@ public class SMTPClientImpl implements SMTPClientConstants,SMTPClient {
                 // only write the request if the SMTPServer does not support
                 // PIPELINING and we don't want to use it
                 // as otherwise we already sent this
-                // if (!supportsPipelining || config.getPipeliningMode() ==
-                // PipeliningMode.NO) {
-                session.send(SMTPRequestImpl.rcpt(rcpt), new RcptResponseCallback(future, statusList, recipients, msg, rcpt, config));
-                // }
+                if (!session.getAttributes().containsKey(PIPELINING_ACTIVE_KEY) || config.getPipeliningMode() == PipeliningMode.NO) {
+                    session.send(SMTPRequestImpl.rcpt(rcpt), new RcptResponseCallback(future, statusList, recipients, msg, rcpt, config));
+                }
             } else {
 
                 boolean success = false;
@@ -311,10 +310,9 @@ public class SMTPClientImpl implements SMTPClientConstants,SMTPClient {
                     // only write the request if the SMTPServer does not support
                     // PIPELINING and we don't want to use it
                     // as otherwise we already sent this
-                    // if (!supportsPipelining || config.getPipeliningMode() ==
-                    // PipeliningMode.NO) {
-                    session.send(SMTPRequestImpl.data(), new DataResponseCallback(future, statusList, msg));
-                    // }
+                    if (!session.getAttributes().containsKey(PIPELINING_ACTIVE_KEY) || config.getPipeliningMode() == PipeliningMode.NO) {
+                        session.send(SMTPRequestImpl.data(), new DataResponseCallback(future, statusList, msg));
+                    }
 
                 } else {
 
@@ -398,6 +396,31 @@ public class SMTPClientImpl implements SMTPClientConstants,SMTPClient {
         
     }
     
+    protected class PipeliningSMTPResponseCallback implements SMTPResponseCallback {
+
+        private SMTPClientFuture future;
+        private SMTPResponseCallback callback;
+
+        public PipeliningSMTPResponseCallback(SMTPClientFuture future, SMTPResponseCallback callback) {
+            this.future = future;
+            this.callback = callback;
+        }
+        @Override
+        public void onResponse(SMTPClientSession session, SMTPResponse response) {
+            if (!future.isDone()) {
+                callback.onResponse(session, response);
+            }
+            
+        }
+
+        @Override
+        public void onException(SMTPClientSession session, Throwable t) {
+            if(!future.isDone()) {
+                callback.onException(session, t);
+            }
+        }
+        
+    }
     /**
      * Abstract base implementation of {@link SMTPResponseCallback} which comple the {@link SMTPClientFuture} on an {@link Exception}
      * 

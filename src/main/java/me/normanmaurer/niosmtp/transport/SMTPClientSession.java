@@ -16,6 +16,7 @@
 */
 package me.normanmaurer.niosmtp.transport;
 
+import java.util.Map;
 import java.util.Set;
 
 import me.normanmaurer.niosmtp.MessageInput;
@@ -34,6 +35,13 @@ import org.slf4j.Logger;
  */
 public interface SMTPClientSession {
 
+    /**
+     * Return a map of attributes which can be used to store data which should be used within the scope of the {@link SMTPClientSession}
+     * 
+     * @return attributes
+     */
+    public Map<String, Object> getAttributes();
+    
     /**
      * Return a {@link Set} of all supported EXTENSIONS. This will be set in the EHLO Response so you will get an empty {@link Set} before the EHLO
      * Response was processed
