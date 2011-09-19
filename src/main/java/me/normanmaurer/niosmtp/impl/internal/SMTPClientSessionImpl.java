@@ -21,6 +21,7 @@ import java.util.Set;
 import me.normanmaurer.niosmtp.MessageInput;
 import me.normanmaurer.niosmtp.SMTPClientSession;
 import me.normanmaurer.niosmtp.SMTPRequest;
+import me.normanmaurer.niosmtp.core.SMTPClientConstants;
 
 import org.jboss.netty.channel.Channel;
 import org.slf4j.Logger;

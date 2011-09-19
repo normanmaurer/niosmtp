@@ -17,6 +17,8 @@
 package me.normanmaurer.niosmtp.impl.internal;
 
 import me.normanmaurer.niosmtp.SMTPPipelinedRequest;
+import me.normanmaurer.niosmtp.core.SMTPClientConstants;
+import me.normanmaurer.niosmtp.core.StringUtils;
 
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;

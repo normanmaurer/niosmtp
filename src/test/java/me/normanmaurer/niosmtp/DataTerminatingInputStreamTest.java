@@ -25,7 +25,7 @@ import org.junit.Test;
 
 import junit.framework.Assert;
 
-import me.normanmaurer.niosmtp.impl.internal.DataTerminatingInputStream;
+import me.normanmaurer.niosmtp.core.DataTerminatingInputStream;
 
 public class DataTerminatingInputStreamTest {
     

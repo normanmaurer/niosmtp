@@ -22,6 +22,8 @@ import java.util.List;
 
 import me.normanmaurer.niosmtp.SMTPPipelinedRequest;
 import me.normanmaurer.niosmtp.SMTPRequest;
+import me.normanmaurer.niosmtp.core.SMTPClientConstants;
+import me.normanmaurer.niosmtp.core.StringUtils;
 
 /**
  * Simple {@link SMTPPipelinedRequest} implementation which use a {@link ArrayList} to store all {@link SMTPRequest}'s.

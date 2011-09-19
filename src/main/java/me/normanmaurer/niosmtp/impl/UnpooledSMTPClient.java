@@ -30,7 +30,7 @@ import me.normanmaurer.niosmtp.SMTPClient;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPUnsupportedExtensionException;
-import me.normanmaurer.niosmtp.impl.internal.SMTPClientConstants;
+import me.normanmaurer.niosmtp.core.SMTPClientConstants;
 import me.normanmaurer.niosmtp.impl.internal.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.impl.internal.SMTPClientPipelineFactory;
 import me.normanmaurer.niosmtp.impl.internal.SecureSMTPClientPipelineFactory;

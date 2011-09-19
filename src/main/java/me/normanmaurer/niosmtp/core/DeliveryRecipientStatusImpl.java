@@ -14,12 +14,12 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.impl.internal;
+package me.normanmaurer.niosmtp.core;
 
 import me.normanmaurer.niosmtp.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.SMTPResponse;
 
-class DeliveryRecipientStatusImpl implements DeliveryRecipientStatus{
+public class DeliveryRecipientStatusImpl implements DeliveryRecipientStatus{
 
     private String address;
     private SMTPResponse response;
