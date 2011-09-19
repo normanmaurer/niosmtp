@@ -37,7 +37,7 @@ import org.jboss.netty.util.Timer;
  * 
  *
  */
-public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory{
+public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory implements NettyConstants{
 
     private final static SslHandshakeHandler SSL_HANDSHAKE_HANDLER = new SslHandshakeHandler();
     
@@ -56,10 +56,10 @@ public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory{
         ChannelPipeline cp = super.getPipeline();
 
         if (mode == DeliveryMode.SMTPS) {
-            cp.addFirst("sslHandshakeHandler", SSL_HANDSHAKE_HANDLER);
+            cp.addFirst(SSL_HANDSHAKE_HANDLER_KEY, SSL_HANDSHAKE_HANDLER);
 
             final SslHandler sslHandler = new SslHandler(createSSLClientEngine(), false);
-            cp.addFirst("sslHandler", sslHandler);
+            cp.addFirst(SSL_HANDLER_KEY, sslHandler);
         }
         return cp;
     }
@@ -78,7 +78,7 @@ public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory{
         if (mode == DeliveryMode.SMTPS || mode == DeliveryMode.PLAIN) {
             return super.createConnectHandler();
         } else {
-            return new ConnectHandler(true, createSSLClientEngine());
+            return new ConnectHandler(callback, LOGGER, true, createSSLClientEngine());
         }
     }
 

@@ -16,18 +16,11 @@
 */
 package me.normanmaurer.niosmtp.transport.impl.internal;
 
-import javax.net.ssl.SSLEngine;
-
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
-import me.normanmaurer.niosmtp.SMTPResponse;
 
-import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.codec.frame.DelimiterBasedFrameDecoder;
 import org.jboss.netty.handler.codec.frame.Delimiters;
 import org.jboss.netty.handler.stream.ChunkedWriteHandler;
@@ -43,15 +36,15 @@ import org.slf4j.LoggerFactory;
  * 
  *
  */
-public class SMTPClientPipelineFactory implements ChannelPipelineFactory{
-    private final static Logger LOGGER = LoggerFactory.getLogger(SMTPClientPipelineFactory.class);
+public class SMTPClientPipelineFactory implements ChannelPipelineFactory, NettyConstants{
+    protected final static Logger LOGGER = LoggerFactory.getLogger(SMTPClientPipelineFactory.class);
     private final static DelimiterBasedFrameDecoder FRAMER = new DelimiterBasedFrameDecoder(8192, true, Delimiters.lineDelimiter());
     private final static SMTPResponseDecoder SMTP_RESPONSE_DECODER = new SMTPResponseDecoder();
     private final static SMTPRequestEncoder SMTP_REQUEST_ENCODER = new SMTPRequestEncoder();
     private final static SMTPClientIdleHandler SMTP_CLIENT_IDLE_HANDLER = new SMTPClientIdleHandler();
     private Timer timer;
     private int responseTime;
-    private SMTPResponseCallback callback;
+    protected SMTPResponseCallback callback;
     
     public SMTPClientPipelineFactory(SMTPResponseCallback callback, Timer timer, int responseTimeout) {
         this.timer = timer;
@@ -63,50 +56,22 @@ public class SMTPClientPipelineFactory implements ChannelPipelineFactory{
     @Override
     public ChannelPipeline getPipeline() throws Exception {
         ChannelPipeline pipeline = Channels.pipeline();
-        pipeline.addLast("smtpIdleHandler", SMTP_CLIENT_IDLE_HANDLER);
-        pipeline.addLast("framer", FRAMER);
-        pipeline.addLast("decoder", SMTP_RESPONSE_DECODER);
-        pipeline.addLast("encoder", SMTP_REQUEST_ENCODER);
-        pipeline.addLast("chunk", new ChunkedWriteHandler());
+        pipeline.addLast(SMTP_IDLE_HANDLER_KEY, SMTP_CLIENT_IDLE_HANDLER);
+        pipeline.addLast(FRAMER_KEY, FRAMER);
+        pipeline.addLast(SMTP_RESPONSE_DECODER_KEY, SMTP_RESPONSE_DECODER);
+        pipeline.addLast(SMTP_REQUEST_ENCODER_KEY, SMTP_REQUEST_ENCODER);
+        pipeline.addLast(CHUNK_WRITE_HANDLER_KEY, new ChunkedWriteHandler());
         
         // Add the idle timeout handler
-        pipeline.addLast("idleHandler", new IdleStateHandler(timer, 0, 0, responseTime));
-        pipeline.addLast("connectHandler", createConnectHandler());
+        pipeline.addLast(IDLE_HANDLER_KEY, new IdleStateHandler(timer, 0, 0, responseTime));
+        pipeline.addLast(CONNECT_HANDLER_KEY, createConnectHandler());
         return pipeline;
     }
     
     protected ConnectHandler createConnectHandler() {
-        return new ConnectHandler(false, null);
+        return new ConnectHandler(callback, LOGGER, false, null);
     }
     
-    public class ConnectHandler extends SimpleChannelUpstreamHandler {
 
-        private SSLEngine engine;
-        private boolean startTLS;
-
-        ConnectHandler(boolean startTLS, SSLEngine engine){
-            this.engine = engine;
-            this.startTLS = startTLS;
-        }
-        
-        
-        @Override
-        public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
-            Object msg = e.getMessage();
-            if (msg instanceof SMTPResponse) {
-                callback.onResponse(new NettySMTPClientSession(ctx.getChannel(), LOGGER, startTLS, engine), (SMTPResponse) msg);
-                ctx.getChannel().getPipeline().remove(this);
-            } else {
-                super.messageReceived(ctx, e);
-            }
-        }
-        
-        @Override
-        public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
-            callback.onException(new NettySMTPClientSession(ctx.getChannel(), LOGGER, startTLS, engine), e.getCause());
-            ctx.getChannel().getPipeline().remove(this);
-
-        }
-    }
 
 }

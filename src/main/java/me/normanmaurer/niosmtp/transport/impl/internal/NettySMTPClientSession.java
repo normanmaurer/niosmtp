@@ -43,7 +43,7 @@ import org.slf4j.Logger;
  * @author Norman Maurer
  *
  */
-public class NettySMTPClientSession implements SMTPClientSession, SMTPClientConstants{
+public class NettySMTPClientSession implements SMTPClientSession, SMTPClientConstants, NettyConstants{
 
     private int callbackCount = 0;
     private Channel channel;
@@ -83,13 +83,13 @@ public class NettySMTPClientSession implements SMTPClientSession, SMTPClientCons
     @Override
     public void startTLS() {
         SslHandler sslHandler =  new SslHandler(engine, false);
-        channel.getPipeline().addFirst("sslHandler", sslHandler);
+        channel.getPipeline().addFirst(SSL_HANDLER_KEY, sslHandler);
         sslHandler.handshake();        
     }
     
     @Override
     public void send(SMTPRequest request, SMTPResponseCallback callback) {
-        channel.getPipeline().addBefore("idleHandler", "callback" + callbackCount++, new SMTPCallbackHandlerAdapter(this, callback));
+        channel.getPipeline().addBefore(IDLE_HANDLER_KEY, "callback" + callbackCount++, new SMTPCallbackHandlerAdapter(this, callback));
         channel.write(request);
     }
     
@@ -100,9 +100,9 @@ public class NettySMTPClientSession implements SMTPClientSession, SMTPClientCons
     public void send(MessageInput msg, SMTPResponseCallback callback) {
         ChannelPipeline cp = channel.getPipeline();
         
-        channel.getPipeline().addBefore("idleHandler", "callback" + callbackCount++, new SMTPCallbackHandlerAdapter(this,callback));
+        channel.getPipeline().addBefore(IDLE_HANDLER_KEY, "callback" + callbackCount++, new SMTPCallbackHandlerAdapter(this,callback));
         if (cp.get(MessageInputEncoder.class) == null) {
-            channel.getPipeline().addAfter("chunk", "messageDataEncoder", new MessageInputEncoder(this));
+            channel.getPipeline().addAfter(CHUNK_WRITE_HANDLER_KEY, "messageDataEncoder", new MessageInputEncoder(this));
         }
         channel.write(msg);
             
