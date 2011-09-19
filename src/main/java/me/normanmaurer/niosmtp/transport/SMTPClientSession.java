@@ -36,6 +36,13 @@ import org.slf4j.Logger;
 public interface SMTPClientSession {
 
     /**
+     * Return the {@link DeliveryMode} which is used for the underlying transport
+     * 
+     * @return mode
+     */
+    public DeliveryMode getDeliveryMode();
+    
+    /**
      * Return a map of attributes which can be used to store data which should be used within the scope of the {@link SMTPClientSession}
      * 
      * @return attributes

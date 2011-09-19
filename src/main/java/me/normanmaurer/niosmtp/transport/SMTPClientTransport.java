@@ -31,13 +31,6 @@ import me.normanmaurer.niosmtp.SMTPResponseCallback;
  */
 public interface SMTPClientTransport {
 
-
-    public static enum DeliveryMode {
-        PLAIN,
-        SMTPS,
-        STARTTLS_TRY,
-        STARTTLS_DEPEND
-    }
     
 
     

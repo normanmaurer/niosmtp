@@ -20,7 +20,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
-import me.normanmaurer.niosmtp.transport.SMTPClientTransport.DeliveryMode;
+import me.normanmaurer.niosmtp.transport.DeliveryMode;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -78,7 +78,7 @@ public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory i
         if (mode == DeliveryMode.SMTPS || mode == DeliveryMode.PLAIN) {
             return super.createConnectHandler();
         } else {
-            return new ConnectHandler(callback, LOGGER, true, createSSLClientEngine());
+            return new ConnectHandler(callback, LOGGER, mode, createSSLClientEngine());
         }
     }
 

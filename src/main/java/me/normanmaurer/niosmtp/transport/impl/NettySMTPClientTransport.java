@@ -25,6 +25,7 @@ import javax.net.ssl.SSLContext;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPUnsupportedExtensionException;
+import me.normanmaurer.niosmtp.transport.DeliveryMode;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 import me.normanmaurer.niosmtp.transport.impl.internal.SMTPClientPipelineFactory;
 import me.normanmaurer.niosmtp.transport.impl.internal.SecureSMTPClientPipelineFactory;

@@ -35,6 +35,7 @@ import me.normanmaurer.niosmtp.client.DeliveryRecipientStatusImpl;
 import me.normanmaurer.niosmtp.client.DeliveryResultImpl;
 import me.normanmaurer.niosmtp.client.SMTPClientFuture;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
+import me.normanmaurer.niosmtp.transport.DeliveryMode;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
@@ -42,7 +43,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  * 
  * It will write the next {@link SMTPRequest} to the {@link SMTPClientSession} with the right {@link SMTPResponseCallback} added.
  * 
- * This implementation also handles the <code>PIPELINING</code> extension
+ * This implementation also handles the <code>PIPELINING</code> and also the <code>STARTTLS</code> extension
  * 
  * @author Norman Maurer
  *
@@ -83,12 +84,6 @@ public class EhloResponseCallback extends AbstractResponseCallback implements Re
         
         int code = response.getCode();
 
-        String mail = mailFrom;
-       
-        // handle null senders
-        if (mail == null) {
-            mail = "";
-        }
         if (code < 400) {
             
             // Check if we depend on pipelining 
@@ -98,30 +93,40 @@ public class EhloResponseCallback extends AbstractResponseCallback implements Re
                 session.close();
                 return;
             }
-            /*
-            // Check if we need to add the SslHandler for STARTTLS
-            if (stateMachine.getLastState() == SMTPState.STARTTLS) {
-                SslHandler sslHandler =  new SslHandler(engine, false);
-                ctx.getChannel().getPipeline().addFirst("sslHandler", sslHandler);
-                sslHandler.handshake();
 
+            if (!supportsStartTLS && session.getDeliveryMode() == DeliveryMode.STARTTLS_DEPEND) {
+                future.setDeliveryStatus(DeliveryResultImpl.create(new SMTPUnsupportedExtensionException("Extension STARTTLS is not supported")));
+                session.send(SMTPRequestImpl.quit(), SMTPResponseCallback.EMPTY);
+                session.close();
+                return;
             }
-            */
             
-
-            // We use a SMTPPipelinedRequest if the SMTPServer supports PIPELINING. This will allow the NETTY to get
-            // the MAX throughput as the encoder will write it out in one buffer if possible. This result in less system calls
-            if (supportsPipelining && config.getPipeliningMode() != PipeliningMode.NO) {
-                session.getAttributes().put(PIPELINING_ACTIVE_KEY, true);
-                session.send(SMTPRequestImpl.mail(mailFrom), new MailResponseCallback(future, statusList, recipients, msg, config));
-                for (int i = 0; i < recipients.size(); i++) {
-                    String rcpt = recipients.get(i);                      
-                    session.send(SMTPRequestImpl.rcpt(rcpt), new RcptResponseCallback(future, statusList, recipients, msg, rcpt, config));
-
-                }
-                session.send(SMTPRequestImpl.data(), new DataResponseCallback(future, statusList, msg));
+            String mail = mailFrom;
+            
+            // handle null senders
+            if (mail == null) {
+                mail = "";
+            }
+            
+            if (supportsStartTLS && (session.getDeliveryMode() == DeliveryMode.STARTTLS_DEPEND || session.getDeliveryMode() == DeliveryMode.STARTTLS_TRY)) {
+                session.send(SMTPRequestImpl.startTls(), new StartTlsResponseCallback(future, statusList, mail, recipients, msg, config));
             } else {
-                session.send(SMTPRequestImpl.mail(mailFrom), new MailResponseCallback(future, statusList, recipients, msg, config));
+                // We use a SMTPPipelinedRequest if the SMTPServer supports
+                // PIPELINING. This will allow the NETTY to get
+                // the MAX throughput as the encoder will write it out in one
+                // buffer if possible. This result in less system calls
+                if (supportsPipelining && config.getPipeliningMode() != PipeliningMode.NO) {
+                    session.getAttributes().put(PIPELINING_ACTIVE_KEY, true);
+                    session.send(SMTPRequestImpl.mail(mail), new MailResponseCallback(future, statusList, recipients, msg, config));
+                    for (int i = 0; i < recipients.size(); i++) {
+                        String rcpt = recipients.get(i);
+                        session.send(SMTPRequestImpl.rcpt(rcpt), new RcptResponseCallback(future, statusList, recipients, msg, rcpt, config));
+
+                    }
+                    session.send(SMTPRequestImpl.data(), new DataResponseCallback(future, statusList, msg));
+                } else {
+                    session.send(SMTPRequestImpl.mail(mail), new MailResponseCallback(future, statusList, recipients, msg, config));
+                }
             }
 
         } else {

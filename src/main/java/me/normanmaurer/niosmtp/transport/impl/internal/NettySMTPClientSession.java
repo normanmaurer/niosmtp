@@ -27,6 +27,7 @@ import me.normanmaurer.niosmtp.MessageInput;
 import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.SMTPRequest;
+import me.normanmaurer.niosmtp.transport.DeliveryMode;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 import org.jboss.netty.buffer.ChannelBuffers;
@@ -51,11 +52,13 @@ public class NettySMTPClientSession implements SMTPClientSession, SMTPClientCons
     private Set<String> extensions;
     private Logger logger;
     private Map<String, Object> attrs = new HashMap<String, Object>();
+    private DeliveryMode mode;
 
-    public NettySMTPClientSession(Channel channel, Logger logger, boolean startTLS,  SSLEngine engine) {
+    public NettySMTPClientSession(Channel channel, Logger logger, DeliveryMode mode,  SSLEngine engine) {
         this.logger = logger;
         this.channel = channel;
         this.engine = engine;
+        this.mode = mode;
     }
     
     
@@ -124,6 +127,12 @@ public class NettySMTPClientSession implements SMTPClientSession, SMTPClientCons
     @Override
     public Map<String, Object> getAttributes() {
         return attrs;
+    }
+
+
+    @Override
+    public DeliveryMode getDeliveryMode() {
+        return mode;
     }
     
 }
