@@ -19,7 +19,7 @@ package me.normanmaurer.niosmtp;
 
 import me.normanmaurer.niosmtp.impl.UnpooledSMTPClient;
 
-import org.apache.james.protocols.api.WiringException;
+import org.apache.james.protocols.api.handler.WiringException;
 import org.apache.james.protocols.impl.NettyServer;
 import org.apache.james.protocols.smtp.SMTPConfigurationImpl;
 import org.apache.james.protocols.smtp.SMTPProtocol;
