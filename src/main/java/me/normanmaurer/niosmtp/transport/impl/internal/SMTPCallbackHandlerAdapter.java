@@ -14,11 +14,11 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.impl.internal;
+package me.normanmaurer.niosmtp.transport.impl.internal;
 
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
-import me.normanmaurer.niosmtp.SMTPClientSession;
 import me.normanmaurer.niosmtp.SMTPResponse;
+import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ExceptionEvent;

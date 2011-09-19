@@ -14,20 +14,39 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp;
+package me.normanmaurer.niosmtp.client;
+
+import java.util.Iterator;
+
+import me.normanmaurer.niosmtp.SMTPException;
 
 /**
- * A listener which will get informed once the SMTP delivery was done
+ * Result of an email delivery
  * 
  * @author Norman Maurer
  *
  */
-public interface SMTPClientFutureListener {
+public interface DeliveryResult {
 
     /**
-     * Callback which will get called once the operation was complete
+     * Return true if the delivery was successful (no exception)
      * 
-     * @param status
+     * @return success
      */
-    void operationComplete(DeliveryResult result); 
+    public boolean isSuccess();
+    
+    /**
+     * Return the {@link SMTPException} which was thrown while try to deliver
+     * 
+     * @return exception
+     */
+    public SMTPException getException();
+    
+    /**
+     * Return an {@link Iterator} which holds all {@link DeliveryRecipientStatus} objects for the 
+     * delivery. This MAY return null if {@link #getCause()} returns not null
+     * 
+     * @return status
+     */
+    public Iterator<DeliveryRecipientStatus> getRecipientStatus();
 }

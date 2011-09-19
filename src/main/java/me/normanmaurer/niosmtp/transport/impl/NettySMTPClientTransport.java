@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.impl;
+package me.normanmaurer.niosmtp.transport.impl;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
@@ -24,10 +24,10 @@ import javax.net.ssl.SSLContext;
 
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
-import me.normanmaurer.niosmtp.SMTPClientTransport;
 import me.normanmaurer.niosmtp.SMTPUnsupportedExtensionException;
-import me.normanmaurer.niosmtp.impl.internal.SMTPClientPipelineFactory;
-import me.normanmaurer.niosmtp.impl.internal.SecureSMTPClientPipelineFactory;
+import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
+import me.normanmaurer.niosmtp.transport.impl.internal.SMTPClientPipelineFactory;
+import me.normanmaurer.niosmtp.transport.impl.internal.SecureSMTPClientPipelineFactory;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.ChannelPipelineFactory;

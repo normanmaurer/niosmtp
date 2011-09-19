@@ -14,37 +14,55 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp;
+package me.normanmaurer.niosmtp.client;
 
-import java.util.Iterator;
+import me.normanmaurer.niosmtp.SMTPResponse;
 
 /**
- * Result of an email delivery
+ * Status for the delivery of an email to a recipient
  * 
  * @author Norman Maurer
  *
  */
-public interface DeliveryResult {
+public interface DeliveryRecipientStatus {
+
+    public enum Status{
+        /**
+         * Email was successful delivered to the recipient
+         * 
+         */
+        Ok,
+        
+        /**
+         * Email was permanent reject for the recipient
+         */
+        PermanentError,
+        
+        /**
+         * Email was temporar reject for the recipient
+         */
+        TemporaryError
+    }
+    
+    /**
+     * Return the {@link SMTPResponse} which was returned for the recipient. 
+     * 
+     * @return response
+     */
+    public SMTPResponse getResponse();
+    
 
     /**
-     * Return true if the delivery was successful (no exception)
-     * 
-     * @return success
-     */
-    public boolean isSuccess();
-    
-    /**
-     * Return the {@link SMTPException} which was thrown while try to deliver
-     * 
-     * @return exception
-     */
-    public SMTPException getException();
-    
-    /**
-     * Return an {@link Iterator} which holds all {@link DeliveryRecipientStatus} objects for the 
-     * delivery. This MAY return null if {@link #getCause()} returns not null
+     * Return the status
      * 
      * @return status
      */
-    public Iterator<DeliveryRecipientStatus> getRecipientStatus();
+    public Status getStatus();
+    
+    /**
+     * Return the email-address of the recipient
+     * 
+     * @return address
+     */
+    public String getAddress();
 }

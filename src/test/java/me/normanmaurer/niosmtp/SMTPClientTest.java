@@ -26,10 +26,13 @@ import java.util.concurrent.ExecutionException;
 
 
 import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
+import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus;
+import me.normanmaurer.niosmtp.client.DeliveryResult;
+import me.normanmaurer.niosmtp.client.SMTPClient;
+import me.normanmaurer.niosmtp.client.SMTPClientFuture;
 import me.normanmaurer.niosmtp.core.SMTPClientConfigImpl;
-import me.normanmaurer.niosmtp.core.SMTPClient;
 import me.normanmaurer.niosmtp.core.SimpleMessageInput;
-import me.normanmaurer.niosmtp.impl.NettySMTPClientTransport;
+import me.normanmaurer.niosmtp.transport.impl.NettySMTPClientTransport;
 
 import org.apache.james.protocols.api.handler.WiringException;
 import org.apache.james.protocols.impl.NettyServer;

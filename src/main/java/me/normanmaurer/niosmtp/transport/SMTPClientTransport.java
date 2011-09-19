@@ -14,9 +14,13 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp;
+package me.normanmaurer.niosmtp.transport;
 
 import java.net.InetSocketAddress;
+
+import me.normanmaurer.niosmtp.SMTPClientConfig;
+import me.normanmaurer.niosmtp.SMTPResponse;
+import me.normanmaurer.niosmtp.SMTPResponseCallback;
 
 
 /**

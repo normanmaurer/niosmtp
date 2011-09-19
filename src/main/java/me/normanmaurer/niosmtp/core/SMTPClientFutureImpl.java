@@ -24,9 +24,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 
-import me.normanmaurer.niosmtp.DeliveryResult;
-import me.normanmaurer.niosmtp.SMTPClientFuture;
-import me.normanmaurer.niosmtp.SMTPClientFutureListener;
+import me.normanmaurer.niosmtp.client.DeliveryResult;
+import me.normanmaurer.niosmtp.client.SMTPClientFuture;
+import me.normanmaurer.niosmtp.client.SMTPClientFutureListener;
 
 public class SMTPClientFutureImpl implements SMTPClientFuture{
     

@@ -16,6 +16,8 @@
 */
 package me.normanmaurer.niosmtp;
 
+import me.normanmaurer.niosmtp.transport.SMTPClientSession;
+
 /**
  * Callback which will get executed in an async manner
  * 

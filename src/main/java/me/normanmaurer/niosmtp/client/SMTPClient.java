@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.core;
+package me.normanmaurer.niosmtp.client;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -26,19 +26,18 @@ import java.util.List;
 import java.util.Set;
 
 
-import me.normanmaurer.niosmtp.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.MessageInput;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPClientConstants;
-import me.normanmaurer.niosmtp.SMTPClientFuture;
-import me.normanmaurer.niosmtp.SMTPClientSession;
-import me.normanmaurer.niosmtp.SMTPClientTransport;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPUnsupportedExtensionException;
-import me.normanmaurer.niosmtp.DeliveryRecipientStatus.Status;
 import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
-import me.normanmaurer.niosmtp.impl.internal.NettySMTPClientFuture;
+import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus.Status;
+import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
+import me.normanmaurer.niosmtp.transport.SMTPClientSession;
+import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
+import me.normanmaurer.niosmtp.transport.impl.internal.NettySMTPClientFuture;
 
 
 

@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.impl.internal;
+package me.normanmaurer.niosmtp.transport.impl.internal;
 
 import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
 

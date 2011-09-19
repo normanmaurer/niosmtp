@@ -14,9 +14,10 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp;
+package me.normanmaurer.niosmtp.client;
 
 import java.util.concurrent.Future;
+
 
 /**
  * A {@link Future} which allows to register {@link SMTPClientFutureListener} and also make it possible to

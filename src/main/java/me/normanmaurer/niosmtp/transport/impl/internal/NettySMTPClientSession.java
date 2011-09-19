@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.impl.internal;
+package me.normanmaurer.niosmtp.transport.impl.internal;
 
 
 import java.util.Set;
@@ -23,9 +23,9 @@ import javax.net.ssl.SSLEngine;
 
 import me.normanmaurer.niosmtp.MessageInput;
 import me.normanmaurer.niosmtp.SMTPClientConstants;
-import me.normanmaurer.niosmtp.SMTPClientSession;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.SMTPRequest;
+import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;

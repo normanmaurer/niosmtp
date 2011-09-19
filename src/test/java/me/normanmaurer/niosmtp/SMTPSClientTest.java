@@ -17,7 +17,7 @@
 package me.normanmaurer.niosmtp;
 
 
-import me.normanmaurer.niosmtp.impl.NettySMTPClientTransport;
+import me.normanmaurer.niosmtp.transport.impl.NettySMTPClientTransport;
 
 import org.apache.james.protocols.api.handler.WiringException;
 import org.apache.james.protocols.impl.NettyServer;
