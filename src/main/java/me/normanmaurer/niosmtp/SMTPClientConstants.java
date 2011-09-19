@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.core;
+package me.normanmaurer.niosmtp;
 
 import java.nio.charset.Charset;
 
@@ -38,19 +38,13 @@ public interface SMTPClientConstants {
     public final static String PIPELINING_EXTENSION = "PIPELINING";
     
     /**
-     * 
+     * Identifier used to detect if the SMTP Server supports <code>STARTTLS</code>
      */
     public final static String STARTTLS_EXTENSION = "STARTTLS";
     
+    /**
+     * Identifier used to detect if the SMTP Server supports <code>8BITMIME</code>
+     */
     public final static String _8BITMIME_EXTENSION = "8BITMIME";
-    public final static String SUPPORTS_8BITMIME_KEY = "SUPPORTS_8BITMIME";
-
-    public static final String RECIPIENT_STATUS_LIST_KEY = "RECIPIENT_STATUS_LIST";
-    public static final String SUPPORTS_PIPELINING_KEY = "SUPPORTS_PIPELINING";
-    public static final String LAST_RECIPIENT_KEY = "LAST_RECIPIENT";
-    public static final String SMTP_STATE_KEY = "SMTP_STATE";
-    
-    public static final String USE_STARTTLS_KEY ="USE_STARTLS";
-    public static final String SUPPORTS_STARTTLS_KEY = "SUPPORTS_STARTTLS";
 
 }

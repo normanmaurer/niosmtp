@@ -43,30 +43,72 @@ public class SMTPRequestImpl implements SMTPRequest{
         return StringUtils.toString(this);
     }
     
+    /**
+     * Create <code>QUIT</code> {@link SMTPRequest}
+     * 
+     * @return quit
+     */
     public static SMTPRequest quit() {
         return new SMTPRequestImpl("QUIT", null);
     }
 
+    /**
+     * Create a <code>HELO</code> {@link SMTPRequest}
+     * 
+     * 
+     * @param heloName
+     * @return helo
+     */
     public static SMTPRequest helo(String heloName) {
         return new SMTPRequestImpl("HELO", heloName);
     }
     
+    
+    /**
+     * Create a <code>EHLO</code> {@link SMTPRequest}
+     * 
+     * @param heloName
+     * @return ehlo
+     */
     public static SMTPRequest ehlo(String heloName) {
         return new SMTPRequestImpl("EHLO", heloName);
     }
     
-    public static SMTPRequest rcpt(String rcpt) {
-        return new SMTPRequestImpl("RCPT TO:", "<" + rcpt + ">");
+    /**
+     * Create a <code>RCPT</code> {@link SMTPRequest}
+     * 
+     * @param recipient
+     * @return rcpt
+     */
+    public static SMTPRequest rcpt(String recipient) {
+        return new SMTPRequestImpl("RCPT TO:", "<" + recipient + ">");
     }
     
+    
+    /**
+     * Create a <code>MAIL</code> {@link SMTPRequest} 
+     * 
+     * @param sender
+     * @return mail
+     */
     public static SMTPRequest mail(String sender) {
         return new SMTPRequestImpl("MAIL FROM:",  "<" + sender + ">");
     }
     
+    /**
+     * Create a <code>DATA</code> {@link SMTPRequest}
+     * 
+     * @return data
+     */
     public static SMTPRequest data() {
         return new SMTPRequestImpl("DATA", null);
     }
     
+    /**
+     * Create a <code>STARTTLS</code> {@link SMTPRequest}
+     * 
+     * @return starttls
+     */
     public static SMTPRequest startTls() {
         return new SMTPRequestImpl("STARTTLS", null);
     }

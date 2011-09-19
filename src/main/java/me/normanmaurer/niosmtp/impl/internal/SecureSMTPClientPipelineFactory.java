@@ -16,14 +16,11 @@
 */
 package me.normanmaurer.niosmtp.impl.internal;
 
-import java.util.LinkedList;
-
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
-import me.normanmaurer.niosmtp.MessageInput;
-import me.normanmaurer.niosmtp.SMTPClient.DeliveryMode;
-import me.normanmaurer.niosmtp.SMTPClientConfig;
+import me.normanmaurer.niosmtp.SMTPResponseCallback;
+import me.normanmaurer.niosmtp.SMTPClientTransport.DeliveryMode;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -47,8 +44,8 @@ public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory{
     private final SSLContext context;
     private final DeliveryMode mode;
 
-    public SecureSMTPClientPipelineFactory(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, MessageInput msg, SMTPClientConfig config, Timer timer, DeliveryMode mode, SSLContext context) {
-        super(future, mailFrom, recipients, msg, config, timer);
+    public SecureSMTPClientPipelineFactory(SMTPResponseCallback callback, Timer timer, int readTimeout, SSLContext context, DeliveryMode mode) {
+        super(callback, timer, readTimeout);
         this.context = context;
         this.mode = mode;
     }
@@ -68,27 +65,23 @@ public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory{
     }
     
 
-    @Override
-    protected SMTPClientHandler createSMTPClientHandler(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, MessageInput msg, SMTPClientConfig config) {
-        if (mode == DeliveryMode.SMTPS) {
-            return super.createSMTPClientHandler(future, mailFrom, recipients, msg, config);
-        } else {
-            boolean dependOnStartTLS;
-            if (mode == DeliveryMode.STARTTLS_DEPEND) {
-                dependOnStartTLS = true;
-            } else {
-                dependOnStartTLS = false;
-            }
-            return new SMTPClientHandler(future, mailFrom, recipients, msg, config, dependOnStartTLS, createSSLClientEngine());
-        }
-    }
-    
+
     private SSLEngine createSSLClientEngine() {
         SSLEngine engine = context.createSSLEngine();
         engine.setUseClientMode(true);
         return engine;
     }
     
+
+    @Override
+    protected ConnectHandler createConnectHandler() {
+        if (mode == DeliveryMode.SMTPS || mode == DeliveryMode.PLAIN) {
+            return super.createConnectHandler();
+        } else {
+            return new ConnectHandler(true, createSSLClientEngine());
+        }
+    }
+
 
     /**
      * {@link SimpleChannelUpstreamHandler} which takes care to call {@link SslHandler#handshake()} after the channel is connected

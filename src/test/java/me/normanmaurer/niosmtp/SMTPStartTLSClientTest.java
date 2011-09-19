@@ -25,7 +25,7 @@ import org.apache.james.protocols.smtp.SMTPProtocol;
 import org.apache.james.protocols.smtp.SMTPProtocolHandlerChain;
 import org.apache.james.protocols.smtp.hook.Hook;
 
-import me.normanmaurer.niosmtp.impl.UnpooledSMTPClient;
+import me.normanmaurer.niosmtp.impl.NettySMTPClientTransport;
 
 
 public class SMTPStartTLSClientTest extends SMTPClientTest{
@@ -48,8 +48,8 @@ public class SMTPStartTLSClientTest extends SMTPClientTest{
     }
 
     @Override
-    protected UnpooledSMTPClient createSMTPClient() {
-        return UnpooledSMTPClient.createStartTLS(BogusSslContextFactory.getClientContext(), true);
+    protected NettySMTPClientTransport createSMTPClient() {
+        return NettySMTPClientTransport.createStartTLS(BogusSslContextFactory.getClientContext(), true);
     }
     
 }

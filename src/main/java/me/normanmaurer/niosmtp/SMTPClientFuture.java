@@ -43,4 +43,15 @@ public interface SMTPClientFuture extends Future<DeliveryResult>{
      * @param listener
      */
     public void removeListener(SMTPClientFutureListener listener);
+    
+    /**
+     * Set the {@link DeliveryResult} for the future and notify all waiting threads + the listeners. This should get called only on time, 
+     * otherwise it will throw an {@link IllegalStateException}
+     * 
+     * @param result
+     * @throws illegalStateException
+     */
+    void setDeliveryStatus(DeliveryResult result);
+   
+
 }

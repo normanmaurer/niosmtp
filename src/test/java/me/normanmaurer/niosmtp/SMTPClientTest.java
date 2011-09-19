@@ -27,8 +27,9 @@ import java.util.concurrent.ExecutionException;
 
 import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.core.SMTPClientConfigImpl;
+import me.normanmaurer.niosmtp.core.SMTPClient;
 import me.normanmaurer.niosmtp.core.SimpleMessageInput;
-import me.normanmaurer.niosmtp.impl.UnpooledSMTPClient;
+import me.normanmaurer.niosmtp.impl.NettySMTPClientTransport;
 
 import org.apache.james.protocols.api.handler.WiringException;
 import org.apache.james.protocols.impl.NettyServer;
@@ -56,8 +57,8 @@ public class SMTPClientTest {
         
     }
     
-    protected UnpooledSMTPClient createSMTPClient() {
-        return UnpooledSMTPClient.createPlain();
+    protected NettySMTPClientTransport createSMTPClient() {
+        return NettySMTPClientTransport.createPlain();
     }
     
     @Test
@@ -77,7 +78,8 @@ public class SMTPClientTest {
         smtpServer.bind();
 
        
-        UnpooledSMTPClient c = createSMTPClient();
+        NettySMTPClientTransport transport = createSMTPClient();
+        SMTPClient c = new SMTPClient(transport);
 
         try {
             SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
@@ -99,7 +101,7 @@ public class SMTPClientTest {
             assertFalse(it.hasNext());
         } finally {
             smtpServer.unbind();
-            c.destroy();
+            transport.destroy();
         }
         
     }
@@ -124,7 +126,10 @@ public class SMTPClientTest {
 
 
        
-        UnpooledSMTPClient c = createSMTPClient();
+        
+        NettySMTPClientTransport transport = createSMTPClient();
+        SMTPClient c = new SMTPClient(transport);
+
 
         try {
             SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
@@ -146,7 +151,7 @@ public class SMTPClientTest {
             assertFalse(it.hasNext());
         } finally {
             smtpServer.unbind();
-            c.destroy();
+            transport.destroy();
         }
         
     }
@@ -171,7 +176,9 @@ public class SMTPClientTest {
 
 
        
-        UnpooledSMTPClient c = createSMTPClient();
+        
+        NettySMTPClientTransport transport = createSMTPClient();
+        SMTPClient c = new SMTPClient(transport);
 
         try {
             SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
@@ -194,7 +201,7 @@ public class SMTPClientTest {
             assertFalse(it.hasNext());
         } finally {
             smtpServer.unbind();
-            c.destroy();
+            transport.destroy();
         }
         
     }
@@ -219,7 +226,9 @@ public class SMTPClientTest {
 
 
        
-        UnpooledSMTPClient c = createSMTPClient();
+        
+        NettySMTPClientTransport transport = createSMTPClient();
+        SMTPClient c = new SMTPClient(transport);
 
         try {
             SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
@@ -241,7 +250,7 @@ public class SMTPClientTest {
             assertFalse(it.hasNext());
         } finally {
             smtpServer.unbind();
-            c.destroy();
+            transport.destroy();
         }
         
     }
@@ -271,7 +280,9 @@ public class SMTPClientTest {
 
 
        
-        UnpooledSMTPClient c = createSMTPClient();
+        
+        NettySMTPClientTransport transport = createSMTPClient();
+        SMTPClient c = new SMTPClient(transport);
 
         try {
             SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
@@ -300,7 +311,7 @@ public class SMTPClientTest {
             assertFalse(it.hasNext());
         } finally {
             smtpServer.unbind();
-            c.destroy();
+            transport.destroy();
         }
         
     }
@@ -308,7 +319,10 @@ public class SMTPClientTest {
     
     @Test
     public void testConnectionRefused() throws InterruptedException, ExecutionException {
-        UnpooledSMTPClient c = createSMTPClient();
+        
+        NettySMTPClientTransport transport = createSMTPClient();
+        SMTPClient c = new SMTPClient(transport);
+
         SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
         conf.setConnectionTimeout(4);
         conf.setResponseTimeout(5);
@@ -319,7 +333,7 @@ public class SMTPClientTest {
             assertNull(dr.getRecipientStatus());
             assertEquals(SMTPConnectionException.class, dr.getException().getClass());
         } finally {
-            c.destroy();
+            transport.destroy();
         }
     }
     

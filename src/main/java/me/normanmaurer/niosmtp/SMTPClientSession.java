@@ -20,15 +20,77 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 
+/**
+ * This is the SMTP Session which belongs to a Connection to a SMTP Server. It's created once a connection was successfully established and
+ * valid till its closed via {@link SMTPClientSession#close()} or an {@link Exception} 
+ * 
+ * @author Norman Maurer
+ *
+ */
 public interface SMTPClientSession {
 
+    /**
+     * Return a {@link Set} of all supported EXTENSIONS. This will be set in the EHLO Response so you will get an empty {@link Set} before the EHLO
+     * Response was processed
+     * 
+     * @return extensions
+     */
     public Set<String> getSupportedExtensions();
     
+    /**
+     * Set the supported EXTENSIONS for the {@link SMTPClientSession}. 
+     * 
+     * @param extensions
+     */
+    public void setSupportedExtensions(Set<String> extensions);
+
+    /**
+     * Return the id of the {@link SMTPClientSession}.
+     * 
+     * @return id
+     */
     public String getId();
     
+    /**
+     * Return the {@link Logger} which belongs the {@link SMTPClientSession}
+     * 
+     * @return logger
+     */
     public Logger getLogger();
     
-    public void write(SMTPRequest request);
+    /**
+     * Return <code>true</code> if the {@link SMTPClientSession} is encrypted
+     * 
+     * @return
+     */
+    public boolean isEncrypted();
     
-    public void write(MessageInput msg);
+    /**
+     * Start TLS encryption
+     */
+    public void startTLS();
+        
+    /**
+     * Send the given {@link SMTPRequest} to the connected SMTP-Server. The given {@link SMTPResponseCallback} will get called
+     * once the {@link SMTPResponse} was received or an {@link Exception} was thrown
+     * 
+     * @param request
+     * @param callback
+     */
+    public void send(SMTPRequest request, SMTPResponseCallback callback);
+    
+    /**
+     * Send the given {@link MessageInput} to the connected SMTP-Server. The given {@link SMTPResponseCallback} will get called
+     * once the {@link SMTPResponse} was received or an {@link Exception} was thrown
+     * 
+     * @param request
+     * @param callback
+     */
+    public void send(MessageInput request, SMTPResponseCallback callback);
+
+    /**
+     * Close the {@link SMTPClientSession}
+     */
+    public void close();
+
 }

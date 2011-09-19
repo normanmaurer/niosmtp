@@ -14,59 +14,38 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp;
+package me.normanmaurer.niosmtp.impl.internal;
+
+import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
+
+import org.jboss.netty.channel.Channel;
 
 /**
- * The different SMTP Commands
+ * NETTY implementation of {@link NettySMTPClientFuture}
  * 
  * @author Norman Maurer
  *
  */
-public enum SMTPState {
+public class NettySMTPClientFuture extends SMTPClientFutureImpl{
+
+    private Channel channel;
+   
+
+
     /**
-     * EHLO Command
-     */
-    EHLO,
-    
-    /**
-     * HELO Command
-     */
-    HELO,
-    
-    /**
-     * MAIL FROM Command
-     */
-    MAIL,
-    
-    /**
-     * DATA Command
-     */
-    DATA,
-    
-    /**
-     * AUTH Command
-     */
-    AUTH,
-    
-    /**
-     * NOOP Command
-     */
-    NOOP,
-    
-    /**
-     * QUIT Command
-     */
-    QUIT, 
-    
-    /**
-     * RCPT TO Command
-     */
-    RCPT, 
-    
-    /**
+     * Set the {@link Channel} which will be used for the {@link #cancel(boolean)} operation later
      * 
+     * @param channel
      */
-    DATA_POST,
-    
-    STARTTLS
+    public synchronized void setChannel(Channel channel) {
+        this.channel = channel;
+    }
+
+    @Override
+    protected void doCancel(boolean mayInterruptIfRunning) {
+        if (channel != null && channel.isConnected()) {
+            channel.close();
+        }        
+    }
+
 }

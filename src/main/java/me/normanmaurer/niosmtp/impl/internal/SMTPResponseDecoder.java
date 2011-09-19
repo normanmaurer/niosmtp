@@ -16,8 +16,8 @@
 */
 package me.normanmaurer.niosmtp.impl.internal;
 
+import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.SMTPResponse;
-import me.normanmaurer.niosmtp.core.SMTPClientConstants;
 import me.normanmaurer.niosmtp.core.SMTPResponseImpl;
 import me.normanmaurer.niosmtp.core.StringUtils;
 

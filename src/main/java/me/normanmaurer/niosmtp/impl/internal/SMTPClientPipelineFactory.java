@@ -16,20 +16,25 @@
 */
 package me.normanmaurer.niosmtp.impl.internal;
 
-import java.util.LinkedList;
+import javax.net.ssl.SSLEngine;
 
+import me.normanmaurer.niosmtp.SMTPResponseCallback;
+import me.normanmaurer.niosmtp.SMTPResponse;
 
-import me.normanmaurer.niosmtp.MessageInput;
-import me.normanmaurer.niosmtp.SMTPClientConfig;
-
+import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
+import org.jboss.netty.channel.ExceptionEvent;
+import org.jboss.netty.channel.MessageEvent;
+import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.codec.frame.DelimiterBasedFrameDecoder;
 import org.jboss.netty.handler.codec.frame.Delimiters;
 import org.jboss.netty.handler.stream.ChunkedWriteHandler;
 import org.jboss.netty.handler.timeout.IdleStateHandler;
 import org.jboss.netty.util.Timer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link ChannelPipelineFactory} which is used for the SMTP Client
@@ -39,26 +44,19 @@ import org.jboss.netty.util.Timer;
  *
  */
 public class SMTPClientPipelineFactory implements ChannelPipelineFactory{
-
+    private final static Logger LOGGER = LoggerFactory.getLogger(SMTPClientPipelineFactory.class);
     private final static DelimiterBasedFrameDecoder FRAMER = new DelimiterBasedFrameDecoder(8192, true, Delimiters.lineDelimiter());
     private final static SMTPResponseDecoder SMTP_RESPONSE_DECODER = new SMTPResponseDecoder();
     private final static SMTPRequestEncoder SMTP_REQUEST_ENCODER = new SMTPRequestEncoder();
     private final static SMTPClientIdleHandler SMTP_CLIENT_IDLE_HANDLER = new SMTPClientIdleHandler();
-    private final static SMTPPipelinedRequestEncoder SMTP_PIPELINE_REQUEST_ENCODER = new SMTPPipelinedRequestEncoder();
-    private final String mailFrom;
-    private final LinkedList<String> recipients;
-    private final SMTPClientConfig config;
-    private final MessageInput msg;
-    private final SMTPClientFutureImpl future;
     private Timer timer;
+    private int responseTime;
+    private SMTPResponseCallback callback;
     
-    public SMTPClientPipelineFactory(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, MessageInput msg, SMTPClientConfig config, Timer timer) {
-        this.mailFrom = mailFrom;
-        this.recipients = recipients;
-        this.config = config;
-        this.msg = msg;
-        this.future = future;
+    public SMTPClientPipelineFactory(SMTPResponseCallback callback, Timer timer, int responseTimeout) {
         this.timer = timer;
+        this.responseTime = responseTimeout;
+        this.callback = callback;
     }
     
     
@@ -69,17 +67,46 @@ public class SMTPClientPipelineFactory implements ChannelPipelineFactory{
         pipeline.addLast("framer", FRAMER);
         pipeline.addLast("decoder", SMTP_RESPONSE_DECODER);
         pipeline.addLast("encoder", SMTP_REQUEST_ENCODER);
-        pipeline.addLast("pipelinedEncoder", SMTP_PIPELINE_REQUEST_ENCODER);
         pipeline.addLast("chunk", new ChunkedWriteHandler());
-        pipeline.addLast("coreHandler", createSMTPClientHandler(future, mailFrom, recipients, msg, config));
         
         // Add the idle timeout handler
-        pipeline.addLast("idleHandler", new IdleStateHandler(timer, 0, 0, config.getResponseTimeout()));
-
+        pipeline.addLast("idleHandler", new IdleStateHandler(timer, 0, 0, responseTime));
+        pipeline.addLast("connectHandler", createConnectHandler());
         return pipeline;
     }
-
-    protected SMTPClientHandler createSMTPClientHandler(SMTPClientFutureImpl future, String mailFrom, LinkedList<String> recipients, MessageInput msg, SMTPClientConfig config) {
-        return new SMTPClientHandler(future, mailFrom, recipients, msg, config);
+    
+    protected ConnectHandler createConnectHandler() {
+        return new ConnectHandler(false, null);
     }
+    
+    public class ConnectHandler extends SimpleChannelUpstreamHandler {
+
+        private SSLEngine engine;
+        private boolean startTLS;
+
+        ConnectHandler(boolean startTLS, SSLEngine engine){
+            this.engine = engine;
+            this.startTLS = startTLS;
+        }
+        
+        
+        @Override
+        public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
+            Object msg = e.getMessage();
+            if (msg instanceof SMTPResponse) {
+                callback.onResponse(new NettySMTPClientSession(ctx.getChannel(), LOGGER, startTLS, engine), (SMTPResponse) msg);
+                ctx.getChannel().getPipeline().remove(this);
+            } else {
+                super.messageReceived(ctx, e);
+            }
+        }
+        
+        @Override
+        public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
+            callback.onException(new NettySMTPClientSession(ctx.getChannel(), LOGGER, startTLS, engine), e.getCause());
+            ctx.getChannel().getPipeline().remove(this);
+
+        }
+    }
+
 }
