@@ -365,6 +365,11 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>1.6.1</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.james.protocols</groupId>
       <artifactId>protocols-impl</artifactId>
       <version>1.6-SNAPSHOT</version>
@@ -376,6 +381,7 @@
       <version>1.6-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
+    
     <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-simple</artifactId>
