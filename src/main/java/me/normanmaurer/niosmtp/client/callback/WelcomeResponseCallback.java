@@ -65,13 +65,6 @@ public class WelcomeResponseCallback extends AbstractResponseCallback {
         int code = response.getCode();
         if (code < 400) {
             session.send(SMTPRequestImpl.ehlo(config.getHeloName()), new EhloResponseCallback(future, statusList, mailFrom, recipients, msg, config));
-/*
-            if (context == null) {
-            } else {
-                // stateMachine.nextState(SMTPState.STARTTLS);
-
-            }
-            */
         } else {
             while (!recipients.isEmpty()) {
                 statusList.add(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response));
