@@ -150,6 +150,7 @@ public class DataTerminatingInputStream extends InputStream {
 
     @Override
     public void reset() throws IOException {
+        throw new IOException("Not supported");
     }
 
 
