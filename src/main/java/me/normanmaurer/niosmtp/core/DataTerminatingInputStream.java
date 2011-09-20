@@ -44,10 +44,6 @@ public class DataTerminatingInputStream extends InputStream {
         startLine = true;
 
     }
-    
-
-
-    
 
     @Override
     public int read() throws IOException {
