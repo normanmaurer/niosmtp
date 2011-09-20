@@ -25,7 +25,6 @@ import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.client.callback.WelcomeResponseCallback;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
-import me.normanmaurer.niosmtp.transport.impl.internal.NettySMTPClientFuture;
 
 
 
@@ -56,7 +55,7 @@ public class SMTPClientImpl implements SMTPClientConstants,SMTPClient {
         }
         
         LinkedList<String> rcpts = new LinkedList<String>(recipients);
-        final NettySMTPClientFuture future = new NettySMTPClientFuture();
+        final SMTPClientFutureImpl future = new SMTPClientFutureImpl();
 
         transport.connect(host, config,new WelcomeResponseCallback(future, mailFrom, rcpts, msg, config));
         

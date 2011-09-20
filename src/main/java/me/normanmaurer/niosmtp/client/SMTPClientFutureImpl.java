@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.core;
+package me.normanmaurer.niosmtp.client;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,9 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 
-import me.normanmaurer.niosmtp.client.DeliveryResult;
-import me.normanmaurer.niosmtp.client.SMTPClientFuture;
-import me.normanmaurer.niosmtp.client.SMTPClientFutureListener;
+import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 public class SMTPClientFutureImpl implements SMTPClientFuture{
     
@@ -34,11 +32,14 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
     private boolean isCancelled = false;
     private final List<SMTPClientFutureListener> listeners = Collections.synchronizedList(new ArrayList<SMTPClientFutureListener>());
     private DeliveryResult result;
+    private SMTPClientSession session;
     
     /**
-     * Set the {@link DeliveryResult} for the future and notify all waiting threads + the listeners
+     * Set the {@link DeliveryResult} for the future and notify all waiting threads + the listeners. This should get called only on time, 
+     * otherwise it will throw an {@link IllegalStateException}
      * 
      * @param result
+     * @throws illegalStateException
      */
     public synchronized void setDeliveryStatus(DeliveryResult result) {
         if (!isDone()) {
@@ -62,7 +63,7 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
         if (isCancelled() || isDone()) {
             return false;
         } else {
-            doCancel(mayInterruptIfRunning);
+           session.close();
            isCancelled = true;
            return true;
         }
@@ -122,14 +123,9 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
             return null;
         }
     }
-    
-    /**
-     * Cancel the future. This should get overridden by sub-classes if need. By default this does nothing
-     * 
-     * @param mayInterruptIfRunning
-     */
-    protected void doCancel(boolean mayInterruptIfRunning) {
-        
+
+    public synchronized void setSMTPClientSession(SMTPClientSession session) {
+        this.session = session;
     }
 
 }

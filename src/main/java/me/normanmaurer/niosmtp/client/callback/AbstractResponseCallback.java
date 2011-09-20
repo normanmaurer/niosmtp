@@ -19,6 +19,7 @@ package me.normanmaurer.niosmtp.client.callback;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.client.DeliveryResultImpl;
 import me.normanmaurer.niosmtp.client.SMTPClientFuture;
+import me.normanmaurer.niosmtp.client.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
@@ -29,9 +30,9 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  */
 public abstract class AbstractResponseCallback implements SMTPResponseCallback {
 
-    protected SMTPClientFuture future;
+    protected SMTPClientFutureImpl future;
 
-    public AbstractResponseCallback(SMTPClientFuture future) {
+    public AbstractResponseCallback(SMTPClientFutureImpl future) {
         this.future = future;
     }
     

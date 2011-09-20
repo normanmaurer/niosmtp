@@ -33,7 +33,7 @@ import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.client.DeliveryRecipientStatusImpl;
 import me.normanmaurer.niosmtp.client.DeliveryResultImpl;
-import me.normanmaurer.niosmtp.client.SMTPClientFuture;
+import me.normanmaurer.niosmtp.client.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.transport.DeliveryMode;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
@@ -55,7 +55,7 @@ public class EhloResponseCallback extends AbstractResponseCallback implements Re
     private String mailFrom;
     private MessageInput msg;
     
-    public EhloResponseCallback(SMTPClientFuture future, final List<DeliveryRecipientStatus> statusList, final String mailFrom, final LinkedList<String> recipients, final MessageInput msg,  final SMTPClientConfig config) {
+    public EhloResponseCallback(SMTPClientFutureImpl future, final List<DeliveryRecipientStatus> statusList, final String mailFrom, final LinkedList<String> recipients, final MessageInput msg,  final SMTPClientConfig config) {
         super(future);
 
         this.config = config;

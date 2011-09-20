@@ -25,8 +25,8 @@ import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.client.DeliveryRecipientStatusImpl;
 import me.normanmaurer.niosmtp.client.DeliveryResultImpl;
-import me.normanmaurer.niosmtp.client.SMTPClientFuture;
 import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus.Status;
+import me.normanmaurer.niosmtp.client.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
@@ -42,7 +42,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 public class PostDataResponseCallback extends AbstractResponseCallback {
     private List<DeliveryRecipientStatus> statusList;
 
-    public PostDataResponseCallback(SMTPClientFuture future, final List<DeliveryRecipientStatus> statusList) {
+    public PostDataResponseCallback(SMTPClientFutureImpl future, final List<DeliveryRecipientStatus> statusList) {
         super(future);
         this.future = future;
         this.statusList = statusList;
