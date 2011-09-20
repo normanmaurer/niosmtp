@@ -16,6 +16,7 @@
 */
 package me.normanmaurer.niosmtp.transport.impl.internal;
 
+import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.transport.DeliveryMode;
 
@@ -44,12 +45,12 @@ public class SMTPClientPipelineFactory implements ChannelPipelineFactory, NettyC
     private final static SMTPRequestEncoder SMTP_REQUEST_ENCODER = new SMTPRequestEncoder();
     private final static SMTPClientIdleHandler SMTP_CLIENT_IDLE_HANDLER = new SMTPClientIdleHandler();
     private Timer timer;
-    private int responseTime;
     protected SMTPResponseCallback callback;
+    protected SMTPClientConfig config;
     
-    public SMTPClientPipelineFactory(SMTPResponseCallback callback, Timer timer, int responseTimeout) {
+    public SMTPClientPipelineFactory(SMTPResponseCallback callback, SMTPClientConfig config, Timer timer) {
         this.timer = timer;
-        this.responseTime = responseTimeout;
+        this.config = config;
         this.callback = callback;
     }
     
@@ -64,13 +65,13 @@ public class SMTPClientPipelineFactory implements ChannelPipelineFactory, NettyC
         pipeline.addLast(CHUNK_WRITE_HANDLER_KEY, new ChunkedWriteHandler());
         
         // Add the idle timeout handler
-        pipeline.addLast(IDLE_HANDLER_KEY, new IdleStateHandler(timer, 0, 0, responseTime));
+        pipeline.addLast(IDLE_HANDLER_KEY, new IdleStateHandler(timer, 0, 0, config.getResponseTimeout()));
         pipeline.addLast(CONNECT_HANDLER_KEY, createConnectHandler());
         return pipeline;
     }
     
     protected ConnectHandler createConnectHandler() {
-        return new ConnectHandler(callback, LOGGER, DeliveryMode.PLAIN, null);
+        return new ConnectHandler(callback, LOGGER, config, DeliveryMode.PLAIN, null);
     }
     
 

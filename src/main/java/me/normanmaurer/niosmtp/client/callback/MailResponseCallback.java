@@ -19,8 +19,6 @@ package me.normanmaurer.niosmtp.client.callback;
 import java.util.LinkedList;
 import java.util.List;
 
-import me.normanmaurer.niosmtp.MessageInput;
-import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
@@ -42,23 +40,23 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  * @author Norman Maurer
  *
  */
-public class MailResponseCallback extends AbstractResponseCallback implements ResponseCallbackConstants {
-    private SMTPClientConfig config;
-    private LinkedList<String> recipients;
-    private List<DeliveryRecipientStatus> statusList;
-    private MessageInput msg;
+public class MailResponseCallback extends AbstractResponseCallback {
     
-    public MailResponseCallback(SMTPClientFutureImpl future, final List<DeliveryRecipientStatus> statusList, final LinkedList<String> recipients, final MessageInput msg,  final SMTPClientConfig config) {
-        super(future);
-        this.config = config;
-        this.recipients = recipients;
-        this.msg = msg;
-        this.statusList = statusList;
+    /**
+     * Get instance of this {@link SMTPResponseCallback} implemenation
+     */
+    public static final SMTPResponseCallback INSTANCE= new MailResponseCallback();
+    
+    private MailResponseCallback() {
+        
     }
-    
 
+    @SuppressWarnings("unchecked")
     @Override
     public void onResponse(SMTPClientSession session, SMTPResponse response) {
+        List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
+        LinkedList<String> recipients = (LinkedList<String>) session.getAttributes().get(RECIPIENTS_KEY);
+        SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
 
         int code = response.getCode();
 
@@ -73,10 +71,13 @@ public class MailResponseCallback extends AbstractResponseCallback implements Re
         } else {
             String rcpt = recipients.removeFirst();
             
+            // store the current recipient we are processing
+            session.getAttributes().put(CURRENT_RCPT_KEY, rcpt);
+            
             // only write the request if the SMTPServer does not support PIPELINING and we don't want to use it
             // as otherwise we already sent this 
-            if (!session.getAttributes().containsKey(PIPELINING_ACTIVE_KEY) || config.getPipeliningMode() == PipeliningMode.NO) {
-                session.send(SMTPRequestImpl.rcpt(rcpt), new RcptResponseCallback(future, statusList, recipients, msg, rcpt, config));
+            if (!session.getAttributes().containsKey(PIPELINING_ACTIVE_KEY) || session.getConfig().getPipeliningMode() == PipeliningMode.NO) {
+                session.send(SMTPRequestImpl.rcpt(rcpt), RcptResponseCallback.INSTANCE);
             }
         }
       

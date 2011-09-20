@@ -18,6 +18,7 @@ package me.normanmaurer.niosmtp.transport.impl.internal;
 
 import javax.net.ssl.SSLEngine;
 
+import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.transport.DeliveryMode;
@@ -34,12 +35,14 @@ class ConnectHandler extends SimpleChannelUpstreamHandler {
     private DeliveryMode mode;
     private SMTPResponseCallback callback;
     private Logger logger;
+    private SMTPClientConfig config;
 
-    public ConnectHandler(SMTPResponseCallback callback, Logger logger, DeliveryMode mode, SSLEngine engine){
+    public ConnectHandler(SMTPResponseCallback callback, Logger logger, SMTPClientConfig config, DeliveryMode mode, SSLEngine engine){
         this.callback = callback;
         this.engine = engine;
         this.mode = mode;
         this.logger = logger;
+        this.config = config;
     }
     
     
@@ -47,7 +50,7 @@ class ConnectHandler extends SimpleChannelUpstreamHandler {
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
         Object msg = e.getMessage();
         if (msg instanceof SMTPResponse) {
-            callback.onResponse(new NettySMTPClientSession(ctx.getChannel(), logger, mode, engine), (SMTPResponse) msg);
+            callback.onResponse(new NettySMTPClientSession(ctx.getChannel(), logger, config, mode, engine), (SMTPResponse) msg);
             ctx.getChannel().getPipeline().remove(this);
         } else {
             super.messageReceived(ctx, e);
@@ -62,7 +65,7 @@ class ConnectHandler extends SimpleChannelUpstreamHandler {
         //
         // https://issues.jboss.org/browse/NETTY-430
         if ((e.getCause() instanceof NullPointerException) == false) {
-            callback.onException(new NettySMTPClientSession(ctx.getChannel(), logger, mode, engine), e.getCause());
+            callback.onException(new NettySMTPClientSession(ctx.getChannel(), logger, config, mode, engine), e.getCause());
             ctx.getChannel().getPipeline().remove(this);
         }
 

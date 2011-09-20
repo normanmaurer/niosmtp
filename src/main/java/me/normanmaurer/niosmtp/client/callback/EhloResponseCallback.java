@@ -22,8 +22,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import me.normanmaurer.niosmtp.MessageInput;
-import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
@@ -48,23 +46,18 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  * @author Norman Maurer
  *
  */
-public class EhloResponseCallback extends AbstractResponseCallback implements ResponseCallbackConstants, SMTPClientConstants{
-    private SMTPClientConfig config;
-    private LinkedList<String> recipients;
-    private List<DeliveryRecipientStatus> statusList;
-    private String mailFrom;
-    private MessageInput msg;
-    
-    public EhloResponseCallback(SMTPClientFutureImpl future, final List<DeliveryRecipientStatus> statusList, final String mailFrom, final LinkedList<String> recipients, final MessageInput msg,  final SMTPClientConfig config) {
-        super(future);
+public class EhloResponseCallback extends AbstractResponseCallback implements SMTPClientConstants{
 
-        this.config = config;
-        this.recipients = recipients;
-        this.msg = msg;
-        this.mailFrom = mailFrom;
-        this.statusList = statusList;
+    /**
+     * Get instance of this {@link SMTPResponseCallback} implemenation
+     */
+    public static final SMTPResponseCallback INSTANCE = new EhloResponseCallback();
+    
+    private EhloResponseCallback() {
+        
     }
     
+    @SuppressWarnings("unchecked")
     @Override
     public void onResponse(SMTPClientSession session, SMTPResponse response) {
         boolean supportsPipelining = false;
@@ -84,10 +77,15 @@ public class EhloResponseCallback extends AbstractResponseCallback implements Re
         
         int code = response.getCode();
 
+        SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
+        String mail = (String) session.getAttributes().get(SENDER_KEY);
+        LinkedList<String> recipients = (LinkedList<String>) session.getAttributes().get(RECIPIENTS_KEY);
+        List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
+        
         if (code < 400) {
             
             // Check if we depend on pipelining 
-            if (!supportsPipelining && config.getPipeliningMode() == PipeliningMode.DEPEND) {
+            if (!supportsPipelining && session.getConfig().getPipeliningMode() == PipeliningMode.DEPEND) {
                 future.setDeliveryStatus(DeliveryResultImpl.create(new SMTPUnsupportedExtensionException("Extension PIPELINING is not supported")));
                 session.send(SMTPRequestImpl.quit(), SMTPResponseCallback.EMPTY);
                 session.close();
@@ -101,31 +99,26 @@ public class EhloResponseCallback extends AbstractResponseCallback implements Re
                 return;
             }
             
-            String mail = mailFrom;
             
-            // handle null senders
-            if (mail == null) {
-                mail = "";
-            }
             
             if (supportsStartTLS && (session.getDeliveryMode() == DeliveryMode.STARTTLS_DEPEND || session.getDeliveryMode() == DeliveryMode.STARTTLS_TRY)) {
-                session.send(SMTPRequestImpl.startTls(), new StartTlsResponseCallback(future, statusList, mail, recipients, msg, config));
+                session.send(SMTPRequestImpl.startTls(), StartTlsResponseCallback.INSTANCE);
             } else {
                 // We use a SMTPPipelinedRequest if the SMTPServer supports
                 // PIPELINING. This will allow the NETTY to get
                 // the MAX throughput as the encoder will write it out in one
                 // buffer if possible. This result in less system calls
-                if (supportsPipelining && config.getPipeliningMode() != PipeliningMode.NO) {
+                if (supportsPipelining && session.getConfig().getPipeliningMode() != PipeliningMode.NO) {
                     session.getAttributes().put(PIPELINING_ACTIVE_KEY, true);
-                    session.send(SMTPRequestImpl.mail(mail), new MailResponseCallback(future, statusList, recipients, msg, config));
+                    session.send(SMTPRequestImpl.mail(mail), MailResponseCallback.INSTANCE);
                     for (int i = 0; i < recipients.size(); i++) {
                         String rcpt = recipients.get(i);
-                        session.send(SMTPRequestImpl.rcpt(rcpt), new RcptResponseCallback(future, statusList, recipients, msg, rcpt, config));
+                        session.send(SMTPRequestImpl.rcpt(rcpt), RcptResponseCallback.INSTANCE);
 
                     }
-                    session.send(SMTPRequestImpl.data(), new DataResponseCallback(future, statusList, msg));
+                    session.send(SMTPRequestImpl.data(), DataResponseCallback.INSTANCE);
                 } else {
-                    session.send(SMTPRequestImpl.mail(mail), new MailResponseCallback(future, statusList, recipients, msg, config));
+                    session.send(SMTPRequestImpl.mail(mail), MailResponseCallback.INSTANCE);
                 }
             }
 

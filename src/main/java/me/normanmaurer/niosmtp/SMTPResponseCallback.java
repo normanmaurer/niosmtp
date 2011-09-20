@@ -19,7 +19,8 @@ package me.normanmaurer.niosmtp;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
- * Callback which will get executed in an async manner
+ * Callback which will get executed in an async manner. Every {@link SMTPResponseCallback} should be stateless to make sure
+ * you don't run in threading issues. If you need to pass a value to it you should store it in {@link SMTPClientSession#getAttributes()}
  * 
  * @author Norman Maurer
  *

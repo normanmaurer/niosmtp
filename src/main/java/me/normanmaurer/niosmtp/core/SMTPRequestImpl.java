@@ -20,9 +20,14 @@ import me.normanmaurer.niosmtp.SMTPRequest;
 
 public class SMTPRequestImpl implements SMTPRequest{
 
+    private final static SMTPRequest QUIT_REQUEST = new SMTPRequestImpl("QUIT", null);
+    private final static SMTPRequest STARTTLS_REQUEST = new SMTPRequestImpl("STARTTLS", null);
+    private final static SMTPRequest DATA_REQUEST = new SMTPRequestImpl("DATA", null);
+    
     private String command;
     private String argument;
 
+    
     public SMTPRequestImpl(String command, String argument) {
         this.command = command;
         this.argument = argument;
@@ -49,7 +54,7 @@ public class SMTPRequestImpl implements SMTPRequest{
      * @return quit
      */
     public static SMTPRequest quit() {
-        return new SMTPRequestImpl("QUIT", null);
+        return QUIT_REQUEST;
     }
 
     /**
@@ -101,7 +106,7 @@ public class SMTPRequestImpl implements SMTPRequest{
      * @return data
      */
     public static SMTPRequest data() {
-        return new SMTPRequestImpl("DATA", null);
+        return DATA_REQUEST;
     }
     
     /**
@@ -110,6 +115,6 @@ public class SMTPRequestImpl implements SMTPRequest{
      * @return starttls
      */
     public static SMTPRequest startTls() {
-        return new SMTPRequestImpl("STARTTLS", null);
+        return STARTTLS_REQUEST;
     }
 }

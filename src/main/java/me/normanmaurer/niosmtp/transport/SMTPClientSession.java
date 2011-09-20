@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 import me.normanmaurer.niosmtp.MessageInput;
+import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
@@ -112,5 +113,13 @@ public interface SMTPClientSession {
      * Close the {@link SMTPClientSession}
      */
     public void close();
+    
+    
+    /**
+     * Return the configuration which was used to create this {@link SMTPClientSession}
+     * 
+     * @return config
+     */
+    public SMTPClientConfig getConfig();
 
 }

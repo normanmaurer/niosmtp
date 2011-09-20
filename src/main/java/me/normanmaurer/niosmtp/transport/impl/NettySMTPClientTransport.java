@@ -113,14 +113,14 @@ public class NettySMTPClientTransport implements SMTPClientTransport{
         ChannelPipelineFactory cp;
         switch (mode) {
         case PLAIN:
-            cp = new SMTPClientPipelineFactory(callback, timer, config.getResponseTimeout());
+            cp = new SMTPClientPipelineFactory(callback, config, timer);
             break;
         case SMTPS:
             // just move on to STARTTLS_DEPEND
         case STARTTLS_TRY:
             // just move on to STARTTLS_DEPEND
         case STARTTLS_DEPEND:
-            cp = new SecureSMTPClientPipelineFactory(callback, timer, config.getResponseTimeout(),context, mode);
+            cp = new SecureSMTPClientPipelineFactory(callback, config, timer,context, mode);
             break;
         default:
             throw new IllegalArgumentException("Unknown DeliveryMode " + mode);

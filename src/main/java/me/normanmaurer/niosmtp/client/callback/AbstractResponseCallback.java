@@ -20,6 +20,7 @@ import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.client.DeliveryResultImpl;
 import me.normanmaurer.niosmtp.client.SMTPClientFuture;
 import me.normanmaurer.niosmtp.client.SMTPClientFutureImpl;
+import me.normanmaurer.niosmtp.client.SMTPClientSessionConstants;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
@@ -28,17 +29,13 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  * @author Norman Maurer
  *
  */
-public abstract class AbstractResponseCallback implements SMTPResponseCallback {
-
-    protected SMTPClientFutureImpl future;
-
-    public AbstractResponseCallback(SMTPClientFutureImpl future) {
-        this.future = future;
-    }
+public abstract class AbstractResponseCallback implements SMTPResponseCallback, SMTPClientSessionConstants {
     
     @Override
     public void onException(SMTPClientSession session, Throwable t) {
+        SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
         future.setDeliveryStatus(DeliveryResultImpl.create(t));
+  
         if (session != null) {
             session.close();
         }

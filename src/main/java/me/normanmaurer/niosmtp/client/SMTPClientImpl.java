@@ -17,13 +17,18 @@
 package me.normanmaurer.niosmtp.client;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.Map;
 
 import me.normanmaurer.niosmtp.MessageInput;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPClientConstants;
+import me.normanmaurer.niosmtp.SMTPResponse;
+import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.client.callback.WelcomeResponseCallback;
+import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 
 
@@ -36,7 +41,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
  * @author Norman Maurer
  * 
  */
-public class SMTPClientImpl implements SMTPClientConstants,SMTPClient {
+public class SMTPClientImpl implements SMTPClientConstants,SMTPClient, SMTPClientSessionConstants {
 
     private SMTPClientTransport transport;
 
@@ -53,11 +58,42 @@ public class SMTPClientImpl implements SMTPClientConstants,SMTPClient {
         if (recipients == null || recipients.isEmpty()) {
             throw new IllegalArgumentException("At least one recipient must be given");
         }
-        
-        LinkedList<String> rcpts = new LinkedList<String>(recipients);
+
         final SMTPClientFutureImpl future = new SMTPClientFutureImpl();
 
-        transport.connect(host, config,new WelcomeResponseCallback(future, mailFrom, rcpts, msg, config));
+        transport.connect(host, config,new SMTPResponseCallback() {
+            SMTPResponseCallback callback = WelcomeResponseCallback.INSTANCE;
+            
+            @Override
+            public void onResponse(SMTPClientSession session, SMTPResponse response) {
+                initSession(session);
+                callback.onResponse(session, response);
+            }
+            
+            @Override
+            public void onException(SMTPClientSession session, Throwable t) {
+                initSession(session);
+                callback.onException(session, t);
+            }
+            
+            /**
+             * Init the SMTPClienSesion by adding all needed data to the attributes
+             * 
+             * @param session
+             */
+            private void initSession(SMTPClientSession session) {
+                Map<String, Object> attrs = session.getAttributes();
+                attrs.put(FUTURE_KEY, future);
+                if (mailFrom == null) {
+                    attrs.put(SENDER_KEY, "");
+                } else {
+                    attrs.put(SENDER_KEY, mailFrom);
+                }
+                attrs.put(RECIPIENTS_KEY, new LinkedList<String>(recipients));
+                attrs.put(MSG_KEY, msg);
+                attrs.put(DELIVERY_STATUS_KEY, new ArrayList<DeliveryRecipientStatus>());
+            }
+        });
         
        
         return future;

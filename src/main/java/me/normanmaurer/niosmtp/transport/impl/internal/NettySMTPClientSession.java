@@ -24,6 +24,7 @@ import java.util.Set;
 import javax.net.ssl.SSLEngine;
 
 import me.normanmaurer.niosmtp.MessageInput;
+import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.SMTPRequest;
@@ -53,12 +54,14 @@ public class NettySMTPClientSession implements SMTPClientSession, SMTPClientCons
     private Logger logger;
     private Map<String, Object> attrs = new HashMap<String, Object>();
     private DeliveryMode mode;
+    private SMTPClientConfig config;
 
-    public NettySMTPClientSession(Channel channel, Logger logger, DeliveryMode mode,  SSLEngine engine) {
+    public NettySMTPClientSession(Channel channel, Logger logger, SMTPClientConfig config, DeliveryMode mode,  SSLEngine engine) {
         this.logger = logger;
         this.channel = channel;
         this.engine = engine;
         this.mode = mode;
+        this.config = config;
     }
     
     
@@ -133,6 +136,12 @@ public class NettySMTPClientSession implements SMTPClientSession, SMTPClientCons
     @Override
     public DeliveryMode getDeliveryMode() {
         return mode;
+    }
+
+
+    @Override
+    public SMTPClientConfig getConfig() {
+        return config;
     }
     
 }

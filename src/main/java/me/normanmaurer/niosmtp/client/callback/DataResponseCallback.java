@@ -40,27 +40,37 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  *
  */
 public class DataResponseCallback extends AbstractResponseCallback {
-    private List<DeliveryRecipientStatus> statusList;
-    private MessageInput msg;
 
-    public DataResponseCallback(SMTPClientFutureImpl future, final List<DeliveryRecipientStatus> statusList, final MessageInput msg) {
-        super(future);
-        this.msg = msg;
-        this.statusList = statusList;
+    /**
+     * Get instance of this {@link SMTPResponseCallback} implemenation
+     */
+    public final static SMTPResponseCallback INSTANCE = new DataResponseCallback();
+    
+    private DataResponseCallback() {
     }
     
+    @SuppressWarnings("unchecked")
     @Override
     public void onResponse(SMTPClientSession session, SMTPResponse response) {
+
+        SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
+        List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
+        MessageInput msg = (MessageInput) session.getAttributes().get(MSG_KEY);
+        boolean pipeliningActive = session.getAttributes().containsKey(PIPELINING_ACTIVE_KEY);
+
         int code = response.getCode();
 
         if (code < 400) {
-            session.send(msg, new PostDataResponseCallback(future, statusList));
+            session.send(msg, PostDataResponseCallback.INSTANCE);
         } else {
-            Iterator<DeliveryRecipientStatus> status = statusList.iterator();
-            while(status.hasNext()) {
-                ((DeliveryRecipientStatusImpl)status.next()).setResponse(response);
-            }
-            future.setDeliveryStatus(new DeliveryResultImpl(statusList));
+            if (!pipeliningActive || !future.isDone()) {
+                Iterator<DeliveryRecipientStatus> status = statusList.iterator();
+                while(status.hasNext()) {
+                    ((DeliveryRecipientStatusImpl)status.next()).setResponse(response);
+                }
+                future.setDeliveryStatus(new DeliveryResultImpl(statusList));
+            } 
+
             session.send(SMTPRequestImpl.quit(), SMTPResponseCallback.EMPTY);
             session.close();
         }            

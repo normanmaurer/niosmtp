@@ -40,15 +40,25 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  *
  */
 public class PostDataResponseCallback extends AbstractResponseCallback {
-    private List<DeliveryRecipientStatus> statusList;
 
-    public PostDataResponseCallback(SMTPClientFutureImpl future, final List<DeliveryRecipientStatus> statusList) {
-        super(future);
-        this.future = future;
-        this.statusList = statusList;
+    
+    /**
+     * Get instance of this {@link SMTPResponseCallback} implemenation
+     */
+    public final static SMTPResponseCallback INSTANCE = new PostDataResponseCallback();
+    
+    
+    private PostDataResponseCallback() {
+        
     }
+    
+    @SuppressWarnings("unchecked")
     @Override
     public void onResponse(SMTPClientSession session, SMTPResponse response) {
+
+        SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
+        List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
+        
         int code = response.getCode();
 
         if (code < 400) {

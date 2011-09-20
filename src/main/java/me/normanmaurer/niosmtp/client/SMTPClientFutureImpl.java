@@ -26,6 +26,11 @@ import java.util.concurrent.TimeoutException;
 
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
+/**
+ * Basic {@link SMTPClientFuture} implementation 
+ * @author Norman Maurer
+ *
+ */
 public class SMTPClientFutureImpl implements SMTPClientFuture{
     
     private boolean isReady = false;
@@ -52,8 +57,6 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
             for (int i = 0; i < listeners.size(); i++) {
                 listeners.get(i).operationComplete(result);
             }
-        } else {
-            throw new IllegalStateException("Should not get called after future is ready");
         }
     }
 
@@ -89,7 +92,7 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
 
     @Override
     public synchronized boolean isDone() {
-        return isReady;
+        return isReady || isCancelled;
     }
 
     @Override

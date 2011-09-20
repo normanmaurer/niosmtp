@@ -16,12 +16,9 @@
 */
 package me.normanmaurer.niosmtp.client.callback;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import me.normanmaurer.niosmtp.MessageInput;
-import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
@@ -45,30 +42,28 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  */
 public class WelcomeResponseCallback extends AbstractResponseCallback {
 
-    private SMTPClientConfig config;
-    private LinkedList<String> recipients;
-    private List<DeliveryRecipientStatus> statusList = new ArrayList<DeliveryRecipientStatus> ();
-    private String mailFrom;
-    private MessageInput msg;
+    /**
+     * Get instance of this {@link SMTPResponseCallback} implemenation
+     */
+    public final static WelcomeResponseCallback INSTANCE = new WelcomeResponseCallback();
     
-    public WelcomeResponseCallback(SMTPClientFutureImpl future, final String mailFrom, final LinkedList<String> recipients, final MessageInput msg,  final SMTPClientConfig config) {
-        super(future);
-        this.config = config;
-        this.recipients = recipients;
-        this.msg = msg;
-        this.mailFrom = mailFrom;
+    private WelcomeResponseCallback() {
+        
     }
     
-    
+    @SuppressWarnings("unchecked")
     @Override
     public void onResponse(SMTPClientSession session, SMTPResponse response) {
+        List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
+        LinkedList<String> recipients = (LinkedList<String>) session.getAttributes().get(RECIPIENTS_KEY);
         int code = response.getCode();
-        if (code < 400) {
-            session.send(SMTPRequestImpl.ehlo(config.getHeloName()), new EhloResponseCallback(future, statusList, mailFrom, recipients, msg, config));
+        if (code < 400) {            
+            session.send(SMTPRequestImpl.ehlo(session.getConfig().getHeloName()), EhloResponseCallback.INSTANCE);
         } else {
             while (!recipients.isEmpty()) {
                 statusList.add(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response));
             }
+            SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
             future.setDeliveryStatus(new DeliveryResultImpl(statusList));
 
             session.send(SMTPRequestImpl.quit(), SMTPResponseCallback.EMPTY);

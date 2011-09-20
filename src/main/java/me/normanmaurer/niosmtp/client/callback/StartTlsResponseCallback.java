@@ -19,8 +19,6 @@ package me.normanmaurer.niosmtp.client.callback;
 import java.util.LinkedList;
 import java.util.List;
 
-import me.normanmaurer.niosmtp.MessageInput;
-import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
@@ -43,52 +41,45 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  * @author Norman Maurer
  *
  */
-public class StartTlsResponseCallback extends AbstractResponseCallback implements SMTPClientConstants, ResponseCallbackConstants{
+public class StartTlsResponseCallback extends AbstractResponseCallback implements SMTPClientConstants {
 
-    private SMTPClientConfig config;
-    private LinkedList<String> recipients;
-    private List<DeliveryRecipientStatus> statusList;
-    private String mailFrom;
-    private MessageInput msg;
-    
-    public StartTlsResponseCallback(SMTPClientFutureImpl future, final List<DeliveryRecipientStatus> statusList, final String mailFrom, final LinkedList<String> recipients, final MessageInput msg,  final SMTPClientConfig config) {
-        super(future);
+    /**
+     * Get instance of this {@link SMTPResponseCallback} implemenation
+     */
+    public final static SMTPResponseCallback INSTANCE = new StartTlsResponseCallback();
 
-        this.config = config;
-        this.recipients = recipients;
-        this.msg = msg;
-        this.mailFrom = mailFrom;
-        this.statusList = statusList;
+    private StartTlsResponseCallback() {
+        
     }
     
-
+    @SuppressWarnings("unchecked")
     @Override
     public void onResponse(SMTPClientSession session, SMTPResponse response) {
+        SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
+        LinkedList<String> recipients = (LinkedList<String>) session.getAttributes().get(RECIPIENTS_KEY);
+        List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
+        String mail = (String) session.getAttributes().get(SENDER_KEY);
+
+        
         int code = response.getCode();
         if (code < 400) {
             
             session.startTLS();
-            
-            String mail = mailFrom;
-            
-            // handle null senders
-            if (mail == null) {
-                mail = "";
-            }
+           
 
             // We use a SMTPPipelinedRequest if the SMTPServer supports PIPELINING. This will allow the NETTY to get
             // the MAX throughput as the encoder will write it out in one buffer if possible. This result in less system calls
-            if (session.getSupportedExtensions().contains(PIPELINING_EXTENSION) && config.getPipeliningMode() != PipeliningMode.NO) {
+            if (session.getSupportedExtensions().contains(PIPELINING_EXTENSION) && session.getConfig().getPipeliningMode() != PipeliningMode.NO) {
                 session.getAttributes().put(PIPELINING_ACTIVE_KEY, true);
-                session.send(SMTPRequestImpl.mail(mail), new MailResponseCallback(future, statusList, recipients, msg, config));
+                session.send(SMTPRequestImpl.mail(mail), MailResponseCallback.INSTANCE);
                 for (int i = 0; i < recipients.size(); i++) {
                     String rcpt = recipients.get(i);                      
-                    session.send(SMTPRequestImpl.rcpt(rcpt), new RcptResponseCallback(future, statusList, recipients, msg, rcpt, config));
+                    session.send(SMTPRequestImpl.rcpt(rcpt), RcptResponseCallback.INSTANCE);
 
                 }
-                session.send(SMTPRequestImpl.data(), new DataResponseCallback(future, statusList, msg));
+                session.send(SMTPRequestImpl.data(), DataResponseCallback.INSTANCE);
             } else {
-                session.send(SMTPRequestImpl.mail(mail), new MailResponseCallback(future, statusList, recipients, msg, config));
+                session.send(SMTPRequestImpl.mail(mail), MailResponseCallback.INSTANCE);
             }
 
         } else {
