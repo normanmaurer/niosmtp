@@ -35,7 +35,7 @@ import org.jboss.netty.handler.stream.ChunkedStream;
  * @author Norman Maurer
  *
  */
-public class MessageInputEncoder extends OneToOneEncoder implements SMTPClientConstants{
+class MessageInputEncoder extends OneToOneEncoder implements SMTPClientConstants{
 
     private SMTPClientSession session;
 

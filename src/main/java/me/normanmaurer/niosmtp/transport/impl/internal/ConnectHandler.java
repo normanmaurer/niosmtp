@@ -28,7 +28,7 @@ import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.slf4j.Logger;
 
-public class ConnectHandler extends SimpleChannelUpstreamHandler {
+class ConnectHandler extends SimpleChannelUpstreamHandler {
 
     private SSLEngine engine;
     private DeliveryMode mode;
