@@ -40,7 +40,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  * @author Norman Maurer
  *
  */
-public class MailResponseCallback extends AbstractResponseCallback {
+public class MailResponseCallback extends AbstractPipelineResponseCallback {
     
     /**
      * Get instance of this {@link SMTPResponseCallback} implemenation
@@ -53,7 +53,7 @@ public class MailResponseCallback extends AbstractResponseCallback {
 
     @SuppressWarnings("unchecked")
     @Override
-    public void onResponse(SMTPClientSession session, SMTPResponse response) {
+    protected void onResponseInternal(SMTPClientSession session, SMTPResponse response) {
         List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
         LinkedList<String> recipients = (LinkedList<String>) session.getAttributes().get(RECIPIENTS_KEY);
         SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
@@ -78,6 +78,7 @@ public class MailResponseCallback extends AbstractResponseCallback {
             // as otherwise we already sent this 
             if (!session.getAttributes().containsKey(PIPELINING_ACTIVE_KEY) || session.getConfig().getPipeliningMode() == PipeliningMode.NO) {
                 session.send(SMTPRequestImpl.rcpt(rcpt), RcptResponseCallback.INSTANCE);
+
             }
         }
       

@@ -187,7 +187,6 @@ public class SMTPClientTest {
             SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
             conf.setConnectionTimeout(4);
             conf.setResponseTimeout(5);
-            conf.setPipeliningMode(PipeliningMode.NO);;
             SMTPClientFuture future = c.deliver(new InetSocketAddress(port), "from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes())), conf);
             DeliveryResult dr = future.get();
             assertTrue(dr.isSuccess());

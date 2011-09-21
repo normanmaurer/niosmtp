@@ -39,7 +39,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  * @author Norman Maurer
  *
  */
-public class DataResponseCallback extends AbstractResponseCallback {
+public class DataResponseCallback extends AbstractPipelineResponseCallback {
 
     /**
      * Get instance of this {@link SMTPResponseCallback} implemenation
@@ -51,7 +51,7 @@ public class DataResponseCallback extends AbstractResponseCallback {
     
     @SuppressWarnings("unchecked")
     @Override
-    public void onResponse(SMTPClientSession session, SMTPResponse response) {
+    public void onResponseInternal(SMTPClientSession session, SMTPResponse response) {
 
         SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
         List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);

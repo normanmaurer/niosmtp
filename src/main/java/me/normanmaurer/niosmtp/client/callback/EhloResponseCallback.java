@@ -104,6 +104,7 @@ public class EhloResponseCallback extends AbstractResponseCallback implements SM
             if (supportsStartTLS && (session.getDeliveryMode() == DeliveryMode.STARTTLS_DEPEND || session.getDeliveryMode() == DeliveryMode.STARTTLS_TRY)) {
                 session.send(SMTPRequestImpl.startTls(), StartTlsResponseCallback.INSTANCE);
             } else {
+                
                 // We use a SMTPPipelinedRequest if the SMTPServer supports
                 // PIPELINING. This will allow the NETTY to get
                 // the MAX throughput as the encoder will write it out in one
@@ -132,6 +133,7 @@ public class EhloResponseCallback extends AbstractResponseCallback implements SM
             session.close();
 
         }
+        
     }
     
     

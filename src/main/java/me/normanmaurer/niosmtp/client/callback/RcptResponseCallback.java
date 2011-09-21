@@ -43,7 +43,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  * @author Norman Maurer
  *
  */
-public class RcptResponseCallback extends AbstractResponseCallback {
+public class RcptResponseCallback extends AbstractPipelineResponseCallback {
 
     /**
      * Get instance of this {@link SMTPResponseCallback} implemenation
@@ -57,7 +57,7 @@ public class RcptResponseCallback extends AbstractResponseCallback {
     
     @SuppressWarnings("unchecked")
     @Override
-    public void onResponse(SMTPClientSession session, SMTPResponse response) {
+    protected void onResponseInternal(SMTPClientSession session, SMTPResponse response) {
 
         SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
         LinkedList<String> recipients = (LinkedList<String>) session.getAttributes().get(RECIPIENTS_KEY);
