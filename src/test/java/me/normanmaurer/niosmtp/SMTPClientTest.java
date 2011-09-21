@@ -63,6 +63,13 @@ public class SMTPClientTest {
         return NettySMTPClientTransport.createPlain();
     }
     
+    protected SMTPClientConfigImpl createConfig() {
+        SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
+        conf.setConnectionTimeout(4);
+        conf.setResponseTimeout(5);
+        return conf;
+    }
+    
     @Test
     public void testRejectMailFrom() throws Exception {
         int port = 6028;
@@ -108,7 +115,8 @@ public class SMTPClientTest {
         
     }
 
-
+    
+    
     @Test
     public void testRejectHelo() throws Exception{
         int port = 6028;
