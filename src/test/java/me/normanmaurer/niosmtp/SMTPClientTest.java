@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 
 
-import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.client.DeliveryResult;
 import me.normanmaurer.niosmtp.client.SMTPClientImpl;
