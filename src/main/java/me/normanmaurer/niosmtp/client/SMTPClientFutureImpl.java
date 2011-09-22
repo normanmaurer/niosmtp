@@ -17,7 +17,6 @@
 package me.normanmaurer.niosmtp.client;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -35,7 +34,7 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
     
     private boolean isReady = false;
     private boolean isCancelled = false;
-    private final List<SMTPClientFutureListener> listeners = Collections.synchronizedList(new ArrayList<SMTPClientFutureListener>());
+    private final List<SMTPClientFutureListener> listeners = new ArrayList<SMTPClientFutureListener>();
     private DeliveryResult result;
     private SMTPClientSession session;
     
@@ -96,7 +95,7 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
     }
 
     @Override
-    public void addListener(SMTPClientFutureListener listener) {
+    public synchronized void addListener(SMTPClientFutureListener listener) {
         listeners.add(listener);
         if (isDone()) {
             listener.operationComplete(result);
@@ -104,7 +103,7 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
     }
 
     @Override
-    public void removeListener(SMTPClientFutureListener listener) {
+    public synchronized void removeListener(SMTPClientFutureListener listener) {
         listeners.remove(listener);
     }
 
