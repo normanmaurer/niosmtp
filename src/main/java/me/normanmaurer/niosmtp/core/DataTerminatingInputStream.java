@@ -38,6 +38,7 @@ public class DataTerminatingInputStream extends InputStream {
     boolean startLine = true;
     private boolean endOfStream = false;
     private PushbackInputStream in;
+    private boolean empty = true;
 
     public DataTerminatingInputStream(InputStream in) {
         this.in = new PushbackInputStream(in, 2);
@@ -47,9 +48,12 @@ public class DataTerminatingInputStream extends InputStream {
 
     @Override
     public int read() throws IOException {
-        
         PushbackInputStream pin = (PushbackInputStream) in;
         int i = pin.read();
+        if (empty && i != -1) {
+            empty = false;
+        }
+        
         if (startLine && endOfStream == false) {
             startLine = false;
             if (i == '.') {
@@ -81,7 +85,7 @@ public class DataTerminatingInputStream extends InputStream {
     }
 
     private void calculateExtraData() {
-        if (last == '\n') {
+        if (empty || last == '\n') {
             extraData = new byte[3];
             extraData[0] = '.';
             extraData[1] = '\r';
