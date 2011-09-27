@@ -116,10 +116,42 @@ public interface SMTPClientSession {
     
     
     /**
+     * Return <code>true</code> if the {@link SMTPClientSession} is closed (disconnected)
+     * 
+     * @return closed
+     */
+    public boolean isClosed();
+    
+    
+    /**
      * Return the configuration which was used to create this {@link SMTPClientSession}
      * 
      * @return config
      */
     public SMTPClientConfig getConfig();
+    
+    /**
+     * Add an {@link CloseListener} which will get notified once the {@link SMTPClientSession} was closed. This may be because the client or the server
+     * has closed it
+     * 
+     * @param listener
+     */
+    public void addCloseListener(CloseListener listener);
+    
+    /**
+     * Listener which will get notified once the {@link SMTPClientSession} was closed
+     * 
+     * @author Norman Maurer
+     *
+     */
+    public interface CloseListener {
+        
+        /**
+         * Which will get called once the {@link SMTPClientSession} was closed
+         * 
+         * @param session
+         */
+        public void onClose(SMTPClientSession session);
+    }
 
 }

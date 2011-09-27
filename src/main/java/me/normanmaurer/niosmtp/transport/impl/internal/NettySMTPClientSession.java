@@ -47,6 +47,7 @@ import org.slf4j.Logger;
  */
 public class NettySMTPClientSession implements SMTPClientSession, SMTPClientConstants, NettyConstants{
 
+    private int closeHandlerCount = 0;
     private int callbackCount = 0;
     private Channel channel;
     private SSLEngine engine;
@@ -142,6 +143,18 @@ public class NettySMTPClientSession implements SMTPClientSession, SMTPClientCons
     @Override
     public SMTPClientConfig getConfig() {
         return config;
+    }
+
+
+    @Override
+    public void addCloseListener(CloseListener listener) {
+        channel.getPipeline().addLast("closeListener" + closeHandlerCount++, new CloseListenerAdapter(this, listener));
+    }
+
+
+    @Override
+    public boolean isClosed() {
+        return !channel.isConnected();
     }
     
 }
