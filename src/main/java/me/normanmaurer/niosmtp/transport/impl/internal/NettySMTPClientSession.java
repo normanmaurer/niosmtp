@@ -18,6 +18,7 @@ package me.normanmaurer.niosmtp.transport.impl.internal;
 
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -51,7 +52,7 @@ public class NettySMTPClientSession implements SMTPClientSession, SMTPClientCons
     private int callbackCount = 0;
     private Channel channel;
     private SSLEngine engine;
-    private Set<String> extensions;
+    private Set<String> extensions = new HashSet<String>();
     private Logger logger;
     private Map<String, Object> attrs = new HashMap<String, Object>();
     private DeliveryMode mode;
@@ -107,7 +108,8 @@ public class NettySMTPClientSession implements SMTPClientSession, SMTPClientCons
     public void send(MessageInput msg, SMTPResponseCallback callback) {
         ChannelPipeline cp = channel.getPipeline();
         
-        channel.getPipeline().addBefore(IDLE_HANDLER_KEY, "callback" + callbackCount++, new SMTPCallbackHandlerAdapter(this,callback));
+        cp.addBefore(IDLE_HANDLER_KEY, "callback" + callbackCount++, new SMTPCallbackHandlerAdapter(this,callback));
+        
         if (cp.get(MessageInputEncoder.class) == null) {
             channel.getPipeline().addAfter(CHUNK_WRITE_HANDLER_KEY, "messageDataEncoder", new MessageInputEncoder(this));
         }
