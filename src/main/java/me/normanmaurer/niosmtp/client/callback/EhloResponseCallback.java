@@ -19,17 +19,14 @@ package me.normanmaurer.niosmtp.client.callback;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
+import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.SMTPUnsupportedExtensionException;
-import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
-import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus;
-import me.normanmaurer.niosmtp.client.DeliveryRecipientStatusImpl;
 import me.normanmaurer.niosmtp.client.DeliveryResultImpl;
 import me.normanmaurer.niosmtp.client.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
@@ -79,9 +76,7 @@ public class EhloResponseCallback extends AbstractResponseCallback implements SM
 
         SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
         String mail = (String) session.getAttributes().get(SENDER_KEY);
-        LinkedList<String> recipients = (LinkedList<String>) session.getAttributes().get(RECIPIENTS_KEY);
-        List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
-        
+        LinkedList<String> recipients = (LinkedList<String>) session.getAttributes().get(RECIPIENTS_KEY);        
         if (code < 400) {
             
             // Check if we depend on pipelining 
@@ -124,13 +119,7 @@ public class EhloResponseCallback extends AbstractResponseCallback implements SM
             }
 
         } else {
-            while (!recipients.isEmpty()) {
-                statusList.add(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response));
-            }
-
-            future.setDeliveryStatus(new DeliveryResultImpl(statusList));
-            session.send(SMTPRequestImpl.quit(), SMTPResponseCallback.EMPTY);
-            session.close();
+            setDeliveryStatusForAll(session, response);
 
         }
         

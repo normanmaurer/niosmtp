@@ -17,16 +17,11 @@
 package me.normanmaurer.niosmtp.client.callback;
 
 import java.util.LinkedList;
-import java.util.List;
 
+import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
-import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
-import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus;
-import me.normanmaurer.niosmtp.client.DeliveryRecipientStatusImpl;
-import me.normanmaurer.niosmtp.client.DeliveryResultImpl;
-import me.normanmaurer.niosmtp.client.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
@@ -54,20 +49,12 @@ public class MailResponseCallback extends AbstractPipelineResponseCallback {
     @SuppressWarnings("unchecked")
     @Override
     protected void onResponseInternal(SMTPClientSession session, SMTPResponse response) {
-        List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
         LinkedList<String> recipients = (LinkedList<String>) session.getAttributes().get(RECIPIENTS_KEY);
-        SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
 
         int code = response.getCode();
 
         if (code > 400) {
-            while (!recipients.isEmpty()) {
-                statusList.add(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response));
-            }
-
-            future.setDeliveryStatus(new DeliveryResultImpl(statusList));                
-            session.send(SMTPRequestImpl.quit(), SMTPResponseCallback.EMPTY);
-            session.close();
+            setDeliveryStatusForAll(session, response);
         } else {
             String rcpt = recipients.removeFirst();
             
