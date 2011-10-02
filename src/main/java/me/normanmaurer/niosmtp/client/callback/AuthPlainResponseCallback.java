@@ -69,8 +69,8 @@ public class AuthPlainResponseCallback extends AbstractAuthResponseCallback{
             if (response.getCode() == 334) {
                 session.getAttributes().put(PROCESS_AUTH, true);
                 Authentication auth = session.getConfig().getAuthentication();
-                String userPass = Base64.encodeBase64String(auth.getUsername().getBytes(CHARSET)) + "\0" + Base64.encodeBase64String(auth.getPassword().getBytes(CHARSET));
-                session.send(new SMTPRequestImpl(userPass, null), INSTANCE);
+                String userPass = auth.getUsername() + "\0" + auth.getPassword();
+                session.send(new SMTPRequestImpl(new String(Base64.encodeBase64(userPass.getBytes(CHARSET)), CHARSET), null), INSTANCE);
             } else {
                 setDeliveryStatusForAll(session, response);
             }

@@ -69,7 +69,7 @@ public class AuthLoginResponseCallback extends AbstractAuthResponseCallback{
 
             if (response.getCode() == 334) {
                 session.getAttributes().put(PROCESS_PASSWORD, true);
-                session.send(new SMTPRequestImpl(Base64.encodeBase64String(session.getConfig().getAuthentication().getPassword().getBytes(CHARSET)), null), INSTANCE);
+                session.send(new SMTPRequestImpl(new String(Base64.encodeBase64(session.getConfig().getAuthentication().getPassword().getBytes(CHARSET)), CHARSET), null), INSTANCE);
             } else {
                 setDeliveryStatusForAll(session, response);
 
@@ -77,7 +77,7 @@ public class AuthLoginResponseCallback extends AbstractAuthResponseCallback{
         } else {
             if (response.getCode() == 334) {
                 session.getAttributes().put(PROCESS_USERNAME, true);
-                session.send(new SMTPRequestImpl(Base64.encodeBase64String(session.getConfig().getAuthentication().getUsername().getBytes(CHARSET)), null), INSTANCE);
+                session.send(new SMTPRequestImpl(new String(Base64.encodeBase64(session.getConfig().getAuthentication().getUsername().getBytes(CHARSET)), CHARSET), null), INSTANCE);
             } else {
                 setDeliveryStatusForAll(session, response);
             }
