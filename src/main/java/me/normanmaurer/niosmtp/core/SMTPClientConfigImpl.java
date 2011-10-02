@@ -138,6 +138,12 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
         return auth;
     }
     
+    /**
+     * Set the {@link Authentication} to use. If you don't want to use AUTH just use <code>null</code> as parameter.
+     * Default is <code>null</code>
+     * 
+     * @param auth
+     */
     public void setAuthentication(Authentication auth) {
         this.auth = auth;
     }
