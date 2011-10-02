@@ -50,28 +50,22 @@ import org.junit.Test;
 
 public class SMTPClientAuthLoginTest extends SMTPClientTest{
 
+    protected final static String VALID_USER ="myuser";
+    protected final static String VALID_PASS ="mypassword";
+
     @Override
     protected NettyServer create(Hook hook) throws WiringException {
         SMTPConfigurationImpl config = new SMTPConfigurationImpl();
         SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain();
         chain.addHook(hook);
-        chain.addHook(new AuthHook() {
-            
-            @Override
-            public HookResult doAuth(SMTPSession session, String username, String password) {
-                if (username.equals("myuser") && password.equals("mypassword")) {
-                    return new HookResult(HookReturnCode.OK);
-                }
-                return new HookResult(HookReturnCode.DECLINED);
-            }
-        });
+        chain.addHook(new TestAuthHook());
         return new NettyServer(new SMTPProtocol(chain, config));
     }
 
     @Override
     protected SMTPClientConfigImpl createConfig() {
         SMTPClientConfigImpl config =  super.createConfig();
-        config.setAuthentication(createAuthentication("myuser", "mypassword"));
+        config.setAuthentication(createAuthentication(VALID_USER, VALID_PASS));
         return config;
     }
     
@@ -115,6 +109,17 @@ public class SMTPClientAuthLoginTest extends SMTPClientTest{
             transport.destroy();
         }
         
+    }
+    
+    protected class TestAuthHook implements AuthHook {
+        
+        @Override
+        public HookResult doAuth(SMTPSession session, String username, String password) {
+            if (username.equals(VALID_USER) && password.equals(VALID_PASS)) {
+                return new HookResult(HookReturnCode.OK);
+            }
+            return new HookResult(HookReturnCode.DECLINED);
+        }
     }
 
 }
