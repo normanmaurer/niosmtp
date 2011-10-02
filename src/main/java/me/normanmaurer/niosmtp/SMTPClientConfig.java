@@ -80,4 +80,13 @@ public interface SMTPClientConfig {
      * @return pipelining
      */
     public PipeliningMode getPipeliningMode();
+    
+    
+    /**
+     * Return the {@link Authentication} to use or <code>null</code> if none should be used
+     * 
+     * 
+     * @return auth 
+     */
+    public Authentication getAuthentication();
 }

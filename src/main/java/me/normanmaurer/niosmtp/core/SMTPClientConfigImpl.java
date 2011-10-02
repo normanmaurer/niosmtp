@@ -18,6 +18,7 @@ package me.normanmaurer.niosmtp.core;
 
 import java.net.InetSocketAddress;
 
+import me.normanmaurer.niosmtp.Authentication;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 
 /**
@@ -37,7 +38,8 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
     private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
     private InetSocketAddress localAddress = null;
     private PipeliningMode pipeliningMode = PipeliningMode.TRY;;
-    private int responseTimeout;
+    private int responseTimeout = DEFAULT_RESPONSE_TIMEOUT;
+    private Authentication auth;
     
     public SMTPClientConfigImpl() {
     }
@@ -129,6 +131,15 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
      */
     public void setResponseTimeout(int responseTimeout) {
         this.responseTimeout = responseTimeout;
+    }
+
+    @Override
+    public Authentication getAuthentication() {
+        return auth;
+    }
+    
+    public void setAuthentication(Authentication auth) {
+        this.auth = auth;
     }
 
 }
