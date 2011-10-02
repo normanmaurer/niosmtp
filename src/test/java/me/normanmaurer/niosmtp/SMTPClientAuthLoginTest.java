@@ -16,8 +16,24 @@
 */
 package me.normanmaurer.niosmtp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.ByteArrayInputStream;
+import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.Iterator;
+
+import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus;
+import me.normanmaurer.niosmtp.client.DeliveryResult;
+import me.normanmaurer.niosmtp.client.SMTPClientFuture;
+import me.normanmaurer.niosmtp.client.SMTPClientImpl;
 import me.normanmaurer.niosmtp.core.AuthenticationImpl;
 import me.normanmaurer.niosmtp.core.SMTPClientConfigImpl;
+import me.normanmaurer.niosmtp.core.SimpleMessageInput;
+import me.normanmaurer.niosmtp.transport.impl.NettySMTPClientTransport;
 
 import org.apache.james.protocols.api.handler.WiringException;
 import org.apache.james.protocols.impl.NettyServer;
@@ -29,6 +45,9 @@ import org.apache.james.protocols.smtp.hook.AuthHook;
 import org.apache.james.protocols.smtp.hook.Hook;
 import org.apache.james.protocols.smtp.hook.HookResult;
 import org.apache.james.protocols.smtp.hook.HookReturnCode;
+import org.apache.james.protocols.smtp.hook.SimpleHook;
+import org.apache.mailet.MailAddress;
+import org.junit.Test;
 
 public class SMTPClientAuthLoginTest extends SMTPClientTest{
 
@@ -59,6 +78,44 @@ public class SMTPClientAuthLoginTest extends SMTPClientTest{
     
     protected Authentication createAuthentication(String username, String password) {
         return AuthenticationImpl.login(username, password);
+    }
+
+    @Test
+    public void testRejectBecauseOfBadAuth() throws Exception {
+        int port = 6028;
+
+        NettyServer smtpServer = create(new SimpleHook());
+        smtpServer.setListenAddresses(Arrays.asList(new InetSocketAddress(port)));
+
+        smtpServer.bind();
+
+       
+        NettySMTPClientTransport transport = createSMTPClient();
+        SMTPClientImpl c = new SMTPClientImpl(transport);
+
+        try {
+            SMTPClientConfigImpl conf = createConfig();
+            conf.setAuthentication(createAuthentication("myuser", "mybadpassword"));
+
+            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), "from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes())), conf);
+            DeliveryResult dr = future.get();
+            assertTrue(dr.isSuccess());
+            assertNull(dr.getException());
+            Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
+            DeliveryRecipientStatus status = it.next();
+            assertEquals(DeliveryRecipientStatus.Status.PermanentError, status.getStatus());
+            assertEquals(535, status.getResponse().getCode());
+
+            status = it.next();
+            assertEquals(DeliveryRecipientStatus.Status.PermanentError, status.getStatus());
+            assertEquals(535, status.getResponse().getCode());
+            
+            assertFalse(it.hasNext());
+        } finally {
+            smtpServer.unbind();
+            transport.destroy();
+        }
+        
     }
 
 }
