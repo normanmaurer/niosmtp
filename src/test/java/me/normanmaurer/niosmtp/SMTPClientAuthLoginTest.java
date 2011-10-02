@@ -46,7 +46,6 @@ import org.apache.james.protocols.smtp.hook.Hook;
 import org.apache.james.protocols.smtp.hook.HookResult;
 import org.apache.james.protocols.smtp.hook.HookReturnCode;
 import org.apache.james.protocols.smtp.hook.SimpleHook;
-import org.apache.mailet.MailAddress;
 import org.junit.Test;
 
 public class SMTPClientAuthLoginTest extends SMTPClientTest{
