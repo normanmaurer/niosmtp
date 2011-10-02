@@ -18,9 +18,9 @@ package me.normanmaurer.niosmtp.client.callback;
 
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Set;
 
+import me.normanmaurer.niosmtp.Authentication;
 import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.SMTPRequest;
@@ -54,7 +54,6 @@ public class EhloResponseCallback extends AbstractResponseCallback implements SM
         
     }
     
-    @SuppressWarnings("unchecked")
     @Override
     public void onResponse(SMTPClientSession session, SMTPResponse response) {
         boolean supportsPipelining = false;
@@ -76,7 +75,6 @@ public class EhloResponseCallback extends AbstractResponseCallback implements SM
 
         SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
         String mail = (String) session.getAttributes().get(SENDER_KEY);
-        LinkedList<String> recipients = (LinkedList<String>) session.getAttributes().get(RECIPIENTS_KEY);        
         if (code < 400) {
             
             // Check if we depend on pipelining 
@@ -99,22 +97,29 @@ public class EhloResponseCallback extends AbstractResponseCallback implements SM
             if (supportsStartTLS && (session.getDeliveryMode() == DeliveryMode.STARTTLS_DEPEND || session.getDeliveryMode() == DeliveryMode.STARTTLS_TRY)) {
                 session.send(SMTPRequestImpl.startTls(), StartTlsResponseCallback.INSTANCE);
             } else {
-                
-                // We use a SMTPPipelinedRequest if the SMTPServer supports
-                // PIPELINING. This will allow the NETTY to get
-                // the MAX throughput as the encoder will write it out in one
-                // buffer if possible. This result in less system calls
-                if (supportsPipelining && session.getConfig().getPipeliningMode() != PipeliningMode.NO) {
-                    session.getAttributes().put(PIPELINING_ACTIVE_KEY, true);
-                    session.send(SMTPRequestImpl.mail(mail), MailResponseCallback.INSTANCE);
-                    for (int i = 0; i < recipients.size(); i++) {
-                        String rcpt = recipients.get(i);
-                        session.send(SMTPRequestImpl.rcpt(rcpt), RcptResponseCallback.INSTANCE);
-
+                Authentication auth = session.getConfig().getAuthentication();
+                if (auth == null) {
+                    // We use a SMTPPipelinedRequest if the SMTPServer supports
+                    // PIPELINING. This will allow the NETTY to get
+                    // the MAX throughput as the encoder will write it out in one
+                    // buffer if possible. This result in less system calls
+                    if (supportsPipelining && session.getConfig().getPipeliningMode() != PipeliningMode.NO) {
+                        pipelining(session);
+                    } else {
+                        session.send(SMTPRequestImpl.mail(mail), MailResponseCallback.INSTANCE);
                     }
-                    session.send(SMTPRequestImpl.data(), DataResponseCallback.INSTANCE);
                 } else {
-                    session.send(SMTPRequestImpl.mail(mail), MailResponseCallback.INSTANCE);
+                    switch (auth.getMode()) {
+                    case Plain:
+                        session.send(SMTPRequestImpl.authPlain(), AuthPlainResponseCallback.INSTANCE);
+
+                        break;
+                    case Login:
+                        session.send(SMTPRequestImpl.authLogin(), AuthLoginResponseCallback.INSTANCE);
+
+                    default:
+                        break;
+                    }
                 }
             }
 

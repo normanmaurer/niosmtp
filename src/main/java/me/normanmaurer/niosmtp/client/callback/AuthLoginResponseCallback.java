@@ -16,20 +16,28 @@
 */
 package me.normanmaurer.niosmtp.client.callback;
 
-import java.nio.charset.Charset;
-
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
+import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 import org.apache.commons.codec.binary.Base64;
 
-public class AuthLoginResponseCallback extends AbstractResponseCallback{
+/**
+ * {@link AbstractAuthResponseCallback} which handles <code>AUTH LOGIN</code>
+ * 
+ * @author Norman Maurer
+ *
+ */
+public class AuthLoginResponseCallback extends AbstractAuthResponseCallback{
 
-    private final static SMTPResponseCallback INSTANCE = new AuthLoginResponseCallback();
+
+    /**
+     * Get instance of this {@link SMTPResponseCallback} implementation
+     */
+    public final static SMTPResponseCallback INSTANCE = new AuthLoginResponseCallback();
     
-    private final static Charset CHARSET = Charset.forName("US_ASCII");
     private final static String PROCESS_USERNAME = "PROCESS_USERNAME";
     private final static String PROCESS_PASSWORD = "PROCESS_PASSWORD";
 
@@ -39,14 +47,26 @@ public class AuthLoginResponseCallback extends AbstractResponseCallback{
     @Override
     public void onResponse(SMTPClientSession session, SMTPResponse response) {
         if (session.getAttributes().containsKey(PROCESS_PASSWORD)) {
+            session.getAttributes().remove(PROCESS_PASSWORD);
             if (response.getCode() == 235) {
                 String mail = (String) session.getAttributes().get(SENDER_KEY);
-
-                session.send(SMTPRequestImpl.mail(mail), MailResponseCallback.INSTANCE);
+                
+                boolean supportsPipelining = session.getSupportedExtensions().contains(PIPELINING_EXTENSION);
+                // We use a SMTPPipelinedRequest if the SMTPServer supports
+                // PIPELINING. This will allow the NETTY to get
+                // the MAX throughput as the encoder will write it out in one
+                // buffer if possible. This result in less system calls
+                if (supportsPipelining && session.getConfig().getPipeliningMode() != PipeliningMode.NO) {
+                    pipelining(session);
+                } else {
+                    session.send(SMTPRequestImpl.mail(mail), MailResponseCallback.INSTANCE);
+                }
             } else {
                 setDeliveryStatusForAll(session, response);
             }
         } else if (session.getAttributes().containsKey(PROCESS_USERNAME)) {
+            session.getAttributes().remove(PROCESS_USERNAME);
+
             if (response.getCode() == 334) {
                 session.getAttributes().put(PROCESS_PASSWORD, true);
                 session.send(new SMTPRequestImpl(Base64.encodeBase64String(session.getConfig().getAuthentication().getPassword().getBytes(CHARSET)), null), INSTANCE);

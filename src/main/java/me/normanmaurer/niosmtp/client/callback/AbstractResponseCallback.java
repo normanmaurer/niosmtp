@@ -63,4 +63,20 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
         session.close();
     }
     
+    @SuppressWarnings("unchecked")
+    protected void pipelining(SMTPClientSession session) {
+        LinkedList<String> recipients = (LinkedList<String>) session.getAttributes().get(RECIPIENTS_KEY);
+        String mail = (String) session.getAttributes().get(SENDER_KEY);
+
+        
+        session.getAttributes().put(PIPELINING_ACTIVE_KEY, true);
+        session.send(SMTPRequestImpl.mail(mail), MailResponseCallback.INSTANCE);
+        for (int i = 0; i < recipients.size(); i++) {
+            String rcpt = recipients.get(i);                      
+            session.send(SMTPRequestImpl.rcpt(rcpt), RcptResponseCallback.INSTANCE);
+
+        }
+        session.send(SMTPRequestImpl.data(), DataResponseCallback.INSTANCE);
+    }
+    
 }

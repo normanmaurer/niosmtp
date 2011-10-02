@@ -42,7 +42,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 public class DataResponseCallback extends AbstractPipelineResponseCallback {
 
     /**
-     * Get instance of this {@link SMTPResponseCallback} implemenation
+     * Get instance of this {@link SMTPResponseCallback} implementation
      */
     public final static SMTPResponseCallback INSTANCE = new DataResponseCallback();
     

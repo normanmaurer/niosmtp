@@ -23,7 +23,9 @@ public class SMTPRequestImpl implements SMTPRequest{
     private final static SMTPRequest QUIT_REQUEST = new SMTPRequestImpl("QUIT", null);
     private final static SMTPRequest STARTTLS_REQUEST = new SMTPRequestImpl("STARTTLS", null);
     private final static SMTPRequest DATA_REQUEST = new SMTPRequestImpl("DATA", null);
-    
+    private final static SMTPRequest AUTH_LOGIN_REQUEST = new SMTPRequestImpl("AUTH", "LOGIN");
+    private final static SMTPRequest AUTH_PLAIN_REQUEST = new SMTPRequestImpl("AUTH", "PLAIN");
+
     private String command;
     private String argument;
 
@@ -116,5 +118,24 @@ public class SMTPRequestImpl implements SMTPRequest{
      */
     public static SMTPRequest startTls() {
         return STARTTLS_REQUEST;
+    }
+    
+    /**
+     * Create a <code>AUTH PLAIN</code> {@link SMTPRequest}
+     * 
+     * @return authPlain
+     */
+    public static SMTPRequest authPlain() {
+        return AUTH_PLAIN_REQUEST;
+    }
+    
+    
+    /**
+     * Create a <code>AUTH LOGIN</code> {@link SMTPRequest}
+     * 
+     * @return authLogin
+     */
+    public static SMTPRequest authLogin() {
+        return AUTH_LOGIN_REQUEST;
     }
 }

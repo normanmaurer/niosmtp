@@ -16,8 +16,6 @@
 */
 package me.normanmaurer.niosmtp.client.callback;
 
-import java.util.LinkedList;
-
 import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.SMTPRequest;
@@ -47,10 +45,8 @@ public class StartTlsResponseCallback extends AbstractResponseCallback implement
         
     }
     
-    @SuppressWarnings("unchecked")
     @Override
     public void onResponse(SMTPClientSession session, SMTPResponse response) {
-        LinkedList<String> recipients = (LinkedList<String>) session.getAttributes().get(RECIPIENTS_KEY);
         String mail = (String) session.getAttributes().get(SENDER_KEY);
 
         
@@ -63,14 +59,7 @@ public class StartTlsResponseCallback extends AbstractResponseCallback implement
             // We use a SMTPPipelinedRequest if the SMTPServer supports PIPELINING. This will allow the NETTY to get
             // the MAX throughput as the encoder will write it out in one buffer if possible. This result in less system calls
             if (session.getSupportedExtensions().contains(PIPELINING_EXTENSION) && session.getConfig().getPipeliningMode() != PipeliningMode.NO) {
-                session.getAttributes().put(PIPELINING_ACTIVE_KEY, true);
-                session.send(SMTPRequestImpl.mail(mail), MailResponseCallback.INSTANCE);
-                for (int i = 0; i < recipients.size(); i++) {
-                    String rcpt = recipients.get(i);                      
-                    session.send(SMTPRequestImpl.rcpt(rcpt), RcptResponseCallback.INSTANCE);
-
-                }
-                session.send(SMTPRequestImpl.data(), DataResponseCallback.INSTANCE);
+                pipelining(session);
             } else {
                 session.send(SMTPRequestImpl.mail(mail), MailResponseCallback.INSTANCE);
             }

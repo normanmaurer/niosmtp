@@ -16,6 +16,11 @@
 */
 package me.normanmaurer.niosmtp;
 
+/**
+ * 
+ * @author Norman Maurer
+ *
+ */
 public interface Authentication {
 
 
@@ -24,9 +29,25 @@ public interface Authentication {
         Login
     }
     
+    
+    /**
+     * Return the {@link AuthMode}
+     * 
+     * @return mode
+     */
     public AuthMode getMode();
     
+    /**
+     * Return the username
+     * 
+     * @return username
+     */
     public String getUsername();
     
+    /**
+     * Return password
+     * 
+     * @return password
+     */
     public String getPassword();
 }
