@@ -48,7 +48,7 @@ class SMTPRequestEncoder extends OneToOneEncoder implements SMTPClientConstants{
             }
             
           
-            return ChannelBuffers.wrappedBuffer(ChannelBuffers.wrappedBuffer(request.getBytes(CHARSET), CRLF.getBytes(CHARSET)));
+            return ChannelBuffers.wrappedBuffer(request.getBytes(CHARSET), CRLF.getBytes(CHARSET));
         }
         return msg;
     }
