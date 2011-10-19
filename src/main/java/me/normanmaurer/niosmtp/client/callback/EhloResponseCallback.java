@@ -23,6 +23,7 @@ import java.util.Set;
 import me.normanmaurer.niosmtp.Authentication;
 import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.SMTPClientConstants;
+import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
@@ -44,11 +45,16 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  */
 public class EhloResponseCallback extends AbstractResponseCallback implements SMTPClientConstants{
 
+    
     /**
      * Get instance of this {@link SMTPResponseCallback} implemenation
      */
     public static final SMTPResponseCallback INSTANCE = new EhloResponseCallback();
     
+    private static final SMTPException PIPELINING_NOT_SUPPORTED_EXECTION = new SMTPUnsupportedExtensionException("Extension PIPELINING is not supported");
+    
+    private static final SMTPException STARTTLS_NOT_SUPPORTED_EXECTION = new SMTPUnsupportedExtensionException("Extension STARTTLS is not supported");
+
     private EhloResponseCallback() {
         
     }
@@ -77,12 +83,12 @@ public class EhloResponseCallback extends AbstractResponseCallback implements SM
             
             // Check if we depend on pipelining 
             if (!supportsPipelining && session.getConfig().getPipeliningMode() == PipeliningMode.DEPEND) {
-                onException(session,new SMTPUnsupportedExtensionException("Extension PIPELINING is not supported"));
+                onException(session, PIPELINING_NOT_SUPPORTED_EXECTION);
                 return;
             }
 
             if (!supportsStartTLS && session.getDeliveryMode() == DeliveryMode.STARTTLS_DEPEND) {
-                onException(session, new SMTPUnsupportedExtensionException("Extension STARTTLS is not supported"));
+                onException(session, STARTTLS_NOT_SUPPORTED_EXECTION);
                 return;
             }
             
