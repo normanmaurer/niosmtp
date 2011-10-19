@@ -78,6 +78,9 @@ public class SMTPTransactionImpl implements SMTPTransaction{
      * @return transactions
      */
     public static SMTPTransaction[] create(final String sender, final Collection<String> recipients, final MessageInput... messages) {
+        if (messages == null || messages.length <1 ){
+            throw new IllegalArgumentException("At least one MessageInput must be given");
+        }
         SMTPTransaction[] transactions = new SMTPTransaction[messages.length];
         for (int i = 0; i < transactions.length; i++) {
             transactions[i] = new SMTPTransactionImpl(sender, recipients, messages[i]);
