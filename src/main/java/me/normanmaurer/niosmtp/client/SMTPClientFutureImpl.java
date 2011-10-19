@@ -17,6 +17,7 @@
 package me.normanmaurer.niosmtp.client;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -35,7 +36,7 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
     private boolean isReady = false;
     private boolean isCancelled = false;
     private final List<SMTPClientFutureListener> listeners = new ArrayList<SMTPClientFutureListener>();
-    private DeliveryResult result;
+    private Iterable<DeliveryResult> result;
     private SMTPClientSession session;
     
     /**
@@ -45,7 +46,7 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
      * @param result
      * @throws illegalStateException
      */
-    public synchronized void setDeliveryStatus(DeliveryResult result) {
+    public synchronized void setDeliveryStatus(Iterable<DeliveryResult> result) {
         if (!isDone()) {
             this.result = result;
             isReady = true;
@@ -54,7 +55,7 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
             
             // notify the listeners
             for (int i = 0; i < listeners.size(); i++) {
-                listeners.get(i).operationComplete(result);
+                listeners.get(i).operationComplete(result.iterator());
             }
         }
     }
@@ -98,7 +99,7 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
     public synchronized void addListener(SMTPClientFutureListener listener) {
         listeners.add(listener);
         if (isDone()) {
-            listener.operationComplete(result);
+            listener.operationComplete(result.iterator());
         }
     }
 
@@ -109,18 +110,18 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
 
 
     @Override
-    public DeliveryResult get() throws InterruptedException, ExecutionException {
+    public Iterator<DeliveryResult> get() throws InterruptedException, ExecutionException {
         checkReady();
-        return result;
+        return result.iterator();
     }
 
 
 
     @Override
-    public DeliveryResult get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+    public Iterator<DeliveryResult> get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         checkReady(unit.toMillis(timeout));
         if (isDone()) {
-            return result;
+            return result.iterator();
         } else {
             return null;
         }

@@ -16,6 +16,7 @@
 */
 package me.normanmaurer.niosmtp.client;
 
+import java.util.Iterator;
 import java.util.concurrent.Future;
 
 
@@ -26,7 +27,7 @@ import java.util.concurrent.Future;
  * @author Norman Maurer
  *
  */
-public interface SMTPClientFuture extends Future<DeliveryResult>{
+public interface SMTPClientFuture extends Future<Iterator<DeliveryResult>>{
 
     /**
      * Add the {@link SMTPClientFutureListener} which will notified one the delivery is complete.

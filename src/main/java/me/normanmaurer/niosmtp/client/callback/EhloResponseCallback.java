@@ -27,8 +27,7 @@ import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.SMTPUnsupportedExtensionException;
-import me.normanmaurer.niosmtp.client.DeliveryResultImpl;
-import me.normanmaurer.niosmtp.client.SMTPClientFutureImpl;
+import me.normanmaurer.niosmtp.client.SMTPTransaction;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.transport.DeliveryMode;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
@@ -73,22 +72,17 @@ public class EhloResponseCallback extends AbstractResponseCallback implements SM
         
         int code = response.getCode();
 
-        SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
-        String mail = (String) session.getAttributes().get(SENDER_KEY);
+        String mail = ((SMTPTransaction)session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
         if (code < 400) {
             
             // Check if we depend on pipelining 
             if (!supportsPipelining && session.getConfig().getPipeliningMode() == PipeliningMode.DEPEND) {
-                future.setDeliveryStatus(DeliveryResultImpl.create(new SMTPUnsupportedExtensionException("Extension PIPELINING is not supported")));
-                session.send(SMTPRequestImpl.quit(), SMTPResponseCallback.EMPTY);
-                session.close();
+                onException(session,new SMTPUnsupportedExtensionException("Extension PIPELINING is not supported"));
                 return;
             }
 
             if (!supportsStartTLS && session.getDeliveryMode() == DeliveryMode.STARTTLS_DEPEND) {
-                future.setDeliveryStatus(DeliveryResultImpl.create(new SMTPUnsupportedExtensionException("Extension STARTTLS is not supported")));
-                session.send(SMTPRequestImpl.quit(), SMTPResponseCallback.EMPTY);
-                session.close();
+                onException(session, new SMTPUnsupportedExtensionException("Extension STARTTLS is not supported"));
                 return;
             }
             

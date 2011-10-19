@@ -20,6 +20,7 @@ import me.normanmaurer.niosmtp.Authentication;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
+import me.normanmaurer.niosmtp.client.SMTPTransaction;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
@@ -49,7 +50,7 @@ public class AuthPlainResponseCallback extends AbstractAuthResponseCallback{
     public void onResponse(SMTPClientSession session, SMTPResponse response) {
         if (session.getAttributes().remove(PROCESS_AUTH) != null) {
             if (response.getCode() == 235) {
-                String mail = (String) session.getAttributes().get(SENDER_KEY);
+                String mail = ((SMTPTransaction)session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
 
                 
                 boolean supportsPipelining = session.getSupportedExtensions().contains(PIPELINING_EXTENSION);

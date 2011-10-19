@@ -18,11 +18,10 @@ package me.normanmaurer.niosmtp.client;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Map;
 
-import me.normanmaurer.niosmtp.MessageInput;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.SMTPResponse;
@@ -54,13 +53,14 @@ public class SMTPClientImpl implements SMTPClientConstants,SMTPClient, SMTPClien
 
 
     @Override
-    public SMTPClientFuture deliver(InetSocketAddress host, final String mailFrom, final Collection<String> recipients, final MessageInput msg, final SMTPClientConfig config) {
-        if (recipients == null || recipients.isEmpty()) {
-            throw new IllegalArgumentException("At least one recipient must be given");
+    public SMTPClientFuture deliver(InetSocketAddress host, final SMTPClientConfig config, final SMTPTransaction... transactions) {
+        if (transactions == null || transactions.length == 0) {
+            throw new IllegalArgumentException("SMTPTransaction parameter must be not null and the length must be > 0");
         }
 
         final SMTPClientFutureImpl future = new SMTPClientFutureImpl();
 
+        
         transport.connect(host, config,new SMTPResponseCallback() {
             SMTPResponseCallback callback = WelcomeResponseCallback.INSTANCE;
             
@@ -83,15 +83,16 @@ public class SMTPClientImpl implements SMTPClientConstants,SMTPClient, SMTPClien
              */
             private void initSession(SMTPClientSession session) {
                 Map<String, Object> attrs = session.getAttributes();
+                
+                LinkedList<SMTPTransaction> transactionList = new LinkedList<SMTPTransaction>(Arrays.asList(transactions));
+                attrs.put(SMTP_TRANSACTIONS_KEY, transactionList);
+                SMTPTransaction transaction = transactionList.remove();
+                attrs.put(CURRENT_SMTP_TRANSACTION_KEY, transaction);
+                attrs.put(RECIPIENTS_KEY, new LinkedList<String>(transaction.getRecipients()));
+
                 attrs.put(FUTURE_KEY, future);
-                if (mailFrom == null) {
-                    attrs.put(SENDER_KEY, "");
-                } else {
-                    attrs.put(SENDER_KEY, mailFrom);
-                }
-                attrs.put(RECIPIENTS_KEY, new LinkedList<String>(recipients));
-                attrs.put(MSG_KEY, msg);
                 attrs.put(DELIVERY_STATUS_KEY, new ArrayList<DeliveryRecipientStatus>());
+                attrs.put(DELIVERY_RESULT_LIST_KEY, new ArrayList<DeliveryResult>());
             }
         });
         

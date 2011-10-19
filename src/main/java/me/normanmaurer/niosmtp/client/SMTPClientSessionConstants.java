@@ -19,7 +19,6 @@ package me.normanmaurer.niosmtp.client;
 import java.util.LinkedList;
 import java.util.List;
 
-import me.normanmaurer.niosmtp.MessageInput;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
@@ -36,25 +35,15 @@ public interface SMTPClientSessionConstants {
     public static final String FUTURE_KEY = "future";
    
     /**
-     * Key under which the sender (MAIL FROM) is stored as a {@link String}
-     */
-    public static final String SENDER_KEY = "sender";
-    
-    /**
      * Key under which the current recipient (RCPT TO) is stored as a {@link String}
      */
     public static final String CURRENT_RCPT_KEY = "cur_rcpt";
     
-    /**
-     * Key under which the working copy of the to-processing recipients are stored as a {@link LinkedList} which holds the recipients
-     * as {@link String} objects
-     */
-    public static final String RECIPIENTS_KEY = "rcpts";
     
     /**
-     * Key under which the {@link MessageInput} is stored 
+     * Key under which the recipients (RCPT TO) is stored as a LinkedList
      */
-    public static final String MSG_KEY = "msg";
+    public static final String RECIPIENTS_KEY = "recipients";
     
     /**
      * Key under which the already processed {@link DeliveryRecipientStatus} are stored in a {@link List}
@@ -64,6 +53,25 @@ public interface SMTPClientSessionConstants {
     /**
      * Key under which we store if <code>PIPELINING</code> is active. 
      */
-    public final static String PIPELINING_ACTIVE_KEY = "PIPELINING_ACTIVE";
+    public final static String PIPELINING_ACTIVE_KEY = "pipelining_active";
+    
+    
+    /**
+     * Key under which the already processed {@link DeliveryResult}'s are stored as a {@link List}
+     */
+    public static final String DELIVERY_RESULT_LIST_KEY = "delivery_result_List";
+
+    
+    
+    /**
+     * Key under which the {@link SMTPTransaction}'s are stored as a {@link LinkedList}
+     */
+    public final static String SMTP_TRANSACTIONS_KEY = "smtp_transactions";
+    
+    /**
+     * Key under which the current {@link SMTPTransaction} is stored
+     */
+    public final static String CURRENT_SMTP_TRANSACTION_KEY = "cur_smtp_transaction";
+
 
 }

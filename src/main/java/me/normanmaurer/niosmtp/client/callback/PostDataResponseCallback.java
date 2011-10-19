@@ -24,10 +24,7 @@ import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.client.DeliveryRecipientStatusImpl;
-import me.normanmaurer.niosmtp.client.DeliveryResultImpl;
 import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus.Status;
-import me.normanmaurer.niosmtp.client.SMTPClientFutureImpl;
-import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 
@@ -56,7 +53,6 @@ public class PostDataResponseCallback extends AbstractResponseCallback {
     @Override
     public void onResponse(SMTPClientSession session, SMTPResponse response) {
 
-        SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
         List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
         
         int code = response.getCode();
@@ -71,18 +67,15 @@ public class PostDataResponseCallback extends AbstractResponseCallback {
                     ((DeliveryRecipientStatusImpl)s).setResponse(response);
                 }
             }
-            future.setDeliveryStatus(new DeliveryResultImpl(statusList));
-
         } else {
             Iterator<DeliveryRecipientStatus> status = statusList.iterator();
             while(status.hasNext()) {
                 ((DeliveryRecipientStatusImpl)status.next()).setResponse(response);
             }
-            future.setDeliveryStatus(new DeliveryResultImpl(statusList));
 
         }    
-        session.send(SMTPRequestImpl.quit(), SMTPResponseCallback.EMPTY);
-        session.close();
+        setDeliveryStatus(session);
+
     }
 
     

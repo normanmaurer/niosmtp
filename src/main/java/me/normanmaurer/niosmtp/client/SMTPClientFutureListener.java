@@ -16,6 +16,8 @@
 */
 package me.normanmaurer.niosmtp.client;
 
+import java.util.Iterator;
+
 
 /**
  * A listener which will get informed once the SMTP delivery was done
@@ -30,5 +32,5 @@ public interface SMTPClientFutureListener {
      * 
      * @param status
      */
-    void operationComplete(DeliveryResult result); 
+    void operationComplete(Iterator<DeliveryResult> result); 
 }

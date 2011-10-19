@@ -31,6 +31,8 @@ import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.client.DeliveryResult;
 import me.normanmaurer.niosmtp.client.SMTPClientImpl;
 import me.normanmaurer.niosmtp.client.SMTPClientFuture;
+import me.normanmaurer.niosmtp.client.SMTPTransaction;
+import me.normanmaurer.niosmtp.client.SMTPTransactionImpl;
 import me.normanmaurer.niosmtp.core.SMTPClientConfigImpl;
 import me.normanmaurer.niosmtp.core.SimpleMessageInput;
 import me.normanmaurer.niosmtp.transport.impl.NettySMTPClientTransport;
@@ -94,8 +96,8 @@ public class SMTPClientTest {
 
         try {
             SMTPClientConfigImpl conf = createConfig();
-            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), "from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes())), conf);
-            DeliveryResult dr = future.get();
+            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
+            DeliveryResult dr = future.get().next();
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());
             Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
@@ -143,8 +145,8 @@ public class SMTPClientTest {
 
         try {
             SMTPClientConfigImpl conf = createConfig();
-            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), "from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes())), conf);
-            DeliveryResult dr = future.get();
+            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
+            DeliveryResult dr = future.get().next();
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());
             Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
@@ -191,8 +193,8 @@ public class SMTPClientTest {
         try {
             SMTPClientConfigImpl conf = createConfig();
 
-            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), "from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes())), conf);
-            DeliveryResult dr = future.get();
+            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
+            DeliveryResult dr = future.get().next();
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());
             Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
@@ -239,8 +241,8 @@ public class SMTPClientTest {
         try {
             SMTPClientConfigImpl conf = createConfig();
 
-            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), "from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes())), conf);
-            DeliveryResult dr = future.get();
+            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
+            DeliveryResult dr = future.get().next();
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());
             Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
@@ -292,8 +294,8 @@ public class SMTPClientTest {
         try {
             SMTPClientConfigImpl conf = createConfig();
 
-            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), "from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com", "to3@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes())), conf);
-            DeliveryResult dr = future.get();
+            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com", "to3@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
+            DeliveryResult dr = future.get().next();
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());
             Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
@@ -320,6 +322,88 @@ public class SMTPClientTest {
         
     }
     
+ 
+    @Test
+    public void testMultiplePerConnection() throws Exception {
+        int port = 6028;
+
+
+        NettyServer smtpServer = create(new SimpleHook() {
+
+        });
+        smtpServer.setListenAddresses(Arrays.asList(new InetSocketAddress(port)));
+
+        smtpServer.bind();
+
+
+       
+        
+        NettySMTPClientTransport transport = createSMTPClient();
+        SMTPClientImpl c = new SMTPClientImpl(transport);
+
+        try {
+            SMTPClientConfigImpl conf = createConfig();
+            SMTPTransaction transaction = new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com", "to3@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes())));
+            
+            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPTransaction[] {transaction, transaction});
+            Iterator<DeliveryResult> results = future.get();
+            
+            DeliveryResult dr = results.next();
+            
+            
+            assertTrue(dr.isSuccess());
+            assertNull(dr.getException());
+            Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
+            DeliveryRecipientStatus status = it.next();
+            assertEquals(DeliveryRecipientStatus.Status.Ok, status.getStatus());
+            assertEquals(250, status.getResponse().getCode());
+            assertEquals("to@example.com", status.getAddress());
+            
+            status = it.next();
+            assertEquals(DeliveryRecipientStatus.Status.Ok, status.getStatus());
+            assertEquals(250, status.getResponse().getCode());
+            assertEquals("to2@example.com", status.getAddress());
+
+            status = it.next();
+            assertEquals(DeliveryRecipientStatus.Status.Ok, status.getStatus());
+            assertEquals(250, status.getResponse().getCode());
+            assertEquals("to3@example.com", status.getAddress());
+            
+            assertFalse(it.hasNext());
+            
+            
+            dr = results.next();
+            assertTrue(dr.isSuccess());
+            assertNull(dr.getException());
+            it = dr.getRecipientStatus();
+            status = it.next();
+            assertEquals(DeliveryRecipientStatus.Status.Ok, status.getStatus());
+            assertEquals(250, status.getResponse().getCode());
+            assertEquals("to@example.com", status.getAddress());
+            
+            status = it.next();
+            assertEquals(DeliveryRecipientStatus.Status.Ok, status.getStatus());
+            assertEquals(250, status.getResponse().getCode());
+            assertEquals("to2@example.com", status.getAddress());
+
+            status = it.next();
+            assertEquals(DeliveryRecipientStatus.Status.Ok, status.getStatus());
+            assertEquals(250, status.getResponse().getCode());
+            assertEquals("to3@example.com", status.getAddress());
+            
+            assertFalse(it.hasNext());
+            assertFalse(results.hasNext());
+
+            
+        } finally {
+            smtpServer.unbind();
+            transport.destroy();
+        }
+        
+    }
+    
+ 
+    
     
     @Test
     public void testConnectionRefused() throws InterruptedException, ExecutionException {
@@ -329,9 +413,9 @@ public class SMTPClientTest {
 
         SMTPClientConfigImpl conf = createConfig();
 
-        SMTPClientFuture future = c.deliver(new InetSocketAddress(11111), "from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes())), conf);
+        SMTPClientFuture future = c.deliver(new InetSocketAddress(11111), conf, new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
         try {
-            DeliveryResult dr = future.get();
+            DeliveryResult dr = future.get().next();
             assertFalse(dr.isSuccess());
             assertNull(dr.getRecipientStatus());
             assertEquals(SMTPConnectionException.class, dr.getException().getClass());

@@ -99,6 +99,9 @@ public class SMTPRequestImpl implements SMTPRequest{
      * @return mail
      */
     public static SMTPRequest mail(String sender) {
+        if (sender == null) {
+            sender = "";
+        }
         return new SMTPRequestImpl("MAIL FROM:",  "<" + sender + ">");
     }
     

@@ -17,9 +17,7 @@
 package me.normanmaurer.niosmtp.client;
 
 import java.net.InetSocketAddress;
-import java.util.Collection;
 
-import me.normanmaurer.niosmtp.MessageInput;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 
 /**
@@ -31,18 +29,15 @@ import me.normanmaurer.niosmtp.SMTPClientConfig;
 public interface SMTPClient {
 
     /**
-     * Deliver an email to the given {@link Collection} of recipients. 
+     * Deliver the given {@link SMTPTransaction}'s 
      * 
-     * The delivery is done in an non-blocking fashion, so this method will return as fast as possible and then allow to get the result
-     * via the {@link SMTPClientFuture}.
+     * The implementation may choose to do the deliver in an async fashion. 
      * 
      * @param host
-     * @param mailFrom
-     * @param recipients
-     * @param msg
      * @param config
+     * @param transation
      * @return future
      */
-    public SMTPClientFuture deliver(InetSocketAddress host, final String mailFrom, final Collection<String> recipients, final MessageInput msg, final SMTPClientConfig config);
+    public SMTPClientFuture deliver(InetSocketAddress host, final SMTPClientConfig config, final SMTPTransaction... transaction);
 
 }
