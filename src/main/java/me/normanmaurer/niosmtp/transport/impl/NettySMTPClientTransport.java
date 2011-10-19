@@ -110,6 +110,9 @@ public class NettySMTPClientTransport implements SMTPClientTransport{
     public void connect(InetSocketAddress remote, SMTPClientConfig config, final SMTPResponseCallback callback) {
         ClientBootstrap bootstrap = new ClientBootstrap(socketFactory);
         bootstrap.setOption("connectTimeoutMillis", config.getConnectionTimeout() * 1000);
+        bootstrap.setOption("tcpNoDelay", true);
+        bootstrap.setOption("keepAlive", true);
+
         ChannelPipelineFactory cp;
         switch (mode) {
         case PLAIN:
