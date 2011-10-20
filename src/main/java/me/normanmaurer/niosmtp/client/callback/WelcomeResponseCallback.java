@@ -47,7 +47,7 @@ public class WelcomeResponseCallback extends AbstractResponseCallback {
     @Override
     public void onResponse(SMTPClientSession session, SMTPResponse response) {
         int code = response.getCode();
-        if (code < 400) {            
+        if (code < 400) {          
             session.send(SMTPRequestImpl.ehlo(session.getConfig().getHeloName()), EhloResponseCallback.INSTANCE);
         } else {
             setDeliveryStatusForAll(session, response);

@@ -16,7 +16,7 @@
 */
 package me.normanmaurer.niosmtp.client;
 
-import java.util.LinkedList;
+import java.util.Iterator;
 import java.util.List;
 
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
@@ -41,7 +41,7 @@ public interface SMTPClientSessionConstants {
     
     
     /**
-     * Key under which the recipients (RCPT TO) is stored as a LinkedList
+     * Key under which the recipients (RCPT TO) is stored as a {@link Iterator}
      */
     public static final String RECIPIENTS_KEY = "recipients";
     
@@ -64,7 +64,7 @@ public interface SMTPClientSessionConstants {
     
     
     /**
-     * Key under which the {@link SMTPTransaction}'s are stored as a {@link LinkedList}
+     * Key under which the {@link SMTPTransaction}'s are stored as a {@link Iterator}
      */
     public final static String SMTP_TRANSACTIONS_KEY = "smtp_transactions";
     

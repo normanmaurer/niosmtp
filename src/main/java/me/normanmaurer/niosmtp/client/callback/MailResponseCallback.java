@@ -16,7 +16,7 @@
 */
 package me.normanmaurer.niosmtp.client.callback;
 
-import java.util.LinkedList;
+import java.util.Iterator;
 
 import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.SMTPRequest;
@@ -49,14 +49,13 @@ public class MailResponseCallback extends AbstractPipelineResponseCallback {
     @SuppressWarnings("unchecked")
     @Override
     protected void onResponseInternal(SMTPClientSession session, SMTPResponse response) {
-        LinkedList<String> recipients = (LinkedList<String>) session.getAttributes().get(RECIPIENTS_KEY);
+        Iterator<String> recipients = (Iterator<String>) session.getAttributes().get(RECIPIENTS_KEY);
 
         int code = response.getCode();
-
         if (code > 400) {
             setDeliveryStatusForAll(session, response);
         } else {
-            String rcpt = recipients.removeFirst();
+            String rcpt = recipients.next();
             
             // store the current recipient we are processing
             session.getAttributes().put(CURRENT_RCPT_KEY, rcpt);

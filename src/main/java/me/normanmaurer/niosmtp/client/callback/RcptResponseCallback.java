@@ -16,7 +16,7 @@
 */
 package me.normanmaurer.niosmtp.client.callback;
 
-import java.util.LinkedList;
+import java.util.Iterator;
 import java.util.List;
 
 import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
@@ -56,15 +56,15 @@ public class RcptResponseCallback extends AbstractPipelineResponseCallback {
     @Override
     protected void onResponseInternal(SMTPClientSession session, SMTPResponse response) {
 
-        LinkedList<String> recipients = (LinkedList<String>) session.getAttributes().get(RECIPIENTS_KEY);
+        Iterator<String> recipients = (Iterator<String>) session.getAttributes().get(RECIPIENTS_KEY);
         List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
         
         statusList.add(new DeliveryRecipientStatusImpl((String) session.getAttributes().get(CURRENT_RCPT_KEY), response));
        
         boolean pipeliningActive = session.getAttributes().containsKey(PIPELINING_ACTIVE_KEY);
         
-        if (!recipients.isEmpty()) {
-            String rcpt = recipients.removeFirst();
+        if (recipients.hasNext()) {
+            String rcpt = recipients.next();
             
             // store the current recipient we are processing
             session.getAttributes().put(CURRENT_RCPT_KEY, rcpt);

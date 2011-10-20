@@ -17,13 +17,14 @@
 package me.normanmaurer.niosmtp.client.callback;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
+import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.client.DeliveryRecipientStatusImpl;
 import me.normanmaurer.niosmtp.client.DeliveryResult;
@@ -49,10 +50,12 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
         SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
         
         List<DeliveryResult> resultList = ((List<DeliveryResult>) session.getAttributes().get(DELIVERY_RESULT_LIST_KEY));
-        LinkedList<SMTPTransaction> transactions = ((LinkedList<SMTPTransaction>) session.getAttributes().get(SMTP_TRANSACTIONS_KEY));
+        Iterator<SMTPTransaction> transactions = ((Iterator<SMTPTransaction>) session.getAttributes().get(SMTP_TRANSACTIONS_KEY));
         
         resultList.add(DeliveryResultImpl.create(t));
-        while(!transactions.isEmpty()) {
+        while(transactions.hasNext()) {
+            // Remove the transactions from iterator and place a DeliveryResult which contains a Exception
+            transactions.next();
             resultList.add(DeliveryResultImpl.create(t));
         }
         
@@ -63,11 +66,11 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
     
     @SuppressWarnings("unchecked")
     protected void setDeliveryStatusForAll(SMTPClientSession session, SMTPResponse response) {
-        LinkedList<String> recipients = (LinkedList<String>) session.getAttributes().get(RECIPIENTS_KEY);
+        Iterator<String> recipients = (Iterator<String>) session.getAttributes().get(RECIPIENTS_KEY);
         List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
-        
-        while (!recipients.isEmpty()) {
-            statusList.add(new DeliveryRecipientStatusImpl(recipients.removeFirst(), response));
+
+        while (recipients.hasNext()) {
+            statusList.add(new DeliveryRecipientStatusImpl(recipients.next(), response));
         }
 
         setDeliveryStatus(session);
@@ -81,11 +84,11 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
     @SuppressWarnings("unchecked")
     private void initSession(SMTPClientSession session) {
         Map<String, Object> attrs = session.getAttributes();
-        LinkedList<SMTPTransaction> transactionList = ((LinkedList<SMTPTransaction>) session.getAttributes().get(SMTP_TRANSACTIONS_KEY));
-        SMTPTransaction transaction =  transactionList.remove();
+        Iterator<SMTPTransaction> transactionList = ((Iterator<SMTPTransaction>) session.getAttributes().get(SMTP_TRANSACTIONS_KEY));
+        SMTPTransaction transaction =  transactionList.next();
         
         attrs.put(CURRENT_SMTP_TRANSACTION_KEY,transaction);
-        attrs.put(RECIPIENTS_KEY, new LinkedList<String>(transaction.getRecipients()));
+        attrs.put(RECIPIENTS_KEY, transaction.getRecipients().iterator());
         attrs.put(DELIVERY_STATUS_KEY, new ArrayList<DeliveryRecipientStatus>());
 
         // cleanup old attribute
@@ -100,18 +103,13 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
      * 
      * @param session
      */
-    @SuppressWarnings("unchecked")
     protected void pipelining(SMTPClientSession session) {
-        LinkedList<String> recipients = (LinkedList<String>) session.getAttributes().get(RECIPIENTS_KEY);
-        String mail = ((SMTPTransaction) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
-
+        SMTPTransaction transaction = (SMTPTransaction) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY);
         
         session.getAttributes().put(PIPELINING_ACTIVE_KEY, true);
-        session.send(SMTPRequestImpl.mail(mail), MailResponseCallback.INSTANCE);
-        for (int i = 0; i < recipients.size(); i++) {
-            String rcpt = recipients.get(i);                      
+        session.send(SMTPRequestImpl.mail(transaction.getSender()), MailResponseCallback.INSTANCE);
+        for (String rcpt: transaction.getRecipients()) {
             session.send(SMTPRequestImpl.rcpt(rcpt), RcptResponseCallback.INSTANCE);
-
         }
         session.send(SMTPRequestImpl.data(), DataResponseCallback.INSTANCE);
     }
@@ -127,17 +125,19 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
         SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
         List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
         List<DeliveryResult> resultList = ((List<DeliveryResult>) session.getAttributes().get(DELIVERY_RESULT_LIST_KEY));       
-        LinkedList<SMTPTransaction> transactions = ((LinkedList<SMTPTransaction>) session.getAttributes().get(SMTP_TRANSACTIONS_KEY));
+        Iterator<SMTPTransaction> transactions = ((Iterator<SMTPTransaction>) session.getAttributes().get(SMTP_TRANSACTIONS_KEY));
 
         resultList.add(new DeliveryResultImpl(statusList));
         
-        if (transactions.isEmpty()) {
+        if (!transactions.hasNext()) {
             future.setDeliveryStatus(resultList);
+
             session.send(SMTPRequestImpl.quit(), SMTPResponseCallback.EMPTY);
             session.close();
+
         } else {
             initSession(session);
-            if (session.getSupportedExtensions().contains(PIPELINING_EXTENSION)) {
+            if (session.getSupportedExtensions().contains(PIPELINING_EXTENSION) && session.getConfig().getPipeliningMode() != PipeliningMode.NO) {
                 pipelining(session);
             } else {
                 String sender = ((SMTPTransaction) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getSender();

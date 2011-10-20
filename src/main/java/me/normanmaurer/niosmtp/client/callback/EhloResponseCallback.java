@@ -73,14 +73,12 @@ public class EhloResponseCallback extends AbstractResponseCallback implements SM
         if (extensions.contains(STARTTLS_EXTENSION)) {
             supportsStartTLS = true;
         }
-        
-        
-        
+
         int code = response.getCode();
 
         String mail = ((SMTPTransaction)session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
         if (code < 400) {
-            
+
             // Check if we depend on pipelining 
             if (!supportsPipelining && session.getConfig().getPipeliningMode() == PipeliningMode.DEPEND) {
                 onException(session, PIPELINING_NOT_SUPPORTED_EXECTION);

@@ -18,15 +18,16 @@ package me.normanmaurer.niosmtp.client;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.Iterator;
 import java.util.Map;
+
 
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.client.callback.WelcomeResponseCallback;
+import me.normanmaurer.niosmtp.core.ArrayIterator;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 
@@ -35,7 +36,6 @@ import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 /**
  * {@link SMTPClientImpl} which use the wrapped {@link SMTPClientTransport} to deliver email
  * 
- * So no pooling is active
  * 
  * @author Norman Maurer
  * 
@@ -84,11 +84,11 @@ public class SMTPClientImpl implements SMTPClientConstants,SMTPClient, SMTPClien
             private void initSession(SMTPClientSession session) {
                 Map<String, Object> attrs = session.getAttributes();
                 
-                LinkedList<SMTPTransaction> transactionList = new LinkedList<SMTPTransaction>(Arrays.asList(transactions));
-                attrs.put(SMTP_TRANSACTIONS_KEY, transactionList);
-                SMTPTransaction transaction = transactionList.remove();
+                Iterator<SMTPTransaction> transactionIt = new ArrayIterator<SMTPTransaction>(transactions);
+                attrs.put(SMTP_TRANSACTIONS_KEY, transactionIt);
+                SMTPTransaction transaction = transactionIt.next();
                 attrs.put(CURRENT_SMTP_TRANSACTION_KEY, transaction);
-                attrs.put(RECIPIENTS_KEY, new LinkedList<String>(transaction.getRecipients()));
+                attrs.put(RECIPIENTS_KEY, transaction.getRecipients().iterator());
 
                 attrs.put(FUTURE_KEY, future);
                 attrs.put(DELIVERY_STATUS_KEY, new ArrayList<DeliveryRecipientStatus>());
