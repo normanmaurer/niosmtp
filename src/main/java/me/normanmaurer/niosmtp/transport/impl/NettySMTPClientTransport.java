@@ -33,12 +33,18 @@ import org.jboss.netty.channel.socket.ClientSocketChannelFactory;
 import org.jboss.netty.util.HashedWheelTimer;
 import org.jboss.netty.util.Timer;
 
-public class NettySMTPClientTransport implements SMTPClientTransport{
+/**
+ * {@link SMTPClientTransport} which uses Netty under the hood
+ * 
+ * @author Norman Maurer
+ *
+ */
+class NettySMTPClientTransport implements SMTPClientTransport{
 
-    private SSLContext context;
-    private DeliveryMode mode;
+    private final SSLContext context;
+    private final DeliveryMode mode;
     private final Timer timer = new HashedWheelTimer();
-    private ClientSocketChannelFactory factory;
+    private final ClientSocketChannelFactory factory;
     
 
     NettySMTPClientTransport(DeliveryMode mode, SSLContext context, ClientSocketChannelFactory factory) {
