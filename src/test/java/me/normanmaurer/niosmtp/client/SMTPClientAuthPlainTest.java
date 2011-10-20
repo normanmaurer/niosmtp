@@ -14,8 +14,9 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp;
+package me.normanmaurer.niosmtp.client;
 
+import me.normanmaurer.niosmtp.Authentication;
 import me.normanmaurer.niosmtp.core.AuthenticationImpl;
 
 public class SMTPClientAuthPlainTest extends SMTPClientAuthLoginTest{

@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp;
+package me.normanmaurer.niosmtp.client;
 
 import static org.junit.Assert.*;
 
@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutionException;
 
 
 
+import me.normanmaurer.niosmtp.SMTPConnectionException;
 import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.client.DeliveryResult;
 import me.normanmaurer.niosmtp.client.SMTPClientImpl;

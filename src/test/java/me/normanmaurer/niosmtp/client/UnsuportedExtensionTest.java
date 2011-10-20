@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-package me.normanmaurer.niosmtp;
+package me.normanmaurer.niosmtp.client;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -37,6 +37,7 @@ import org.apache.james.protocols.smtp.core.esmtp.EhloCmdHandler;
 import org.apache.james.protocols.smtp.core.esmtp.StartTlsCmdHandler;
 import org.junit.Test;
 
+import me.normanmaurer.niosmtp.SMTPUnsupportedExtensionException;
 import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.client.DeliveryResult;
 import me.normanmaurer.niosmtp.client.SMTPClientFuture;

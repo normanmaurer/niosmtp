@@ -14,10 +14,9 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp;
+package me.normanmaurer.niosmtp.client;
 
 
-import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 
 import org.apache.james.protocols.api.handler.WiringException;
 import org.apache.james.protocols.impl.NettyServer;
@@ -26,22 +25,31 @@ import org.apache.james.protocols.smtp.SMTPProtocol;
 import org.apache.james.protocols.smtp.SMTPProtocolHandlerChain;
 import org.apache.james.protocols.smtp.hook.Hook;
 
-public class SMTPSClientTest extends SMTPClientTest{
+import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 
-   
+
+public class SMTPStartTLSClientTest extends SMTPClientTest{
+
 
     @Override
     protected NettyServer create(Hook hook) throws WiringException {
-        SMTPConfigurationImpl config = new SMTPConfigurationImpl();
+        SMTPConfigurationImpl config = new SMTPConfigurationImpl() {
+
+            @Override
+            public boolean isStartTLSSupported() {
+                return true;
+            }
+            
+        };
+        
         SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain();
         chain.addHook(hook);
         return new NettyServer(new SMTPProtocol(chain, config),BogusSslContextFactory.getServerContext());
-
     }
 
     @Override
     protected SMTPClientTransport createSMTPClient() {
-        return createFactory().createSMTPS(BogusSslContextFactory.getClientContext());
+        return createFactory().createStartTLS(BogusSslContextFactory.getClientContext(), true);
     }
-
+    
 }
