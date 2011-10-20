@@ -18,11 +18,11 @@
  ****************************************************************/
 package me.normanmaurer.niosmtp.client.nio;
 
-import me.normanmaurer.niosmtp.client.AbstractUnsupportedExtensionTest;
+import me.normanmaurer.niosmtp.client.AbstractSMTPClientUnsupportedExtensionTest;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransportFactory;
 import me.normanmaurer.niosmtp.transport.impl.NettySMTPClientTransportFactory;
 
-public class NioUnsupportedExtensionTest extends AbstractUnsupportedExtensionTest{
+public class NioSMTPClientUnsupportedExtensionTest extends AbstractSMTPClientUnsupportedExtensionTest{
 
     @Override
     protected SMTPClientTransportFactory createFactory() {
