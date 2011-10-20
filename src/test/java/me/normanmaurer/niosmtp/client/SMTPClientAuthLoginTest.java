@@ -50,7 +50,7 @@ import org.apache.james.protocols.smtp.hook.HookReturnCode;
 import org.apache.james.protocols.smtp.hook.SimpleHook;
 import org.junit.Test;
 
-public class SMTPClientAuthLoginTest extends SMTPClientTest{
+public abstract class SMTPClientAuthLoginTest extends SMTPClientTest{
 
     protected final static String VALID_USER ="myuser";
     protected final static String VALID_PASS ="mypassword";

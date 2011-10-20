@@ -47,10 +47,9 @@ import me.normanmaurer.niosmtp.core.SMTPClientConfigImpl;
 import me.normanmaurer.niosmtp.core.SimpleMessageInput;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransportFactory;
-import me.normanmaurer.niosmtp.transport.impl.NettySMTPClientTransportFactory;
 
 
-public class UnsuportedExtensionTest {
+public abstract class UnsuportedExtensionTest {
 
     protected SMTPClientConfigImpl createConfig() {
         SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
@@ -60,9 +59,8 @@ public class UnsuportedExtensionTest {
     }
 
 
-    protected SMTPClientTransportFactory createFactory() {
-       return  NettySMTPClientTransportFactory.createNio();
-    }
+    protected abstract SMTPClientTransportFactory createFactory();
+    
     
     @Test
     public void testDependOnPipelining() throws Exception {

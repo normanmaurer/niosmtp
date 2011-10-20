@@ -29,7 +29,7 @@ import org.apache.james.protocols.smtp.core.esmtp.StartTlsCmdHandler;
 import org.apache.james.protocols.smtp.hook.Hook;
 
 
-public class SMTPStartTLSClientTryTest extends SMTPStartTLSClientTest{
+public abstract class SMTPStartTLSClientTryTest extends SMTPStartTLSClientTest{
 
     @Override
     protected NettyServer create(Hook hook) throws WiringException {

@@ -14,16 +14,16 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.client;
+package me.normanmaurer.niosmtp.client.nio;
 
-import me.normanmaurer.niosmtp.Authentication;
-import me.normanmaurer.niosmtp.core.AuthenticationImpl;
+import me.normanmaurer.niosmtp.client.SMTPSClientTest;
+import me.normanmaurer.niosmtp.transport.SMTPClientTransportFactory;
+import me.normanmaurer.niosmtp.transport.impl.NettySMTPClientTransportFactory;
 
-public abstract class SMTPClientAuthPlainTest extends SMTPClientAuthLoginTest{
+public class NioSMTPSClientTest extends SMTPSClientTest{
 
     @Override
-    protected Authentication createAuthentication(String username, String password) {
-        return AuthenticationImpl.plain(username, password);
+    protected SMTPClientTransportFactory createFactory() {
+        return NettySMTPClientTransportFactory.createNio();
     }
-
 }

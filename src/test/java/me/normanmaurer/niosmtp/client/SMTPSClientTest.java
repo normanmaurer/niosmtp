@@ -26,7 +26,7 @@ import org.apache.james.protocols.smtp.SMTPProtocol;
 import org.apache.james.protocols.smtp.SMTPProtocolHandlerChain;
 import org.apache.james.protocols.smtp.hook.Hook;
 
-public class SMTPSClientTest extends SMTPClientTest{
+public abstract class SMTPSClientTest extends SMTPClientTest{
 
    
 

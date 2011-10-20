@@ -38,7 +38,6 @@ import me.normanmaurer.niosmtp.core.SMTPClientConfigImpl;
 import me.normanmaurer.niosmtp.core.SimpleMessageInput;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransportFactory;
-import me.normanmaurer.niosmtp.transport.impl.NettySMTPClientTransportFactory;
 
 import org.apache.james.protocols.api.handler.WiringException;
 import org.apache.james.protocols.impl.NettyServer;
@@ -55,7 +54,7 @@ import org.apache.mailet.MailAddress;
 import org.junit.Test;
 
 
-public class SMTPClientTest {
+public abstract class SMTPClientTest {
     
 
     protected NettyServer create(Hook hook) throws WiringException {
@@ -65,9 +64,7 @@ public class SMTPClientTest {
         return new NettyServer(new SMTPProtocol(chain, config));
         
     }
-    protected SMTPClientTransportFactory createFactory() {
-        return NettySMTPClientTransportFactory.createNio();
-    }
+    protected abstract SMTPClientTransportFactory createFactory();
     
     protected SMTPClientTransport createSMTPClient() {
         return createFactory().createPlain();
