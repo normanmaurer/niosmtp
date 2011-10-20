@@ -20,7 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * The {@link MessageInput} implementations offer methods to get the message content.
+ * The {@link MessageInput} implementations offer methods to get the message content. 
+ * 
  * 
  * 
  * 
@@ -31,6 +32,9 @@ public interface MessageInput {
 
     /**
      * This method is getting called if the SMTP-Server does not support the 8BITMIME extension. 
+     * <br/>
+     * <br/>
+     * <strong>This method MAY return the same {@link InputStream} on every call, so it should only be used to consume the stream once.</strong>
      * 
      * @return 7bit
      * @throws IOException
@@ -40,7 +44,11 @@ public interface MessageInput {
     
     /**
      * This method is getting called if the SMTP-Server supports the 8BITMIME extension. 
-     * 
+     * <br/>
+     * <br/>
+     * <strong>This method MAY return the same {@link InputStream} on every call, so it should only be used to consume the stream once.</strong>
+     * <br/>
+     * <br/>
      * The returned InputStream is not expected to be "raw content" . It cannot include "null" bytes and must be composed of "lines" separated by CRLF and not longer than 998 bytes.
      * 
      * @return convertedMsg

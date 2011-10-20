@@ -22,7 +22,7 @@ import java.io.InputStream;
 import me.normanmaurer.niosmtp.MessageInput;
 
 /**
- * {@link MessageInput} implementation does return 7bit message even if the remote SMTP Server supports 8BITMIME
+ * {@link MessageInput} implementation which use the given {@link InputStream}'s 
  * 
  * 
  * @author Norman Maurer
@@ -32,23 +32,39 @@ public class SimpleMessageInput implements MessageInput{
 
 
     
-    private InputStream in;
+    private final InputStream _7BitIn;
+    private final InputStream _8BitIn;
 
     /**
-     * The given {@link InputStream} must contain a message in 7bit 
+     * Construct a {@link SimpleMessageInput} which use the  given {@link InputStream} for {@link #get7bit()} and {@link #get8Bit()}.
+     * </br>
+     * </br>
+     * The {@link InputStream} <strong>MUST</strong> contain a message in 7bit 
      * 
-     * @param in
+     * @param message
      */
-    public SimpleMessageInput(InputStream in) {
-        this.in = in;
+    public SimpleMessageInput(final InputStream message) {
+        this._7BitIn = message;
+        this._8BitIn = message;
     }
 
+    /**
+     * Construct a {@link SimpleMessageInput} which use the given {@link InputStream}'s 
+     * 
+     * @param _7BitIn
+     * @param _8BitIn
+     */
+    public SimpleMessageInput(final InputStream _7BitIn, final InputStream _8BitIn) {
+        this._7BitIn = _7BitIn;
+        this._8BitIn = _8BitIn;
+    }
+    
     /**
      * Throws {@link IOException} as conversion is not supported
      */
     @Override
     public InputStream get7bit() throws IOException {
-        return in;
+        return _7BitIn;
     }
 
 
@@ -57,7 +73,7 @@ public class SimpleMessageInput implements MessageInput{
      */
     @Override
     public InputStream get8Bit() throws IOException {
-        return get7bit();
+        return _8BitIn;
     }
 
 }

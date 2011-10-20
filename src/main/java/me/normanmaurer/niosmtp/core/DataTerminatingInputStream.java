@@ -39,7 +39,14 @@ public class DataTerminatingInputStream extends InputStream {
     private boolean endOfStream = false;
     private PushbackInputStream in;
     private boolean empty = true;
-
+    private final static byte CR = '\r';
+    private final static byte LF = '\n';
+    private final static byte DOT = '.';
+    private final static byte[] DOT_CRLF = new byte[] {DOT, CR, LF};
+    private final static byte[] CRLF_DOT_CRLF = new byte[] {CR, LF, DOT, CR, LF};
+    private final static byte[] LF_DOT_CRLF = new byte[] {LF, DOT, CR, LF};
+    
+    
     public DataTerminatingInputStream(InputStream in) {
         this.in = new PushbackInputStream(in, 2);
         startLine = true;
@@ -86,24 +93,11 @@ public class DataTerminatingInputStream extends InputStream {
 
     private void calculateExtraData() {
         if (empty || last == '\n') {
-            extraData = new byte[3];
-            extraData[0] = '.';
-            extraData[1] = '\r';
-            extraData[2] = '\n';        
+            extraData = DOT_CRLF;     
         } else if (last == '\r') {
-            extraData = new byte[4];
-            extraData[0] = '\n';
-            extraData[1] = '.';
-            extraData[2] = '\r';
-            extraData[3] = '\n';
-
+            extraData = LF_DOT_CRLF;
         } else {
-            extraData = new byte[5];
-            extraData[0] = '\r';
-            extraData[1] = '\n';
-            extraData[2] = '.';
-            extraData[3] = '\r';
-            extraData[4] = '\n';
+            extraData = CRLF_DOT_CRLF;
         }
 
     }

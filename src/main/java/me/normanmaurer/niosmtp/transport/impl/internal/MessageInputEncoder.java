@@ -19,11 +19,14 @@ package me.normanmaurer.niosmtp.transport.impl.internal;
 import java.io.InputStream;
 import java.util.Set;
 
+import me.normanmaurer.niosmtp.ByteArrayMessageInput;
 import me.normanmaurer.niosmtp.MessageInput;
 import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.core.DataTerminatingInputStream;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
+import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
@@ -37,9 +40,16 @@ import org.jboss.netty.handler.stream.ChunkedStream;
  */
 class MessageInputEncoder extends OneToOneEncoder implements SMTPClientConstants{
 
-    private SMTPClientSession session;
-
-    public MessageInputEncoder(SMTPClientSession session) {
+    private final SMTPClientSession session;
+    
+    private final static byte CR = '\r';
+    private final static byte LF = '\n';
+    private final static byte DOT = '.';
+    private final static byte[] DOT_CRLF = new byte[] {DOT, CR, LF};
+    private final static byte[] CRLF_DOT_CRLF = new byte[] {CR, LF, DOT, CR, LF};
+    private final static byte[] LF_DOT_CRLF = new byte[] {LF, DOT, CR, LF};
+    
+    public MessageInputEncoder(final SMTPClientSession session) {
         this.session = session;
     }
     
@@ -48,18 +58,73 @@ class MessageInputEncoder extends OneToOneEncoder implements SMTPClientConstants
         if (msg instanceof MessageInput){
             MessageInput input = (MessageInput) msg;
             Set<String> extensions = session.getSupportedExtensions();
-            InputStream msgIn;
-            
-            if (extensions.contains(_8BITMIME_EXTENSION)) {
-                msgIn = input.get8Bit();
+            if (msg instanceof ByteArrayMessageInput) {
+                byte[] data;
+                
+                if (extensions.contains(_8BITMIME_EXTENSION)) {
+                    data = ((ByteArrayMessageInput)input).get8BitAsByteArray();
+                } else {
+                    data = ((ByteArrayMessageInput)input).get7BitAsByteArray();
+                }
+                return createDataTerminatingChannelBuffer(data);
             } else {
-                msgIn = input.get7bit();
+                InputStream msgIn;
+                
+                if (extensions.contains(_8BITMIME_EXTENSION)) {
+                    msgIn = input.get8Bit();
+                } else {
+                    msgIn = input.get7bit();
+                }
+                       
+                return new ChunkedStream(new DataTerminatingInputStream(msgIn));
             }
-                   
-            return new ChunkedStream(new DataTerminatingInputStream(msgIn));
+
         } else {
             return msg;
         }
+    }
+    
+    /**
+     * Create a {@link ChannelBuffer} which is terminated with a CRLF.CRLF sequence
+     * 
+     * @param data
+     * @return buffer
+     */
+    private static ChannelBuffer createDataTerminatingChannelBuffer(byte[] data) {
+        int length = data.length;
+        if (length < 1) {
+            return ChannelBuffers.wrappedBuffer(CRLF_DOT_CRLF);
+        } else {
+            byte[] terminating;
+
+            byte last = data[length -1];
+
+            if (length == 1) {
+                if (last == CR) {
+                    terminating = LF_DOT_CRLF;
+                } else {
+                    terminating = CRLF_DOT_CRLF;
+                }
+            } else {
+                byte prevLast = data[length - 2];
+                
+                if (last == LF) {
+                    if (prevLast == CR) {
+                        terminating = DOT_CRLF;
+                    } else {
+                        terminating = CRLF_DOT_CRLF;
+                    }
+                } else if (last == CR) {
+                    terminating = LF_DOT_CRLF;
+                } else {
+                    terminating = CRLF_DOT_CRLF;
+
+                }
+            }
+            return ChannelBuffers.wrappedBuffer(data, terminating);
+        }
+        
+      
     }
 
 }
