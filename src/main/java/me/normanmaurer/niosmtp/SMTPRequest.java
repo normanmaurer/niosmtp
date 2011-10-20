@@ -24,6 +24,8 @@ package me.normanmaurer.niosmtp;
  */
 public interface SMTPRequest {
     
+    public final static char SEPERATOR = ' ';
+    
     /**
      * Return the command 
      * 

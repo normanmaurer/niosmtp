@@ -37,18 +37,20 @@ import org.slf4j.LoggerFactory;
 class SMTPRequestEncoder extends OneToOneEncoder implements SMTPClientConstants{
     private final Logger logger = LoggerFactory.getLogger(SMTPRequestEncoder.class);
 
+    private final static byte[] CRLF = new byte[] {'\r', '\n'};
+    
     @Override
     protected Object encode(ChannelHandlerContext ctx, Channel arg1, Object msg) throws Exception {
         if (msg instanceof SMTPRequest) {
             SMTPRequest req = (SMTPRequest) msg;
             String request = StringUtils.toString((SMTPRequest) req);
             
-            if (logger.isInfoEnabled()) {
-                logger.info("Channel " + ctx.getChannel().getId() + " sent: [" + request + "]");
+            if (logger.isDebugEnabled()) {
+                logger.debug("Channel " + ctx.getChannel().getId() + " sent: [" + request + "]");
             }
             
           
-            return ChannelBuffers.wrappedBuffer(request.getBytes(CHARSET), CRLF.getBytes(CHARSET));
+            return ChannelBuffers.wrappedBuffer(request.getBytes(CHARSET), CRLF);
         }
         return msg;
     }

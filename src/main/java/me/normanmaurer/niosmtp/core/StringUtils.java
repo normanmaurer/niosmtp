@@ -46,19 +46,19 @@ public class StringUtils implements SMTPClientConstants{
                 boolean hasNext = it.hasNext();
                 sb.append(response.getCode());
                 if (hasNext) {
-                    sb.append("-");
+                    sb.append(SMTPResponse.SEPERATOR);
                 } else {
-                    sb.append(" ");
+                    sb.append(SMTPResponse.LAST_SEPERATOR);
                 }
                 sb.append(line);
                 if (hasNext) {
-                    sb.append("\r\n");
+                    sb.append(SMTPResponse.LINES_SEPERATOR);
                 }
                 
             }
             return sb.toString();
         }
-        return response.getCode() + "";
+        return Integer.toString(response.getCode());
     }
     
     /**
@@ -73,7 +73,7 @@ public class StringUtils implements SMTPClientConstants{
         if (argument == null) {
             return command;
         } else {
-            return command + " " + argument;
+            return command + SMTPRequest.SEPERATOR + argument;
         }
     }
 }

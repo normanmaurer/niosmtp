@@ -26,6 +26,13 @@ import java.util.List;
  */
 public interface SMTPResponse {
     
+    public final static char LAST_SEPERATOR = ' ';
+    
+    public final static char SEPERATOR = '-';
+    
+    public final static String LINES_SEPERATOR = "\r\n";
+    
+
     /**
      * Return the return code
      * 

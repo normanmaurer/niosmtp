@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  */
 class SMTPResponseDecoder extends OneToOneDecoder implements SMTPClientConstants{
     private final Logger logger = LoggerFactory.getLogger(SMTPResponseDecoder.class);
-    
+
     @Override
     protected Object decode(ChannelHandlerContext ctx, Channel channel, Object msg) throws Exception {
         if (msg instanceof ChannelBuffer) {
@@ -50,7 +50,7 @@ class SMTPResponseDecoder extends OneToOneDecoder implements SMTPClientConstants
             // digits
             int separator = line.getByte(3);
 
-            if (separator == ' ') {
+            if (separator == SMTPResponse.LAST_SEPERATOR) {
                 // Ok we had a ' ' separator which means this was the end of the
                 // SMTPResponse
                 if (response == null) {
@@ -68,11 +68,11 @@ class SMTPResponseDecoder extends OneToOneDecoder implements SMTPClientConstants
 
                 }
                 ctx.setAttachment(null);
-                if (logger.isInfoEnabled()) {
-                    logger.info("Channel " + ctx.getChannel().getId() + " received: [" + StringUtils.toString(response) + "]");
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Channel " + ctx.getChannel().getId() + " received: [" + StringUtils.toString(response) + "]");
                 }
                 return response;
-            } else if (separator == '-') {
+            } else if (separator == SMTPResponse.SEPERATOR) {
                 // The '-' separator is used for multi-line responses so just
                 // add it to the response
                 if (response == null) {

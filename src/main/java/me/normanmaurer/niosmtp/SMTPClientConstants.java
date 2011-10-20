@@ -32,10 +32,6 @@ public interface SMTPClientConstants {
      */
     public final static Charset CHARSET = Charset.forName("US-ASCII");
     
-    /**
-     * CLRF sequence
-     */
-    public final static String CRLF = "\r\n";
     
     /**
      * Identifier used to detect if the SMTP Server supports <code>PIPELINING</code>
