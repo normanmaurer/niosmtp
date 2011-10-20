@@ -52,4 +52,10 @@ public interface SMTPClientTransport {
     public void connect(InetSocketAddress remote, SMTPClientConfig config, SMTPResponseCallback callback);
     
     
+
+    /**
+     * Destroy this {@link SMTPClientTransport} and release all resources
+     */
+    public void destroy();
+    
 }

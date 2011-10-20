@@ -35,7 +35,9 @@ import me.normanmaurer.niosmtp.client.SMTPTransaction;
 import me.normanmaurer.niosmtp.client.SMTPTransactionImpl;
 import me.normanmaurer.niosmtp.core.SMTPClientConfigImpl;
 import me.normanmaurer.niosmtp.core.SimpleMessageInput;
-import me.normanmaurer.niosmtp.transport.impl.NettySMTPClientTransport;
+import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
+import me.normanmaurer.niosmtp.transport.SMTPClientTransportFactory;
+import me.normanmaurer.niosmtp.transport.impl.NettySMTPClientTransportFactory;
 
 import org.apache.james.protocols.api.handler.WiringException;
 import org.apache.james.protocols.impl.NettyServer;
@@ -62,9 +64,12 @@ public class SMTPClientTest {
         return new NettyServer(new SMTPProtocol(chain, config));
         
     }
+    protected SMTPClientTransportFactory createFactory() {
+        return NettySMTPClientTransportFactory.createNio();
+    }
     
-    protected NettySMTPClientTransport createSMTPClient() {
-        return NettySMTPClientTransport.createPlain();
+    protected SMTPClientTransport createSMTPClient() {
+        return createFactory().createPlain();
     }
     
     protected SMTPClientConfigImpl createConfig() {
@@ -91,7 +96,7 @@ public class SMTPClientTest {
         smtpServer.bind();
 
        
-        NettySMTPClientTransport transport = createSMTPClient();
+        SMTPClientTransport transport = createSMTPClient();
         SMTPClientImpl c = new SMTPClientImpl(transport);
 
         try {
@@ -139,7 +144,7 @@ public class SMTPClientTest {
 
        
         
-        NettySMTPClientTransport transport = createSMTPClient();
+        SMTPClientTransport transport = createSMTPClient();
         SMTPClientImpl c = new SMTPClientImpl(transport);
 
 
@@ -187,7 +192,7 @@ public class SMTPClientTest {
 
        
         
-        NettySMTPClientTransport transport = createSMTPClient();
+        SMTPClientTransport transport = createSMTPClient();
         SMTPClientImpl c = new SMTPClientImpl(transport);
 
         try {
@@ -235,7 +240,7 @@ public class SMTPClientTest {
 
        
         
-        NettySMTPClientTransport transport = createSMTPClient();
+        SMTPClientTransport transport = createSMTPClient();
         SMTPClientImpl c = new SMTPClientImpl(transport);
 
         try {
@@ -288,7 +293,7 @@ public class SMTPClientTest {
 
        
         
-        NettySMTPClientTransport transport = createSMTPClient();
+        SMTPClientTransport transport = createSMTPClient();
         SMTPClientImpl c = new SMTPClientImpl(transport);
 
         try {
@@ -338,7 +343,7 @@ public class SMTPClientTest {
 
        
         
-        NettySMTPClientTransport transport = createSMTPClient();
+        SMTPClientTransport transport = createSMTPClient();
         SMTPClientImpl c = new SMTPClientImpl(transport);
 
         try {
@@ -408,7 +413,7 @@ public class SMTPClientTest {
     @Test
     public void testConnectionRefused() throws InterruptedException, ExecutionException {
         
-        NettySMTPClientTransport transport = createSMTPClient();
+        SMTPClientTransport transport = createSMTPClient();
         SMTPClientImpl c = new SMTPClientImpl(transport);
 
         SMTPClientConfigImpl conf = createConfig();

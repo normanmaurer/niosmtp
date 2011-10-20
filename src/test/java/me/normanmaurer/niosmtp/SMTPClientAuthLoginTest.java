@@ -34,7 +34,7 @@ import me.normanmaurer.niosmtp.client.SMTPTransactionImpl;
 import me.normanmaurer.niosmtp.core.AuthenticationImpl;
 import me.normanmaurer.niosmtp.core.SMTPClientConfigImpl;
 import me.normanmaurer.niosmtp.core.SimpleMessageInput;
-import me.normanmaurer.niosmtp.transport.impl.NettySMTPClientTransport;
+import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 
 import org.apache.james.protocols.api.handler.WiringException;
 import org.apache.james.protocols.impl.NettyServer;
@@ -84,7 +84,7 @@ public class SMTPClientAuthLoginTest extends SMTPClientTest{
         smtpServer.bind();
 
        
-        NettySMTPClientTransport transport = createSMTPClient();
+        SMTPClientTransport transport = createSMTPClient();
         SMTPClientImpl c = new SMTPClientImpl(transport);
 
         try {

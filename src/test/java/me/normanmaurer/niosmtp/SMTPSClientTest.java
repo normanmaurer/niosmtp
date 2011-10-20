@@ -17,7 +17,7 @@
 package me.normanmaurer.niosmtp;
 
 
-import me.normanmaurer.niosmtp.transport.impl.NettySMTPClientTransport;
+import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 
 import org.apache.james.protocols.api.handler.WiringException;
 import org.apache.james.protocols.impl.NettyServer;
@@ -40,8 +40,8 @@ public class SMTPSClientTest extends SMTPClientTest{
     }
 
     @Override
-    protected NettySMTPClientTransport createSMTPClient() {
-        return NettySMTPClientTransport.createSMTPS(BogusSslContextFactory.getClientContext());
+    protected SMTPClientTransport createSMTPClient() {
+        return createFactory().createSMTPS(BogusSslContextFactory.getClientContext());
     }
 
 }

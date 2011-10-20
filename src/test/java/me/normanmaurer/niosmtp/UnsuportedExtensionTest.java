@@ -44,7 +44,9 @@ import me.normanmaurer.niosmtp.client.SMTPClientImpl;
 import me.normanmaurer.niosmtp.client.SMTPTransactionImpl;
 import me.normanmaurer.niosmtp.core.SMTPClientConfigImpl;
 import me.normanmaurer.niosmtp.core.SimpleMessageInput;
-import me.normanmaurer.niosmtp.transport.impl.NettySMTPClientTransport;
+import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
+import me.normanmaurer.niosmtp.transport.SMTPClientTransportFactory;
+import me.normanmaurer.niosmtp.transport.impl.NettySMTPClientTransportFactory;
 
 
 public class UnsuportedExtensionTest {
@@ -57,6 +59,10 @@ public class UnsuportedExtensionTest {
     }
 
 
+    protected SMTPClientTransportFactory createFactory() {
+       return  NettySMTPClientTransportFactory.createNio();
+    }
+    
     @Test
     public void testDependOnPipelining() throws Exception {
         int port = 6028;
@@ -93,7 +99,7 @@ public class UnsuportedExtensionTest {
         smtpServer.bind();
 
         
-        NettySMTPClientTransport transport = NettySMTPClientTransport.createPlain();
+        SMTPClientTransport transport = createFactory().createPlain();
         SMTPClientImpl c = new SMTPClientImpl(transport);
 
         SMTPClientConfigImpl conf = createConfig();
@@ -151,7 +157,7 @@ public class UnsuportedExtensionTest {
         smtpServer.bind();
 
         
-        NettySMTPClientTransport transport = NettySMTPClientTransport.createStartTLS(BogusSslContextFactory.getClientContext(), true);
+        SMTPClientTransport transport = createFactory().createStartTLS(BogusSslContextFactory.getClientContext(), true);
         SMTPClientImpl c = new SMTPClientImpl(transport);
 
         SMTPClientConfigImpl conf = createConfig();
