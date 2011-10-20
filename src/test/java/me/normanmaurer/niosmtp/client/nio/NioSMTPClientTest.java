@@ -16,11 +16,11 @@
 */
 package me.normanmaurer.niosmtp.client.nio;
 
-import me.normanmaurer.niosmtp.client.SMTPClientTest;
+import me.normanmaurer.niosmtp.client.AbstractSMTPClientTest;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransportFactory;
 import me.normanmaurer.niosmtp.transport.impl.NettySMTPClientTransportFactory;
 
-public class NioSMTPClientTest extends SMTPClientTest{
+public class NioSMTPClientTest extends AbstractSMTPClientTest{
 
     @Override
     protected SMTPClientTransportFactory createFactory() {

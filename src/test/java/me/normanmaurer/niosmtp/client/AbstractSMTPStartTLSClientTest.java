@@ -28,7 +28,7 @@ import org.apache.james.protocols.smtp.hook.Hook;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 
 
-public abstract class SMTPStartTLSClientTest extends SMTPClientTest{
+public abstract class AbstractSMTPStartTLSClientTest extends AbstractSMTPClientTest{
 
 
     @Override

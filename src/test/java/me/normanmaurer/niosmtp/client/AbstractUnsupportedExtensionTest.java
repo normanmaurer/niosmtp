@@ -49,7 +49,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransportFactory;
 
 
-public abstract class UnsupportedExtensionTest {
+public abstract class AbstractUnsupportedExtensionTest {
 
     protected SMTPClientConfigImpl createConfig() {
         SMTPClientConfigImpl conf = new SMTPClientConfigImpl();

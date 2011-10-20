@@ -54,7 +54,7 @@ import org.apache.mailet.MailAddress;
 import org.junit.Test;
 
 
-public abstract class SMTPClientTest {
+public abstract class AbstractSMTPClientTest {
     
 
     protected NettyServer create(Hook hook) throws WiringException {

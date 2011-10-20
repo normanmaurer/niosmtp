@@ -19,7 +19,7 @@ package me.normanmaurer.niosmtp.client;
 import me.normanmaurer.niosmtp.Authentication;
 import me.normanmaurer.niosmtp.core.AuthenticationImpl;
 
-public abstract class SMTPClientAuthPlainTest extends SMTPClientAuthLoginTest{
+public abstract class AbstractSMTPClientAuthPlainTest extends AbstractSMTPClientAuthLoginTest{
 
     @Override
     protected Authentication createAuthentication(String username, String password) {

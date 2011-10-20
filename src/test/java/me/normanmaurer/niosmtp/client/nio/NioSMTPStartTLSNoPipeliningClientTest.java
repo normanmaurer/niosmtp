@@ -16,11 +16,11 @@
 */
 package me.normanmaurer.niosmtp.client.nio;
 
-import me.normanmaurer.niosmtp.client.SMTPStartTLSNoPipeliningClientTest;
+import me.normanmaurer.niosmtp.client.AbstractSMTPStartTLSNoPipeliningClientTest;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransportFactory;
 import me.normanmaurer.niosmtp.transport.impl.NettySMTPClientTransportFactory;
 
-public class NioSMTPStartTLSNoPipeliningClientTest extends SMTPStartTLSNoPipeliningClientTest{
+public class NioSMTPStartTLSNoPipeliningClientTest extends AbstractSMTPStartTLSNoPipeliningClientTest{
 
 
     @Override

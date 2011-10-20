@@ -19,9 +19,8 @@ package me.normanmaurer.niosmtp.client;
 import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.core.SMTPClientConfigImpl;
 
-public abstract class SMTPSClientNoPipeliningTest extends SMTPSClientTest{
+public abstract class AbstractSMTPClientNoPipeliningTest extends AbstractSMTPClientTest{
 
-    
     @Override
     protected SMTPClientConfigImpl createConfig() {
         SMTPClientConfigImpl config = super.createConfig();
@@ -29,5 +28,4 @@ public abstract class SMTPSClientNoPipeliningTest extends SMTPSClientTest{
         return config;
     }
 
-    
 }

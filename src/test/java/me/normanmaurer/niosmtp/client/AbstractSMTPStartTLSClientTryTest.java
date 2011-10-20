@@ -16,6 +16,7 @@
 */
 package me.normanmaurer.niosmtp.client;
 
+import java.util.List;
 
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 
@@ -24,24 +25,50 @@ import org.apache.james.protocols.impl.NettyServer;
 import org.apache.james.protocols.smtp.SMTPConfigurationImpl;
 import org.apache.james.protocols.smtp.SMTPProtocol;
 import org.apache.james.protocols.smtp.SMTPProtocolHandlerChain;
+import org.apache.james.protocols.smtp.core.esmtp.StartTlsCmdHandler;
 import org.apache.james.protocols.smtp.hook.Hook;
 
-public abstract class SMTPSClientTest extends SMTPClientTest{
 
-   
+public abstract class AbstractSMTPStartTLSClientTryTest extends AbstractSMTPStartTLSClientTest{
 
     @Override
     protected NettyServer create(Hook hook) throws WiringException {
-        SMTPConfigurationImpl config = new SMTPConfigurationImpl();
-        SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain();
+        SMTPConfigurationImpl config = new SMTPConfigurationImpl() {
+
+            @Override
+            public boolean isStartTLSSupported() {
+                return true;
+            }
+            
+        };
+             
+        SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain() {
+
+            @Override
+            protected List<Object> initDefaultHandlers() {
+                List<Object> defaultHandlers =  super.initDefaultHandlers();
+                for (int i = 0 ; i < defaultHandlers.size(); i++) {
+                    Object h = defaultHandlers.get(i);
+                    if (h instanceof StartTlsCmdHandler) {
+                        defaultHandlers.remove(h);
+                        return defaultHandlers;
+                    }
+                }
+                return defaultHandlers;
+            }
+
+
+            
+        };
         chain.addHook(hook);
         return new NettyServer(new SMTPProtocol(chain, config),BogusSslContextFactory.getServerContext());
-
+        
     }
 
     @Override
     protected SMTPClientTransport createSMTPClient() {
-        return createFactory().createSMTPS(BogusSslContextFactory.getClientContext());
+        return createFactory().createStartTLS(BogusSslContextFactory.getClientContext(), false);
+
     }
 
 }
