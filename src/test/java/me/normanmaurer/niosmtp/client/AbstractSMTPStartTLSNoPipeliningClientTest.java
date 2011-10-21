@@ -19,6 +19,11 @@ package me.normanmaurer.niosmtp.client;
 import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.core.SMTPClientConfigImpl;
 
+/**
+ * 
+ * @author Norman Maurer
+ *
+ */
 public abstract class AbstractSMTPStartTLSNoPipeliningClientTest extends AbstractSMTPStartTLSClientTest {
 
     @Override

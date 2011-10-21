@@ -20,6 +20,12 @@ import me.normanmaurer.niosmtp.client.AbstractSMTPStartTLSNoPipeliningClientTest
 import me.normanmaurer.niosmtp.transport.SMTPClientTransportFactory;
 import me.normanmaurer.niosmtp.transport.impl.NettySMTPClientTransportFactory;
 
+
+/**
+ * 
+ * @author Norman Maurer
+ *
+ */
 public class OioSMTPStartTLSNoPipeliningClientTest extends AbstractSMTPStartTLSNoPipeliningClientTest{
 
 

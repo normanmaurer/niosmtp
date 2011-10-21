@@ -22,6 +22,12 @@ import me.normanmaurer.niosmtp.client.AbstractSMTPClientUnsupportedExtensionTest
 import me.normanmaurer.niosmtp.transport.SMTPClientTransportFactory;
 import me.normanmaurer.niosmtp.transport.impl.NettySMTPClientTransportFactory;
 
+
+/**
+ * 
+ * @author Norman Maurer
+ *
+ */
 public class OioSMTPClientUnsupportedExtensionTest extends AbstractSMTPClientUnsupportedExtensionTest{
 
     @Override

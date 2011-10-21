@@ -21,12 +21,16 @@ package me.normanmaurer.niosmtp.client;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 
 import java.io.ByteArrayInputStream;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+
 
 import org.apache.james.protocols.impl.NettyServer;
 import org.apache.james.protocols.smtp.SMTPConfigurationImpl;
@@ -64,6 +68,34 @@ public abstract class AbstractSMTPClientUnsupportedExtensionTest {
     
     @Test
     public void testDependOnPipelining() throws Exception {
+        checkDependOnPipelining(new DependOnPipeliningAssertCheck());
+    }
+    
+    @Test
+    public void testDependOnPipeliningNonBlocking() throws Exception {
+        checkDependOnPipelining(new AsyncAssertCheck(new DependOnPipeliningAssertCheck()));
+    }
+    
+    private final class DependOnPipeliningAssertCheck extends AssertCheck {
+
+        @Override
+        protected void onDeliveryResult(Iterator<DeliveryResult> result) {
+            assertTrue(result.hasNext());
+            
+            // We expect to receive an exception as PIPELINING was not supported
+            DeliveryResult dr = result.next();
+            assertFalse(dr.isSuccess());
+            assertNull(dr.getRecipientStatus());
+            assertEquals(SMTPUnsupportedExtensionException.class, dr.getException().getClass());
+            
+            assertFalse(result.hasNext());
+
+        }
+        
+    }
+    
+    
+    private void checkDependOnPipelining(AssertCheck check) throws Exception {
         int port = 6028;
 
         SMTPConfigurationImpl config = new SMTPConfigurationImpl();
@@ -107,20 +139,46 @@ public abstract class AbstractSMTPClientUnsupportedExtensionTest {
         SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
         try {
             
-            // We expect to receive an exception as PIPELINING was not supported
-            DeliveryResult dr = future.get().next();
-            assertFalse(dr.isSuccess());
-            assertNull(dr.getRecipientStatus());
-            assertEquals(SMTPUnsupportedExtensionException.class, dr.getException().getClass());
+            check.onSMTPClientFuture(future);
         } finally {
             transport.destroy();
             smtpServer.unbind();
         }
     }
-    
  
     @Test
     public void testDependOnStartTLS() throws Exception {
+        checkDependOnStartTLS(new DependOnStartTLSAssertCheck());
+    }
+    
+    
+    @Test
+    public void testDependOnStartTLSNonBlocking() throws Exception {
+        checkDependOnStartTLS(new AsyncAssertCheck(new DependOnStartTLSAssertCheck()));
+    }
+    
+    
+    
+    
+    private class DependOnStartTLSAssertCheck extends AssertCheck {
+
+        
+        protected void onDeliveryResult(Iterator<DeliveryResult> result) {
+            assertTrue(result.hasNext());
+
+            // We expect to receive an exception as STARTTLS was not supported
+            DeliveryResult dr = result.next();
+            assertFalse(dr.isSuccess());
+            assertNull(dr.getRecipientStatus());
+            assertEquals(SMTPUnsupportedExtensionException.class, dr.getException().getClass());
+            
+            assertFalse(result.hasNext());
+
+        }
+        
+    }
+
+    private void checkDependOnStartTLS(AssertCheck check) throws Exception {
         int port = 6028;
 
         SMTPConfigurationImpl config = new SMTPConfigurationImpl() {
@@ -163,16 +221,11 @@ public abstract class AbstractSMTPClientUnsupportedExtensionTest {
 
         SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
         try {
-            
-            // We expect to receive an exception as STARTTLS was not supported
-            DeliveryResult dr = future.get().next();
-            assertFalse(dr.isSuccess());
-            assertNull(dr.getRecipientStatus());
-            assertEquals(SMTPUnsupportedExtensionException.class, dr.getException().getClass());
+            check.onSMTPClientFuture(future);
         } finally {
             transport.destroy();
             smtpServer.unbind();
         }
     }
-    
+
 }

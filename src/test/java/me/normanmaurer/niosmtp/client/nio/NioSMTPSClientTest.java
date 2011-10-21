@@ -20,6 +20,12 @@ import me.normanmaurer.niosmtp.client.AbstractSMTPSClientTest;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransportFactory;
 import me.normanmaurer.niosmtp.transport.impl.NettySMTPClientTransportFactory;
 
+
+/**
+ * 
+ * @author Norman Maurer
+ *
+ */
 public class NioSMTPSClientTest extends AbstractSMTPSClientTest{
 
     @Override

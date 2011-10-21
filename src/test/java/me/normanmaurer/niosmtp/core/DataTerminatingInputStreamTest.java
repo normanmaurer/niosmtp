@@ -27,6 +27,12 @@ import junit.framework.Assert;
 
 import me.normanmaurer.niosmtp.core.DataTerminatingInputStream;
 
+
+/**
+ * 
+ * @author Norman Maurer
+ *
+ */
 public class DataTerminatingInputStreamTest {
     
     private void checkStream(String expected, String msg) throws IOException {

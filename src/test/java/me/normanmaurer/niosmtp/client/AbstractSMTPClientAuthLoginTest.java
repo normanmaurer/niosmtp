@@ -113,6 +113,7 @@ public abstract class AbstractSMTPClientAuthLoginTest extends AbstractSMTPClient
         
     }
     
+    
     protected class TestAuthHook implements AuthHook {
         
         @Override

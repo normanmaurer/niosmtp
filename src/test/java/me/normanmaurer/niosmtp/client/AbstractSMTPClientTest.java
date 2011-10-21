@@ -23,9 +23,6 @@ import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import java.util.concurrent.ExecutionException;
-
-
 
 import me.normanmaurer.niosmtp.SMTPConnectionException;
 import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus;
@@ -79,6 +76,17 @@ public abstract class AbstractSMTPClientTest {
     
     @Test
     public void testRejectMailFrom() throws Exception {
+        checkRejectMailFrom(new RejectMailFromAssertCheck());
+    }
+    
+    
+    @Test
+    public void testRejectMailFromNonBlocking() throws Exception {
+        checkRejectMailFrom(new AsyncAssertCheck(new RejectMailFromAssertCheck()));
+    }
+    
+    
+    private void checkRejectMailFrom(AssertCheck check) throws Exception {
         int port = 6028;
 
         NettyServer smtpServer = create(new SimpleHook() {
@@ -100,7 +108,19 @@ public abstract class AbstractSMTPClientTest {
         try {
             SMTPClientConfigImpl conf = createConfig();
             SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
-            DeliveryResult dr = future.get().next();
+            check.onSMTPClientFuture(future);
+        } finally {
+            smtpServer.unbind();
+            transport.destroy();
+        }
+        
+    }
+    
+    private final class RejectMailFromAssertCheck extends AssertCheck {
+
+        @Override
+        protected void onDeliveryResult(Iterator<DeliveryResult> result) {
+            DeliveryResult dr = result.next();
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());
             Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
@@ -113,17 +133,25 @@ public abstract class AbstractSMTPClientTest {
             assertEquals(554, status.getResponse().getCode());
             
             assertFalse(it.hasNext());
-        } finally {
-            smtpServer.unbind();
-            transport.destroy();
         }
         
     }
-
+    
+    
     
     
     @Test
     public void testRejectHelo() throws Exception{
+        checkRejectHelo(new RejectHeloAssertCheck());
+    }
+    
+    @Test
+    public void testRejectHeloNonBlocking() throws Exception{
+        checkRejectHelo(new AsyncAssertCheck(new RejectHeloAssertCheck()));
+    }
+    
+    
+    private void checkRejectHelo(AssertCheck check) throws Exception{
         int port = 6028;
 
         NettyServer smtpServer = create(new SimpleHook() {
@@ -149,7 +177,19 @@ public abstract class AbstractSMTPClientTest {
         try {
             SMTPClientConfigImpl conf = createConfig();
             SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
-            DeliveryResult dr = future.get().next();
+            check.onSMTPClientFuture(future);
+        } finally {
+            smtpServer.unbind();
+            transport.destroy();
+        }
+        
+    }
+    
+    private final class RejectHeloAssertCheck extends AssertCheck {
+
+        @Override
+        protected void onDeliveryResult(Iterator<DeliveryResult> result) {
+            DeliveryResult dr = result.next();
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());
             Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
@@ -161,15 +201,25 @@ public abstract class AbstractSMTPClientTest {
             assertEquals(DeliveryRecipientStatus.Status.PermanentError, status.getStatus());
             assertEquals(554, status.getResponse().getCode());
             
-            assertFalse(it.hasNext());
-        } finally {
-            smtpServer.unbind();
-            transport.destroy();
+            assertFalse(it.hasNext());            
         }
         
     }
+    
+    
+    
     @Test
     public void testRejectAllRecipients() throws Exception {
+        checkRejectAllRecipients(new RejectAllRecipientsAssertCheck());
+    }
+    
+    @Test
+    public void testRejectAllRecipientsNonBlocking() throws Exception {
+        checkRejectAllRecipients(new AsyncAssertCheck(new RejectAllRecipientsAssertCheck()));
+    }
+    
+    
+    private void checkRejectAllRecipients(AssertCheck check) throws Exception {
         int port = 6028;
 
 
@@ -197,7 +247,19 @@ public abstract class AbstractSMTPClientTest {
             SMTPClientConfigImpl conf = createConfig();
 
             SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
-            DeliveryResult dr = future.get().next();
+            check.onSMTPClientFuture(future);
+        } finally {
+            smtpServer.unbind();
+            transport.destroy();
+        }
+        
+    }
+    
+    private final class RejectAllRecipientsAssertCheck extends AssertCheck {
+
+        @Override
+        protected void onDeliveryResult(Iterator<DeliveryResult> result) {
+            DeliveryResult dr = result.next();
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());
             Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
@@ -210,16 +272,22 @@ public abstract class AbstractSMTPClientTest {
             assertEquals(554, status.getResponse().getCode());
             
             assertFalse(it.hasNext());
-        } finally {
-            smtpServer.unbind();
-            transport.destroy();
         }
         
     }
     
-    
     @Test
     public void testRejectData() throws Exception {
+        checkRejectData(new RejectDataAssertCheck());
+    }
+    
+    @Test
+    public void testRejectDataNonBlocking() throws Exception {
+        checkRejectData(new AsyncAssertCheck(new RejectDataAssertCheck()));
+    }
+    
+    
+    private void checkRejectData(AssertCheck check) throws Exception {
         int port = 6028;
 
         NettyServer smtpServer = create(new SimpleHook() {
@@ -245,7 +313,19 @@ public abstract class AbstractSMTPClientTest {
             SMTPClientConfigImpl conf = createConfig();
 
             SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
-            DeliveryResult dr = future.get().next();
+            check.onSMTPClientFuture(future);
+        } finally {
+            smtpServer.unbind();
+            transport.destroy();
+        }
+        
+    }
+    
+    private final class RejectDataAssertCheck extends AssertCheck {
+
+        @Override
+        protected void onDeliveryResult(Iterator<DeliveryResult> result) {
+            DeliveryResult dr = result.next();
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());
             Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
@@ -258,17 +338,22 @@ public abstract class AbstractSMTPClientTest {
             assertEquals(554, status.getResponse().getCode());
             
             assertFalse(it.hasNext());
-        } finally {
-            smtpServer.unbind();
-            transport.destroy();
         }
         
     }
     
-    
-    
     @Test
     public void testRejectOneRecipient() throws Exception {
+        checkRejectOneRecipient(new RejectOneRecipientAssertCheck());
+    }
+    
+    @Test
+    public void testRejectOneRecipientNonBlocking() throws Exception {
+        checkRejectOneRecipient(new AsyncAssertCheck(new RejectOneRecipientAssertCheck()));
+    }
+    
+    
+    private void checkRejectOneRecipient(AssertCheck check) throws Exception {
         int port = 6028;
 
 
@@ -298,7 +383,19 @@ public abstract class AbstractSMTPClientTest {
             SMTPClientConfigImpl conf = createConfig();
 
             SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com", "to3@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
-            DeliveryResult dr = future.get().next();
+            check.onSMTPClientFuture(future);
+        } finally {
+            smtpServer.unbind();
+            transport.destroy();
+        }
+        
+    }
+ 
+    private final class RejectOneRecipientAssertCheck extends AssertCheck {
+
+        @Override
+        protected void onDeliveryResult(Iterator<DeliveryResult> result) {
+            DeliveryResult dr = result.next();
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());
             Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
@@ -317,17 +414,24 @@ public abstract class AbstractSMTPClientTest {
             assertEquals(250, status.getResponse().getCode());
             assertEquals("to3@example.com", status.getAddress());
             
-            assertFalse(it.hasNext());
-        } finally {
-            smtpServer.unbind();
-            transport.destroy();
+            assertFalse(it.hasNext());            
         }
         
     }
     
- 
+    
     @Test
     public void testMultiplePerConnection() throws Exception {
+        checkMultiplePerConnection(new MultiplePerConnectionAssertCheck());
+    }
+    
+    @Test
+    public void testMultiplePerConnectionNonBlocking() throws Exception {
+        checkMultiplePerConnection(new AsyncAssertCheck(new MultiplePerConnectionAssertCheck()));
+    }
+    
+    
+    private void checkMultiplePerConnection(AssertCheck check) throws Exception {
         int port = 6028;
 
 
@@ -349,7 +453,19 @@ public abstract class AbstractSMTPClientTest {
             SMTPTransaction transaction = new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com", "to3@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes())));
             
             SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPTransaction[] {transaction, transaction});
-            Iterator<DeliveryResult> results = future.get();
+            check.onSMTPClientFuture(future);
+            
+        } finally {
+            smtpServer.unbind();
+            transport.destroy();
+        }
+        
+    }
+ 
+    private final class MultiplePerConnectionAssertCheck extends AssertCheck {
+
+        @Override
+        protected void onDeliveryResult(Iterator<DeliveryResult> results) {
             
             DeliveryResult dr = results.next();
             
@@ -395,21 +511,23 @@ public abstract class AbstractSMTPClientTest {
             assertEquals("to3@example.com", status.getAddress());
             
             assertFalse(it.hasNext());
-            assertFalse(results.hasNext());
-
-            
-        } finally {
-            smtpServer.unbind();
-            transport.destroy();
+            assertFalse(results.hasNext());            
         }
         
     }
     
- 
-    
+    @Test
+    public void testConnectionRefused() throws Exception {
+        checkConnectionRefused(new ConnectionRefusedAssertCheck());
+    }
     
     @Test
-    public void testConnectionRefused() throws InterruptedException, ExecutionException {
+    public void testConnectionRefusedNonBlocking() throws Exception {
+        checkConnectionRefused(new AsyncAssertCheck(new ConnectionRefusedAssertCheck()));
+    }
+    
+    
+    private void checkConnectionRefused(AssertCheck check) throws Exception {
         
         SMTPClientTransport transport = createSMTPClient();
         SMTPClientImpl c = new SMTPClientImpl(transport);
@@ -418,16 +536,24 @@ public abstract class AbstractSMTPClientTest {
 
         SMTPClientFuture future = c.deliver(new InetSocketAddress(11111), conf, new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
         try {
-            DeliveryResult dr = future.get().next();
-            assertFalse(dr.isSuccess());
-            assertNull(dr.getRecipientStatus());
-            assertEquals(SMTPConnectionException.class, dr.getException().getClass());
+            check.onSMTPClientFuture(future);
         } finally {
             transport.destroy();
         }
     }
     
-   
+    
+    private final class ConnectionRefusedAssertCheck extends AssertCheck {
+
+        @Override
+        protected void onDeliveryResult(Iterator<DeliveryResult> result) {
+            DeliveryResult dr = result.next();
+            assertFalse(dr.isSuccess());
+            assertNull(dr.getRecipientStatus());
+            assertEquals(SMTPConnectionException.class, dr.getException().getClass());            
+        }
+        
+    }
 
 
 }
