@@ -36,7 +36,7 @@ public interface SMTPDeliveryFuture extends Future<Iterator<DeliveryResult>>{
      * 
      * @return result
      */
-    public Iterator<DeliveryResult> getNoWait();
+    Iterator<DeliveryResult> getNoWait();
     
     
     /**
@@ -44,7 +44,7 @@ public interface SMTPDeliveryFuture extends Future<Iterator<DeliveryResult>>{
      * 
      * @return session
      */
-    public SMTPClientSession getSession();
+    SMTPClientSession getSession();
     
     
     /**
@@ -55,14 +55,14 @@ public interface SMTPDeliveryFuture extends Future<Iterator<DeliveryResult>>{
      * 
      * @param listener
      */
-    public void addListener(SMTPDeliveryFutureListener listener);
+    void addListener(SMTPDeliveryFutureListener listener);
     
     /**
      * Remove the {@link SMTPDeliveryFutureListener}
      * 
      * @param listener
      */
-    public void removeListener(SMTPDeliveryFutureListener listener);
+    void removeListener(SMTPDeliveryFutureListener listener);
     
     
     /**
@@ -70,7 +70,7 @@ public interface SMTPDeliveryFuture extends Future<Iterator<DeliveryResult>>{
      * 
      * @return listeners
      */
-    public Iterator<SMTPDeliveryFutureListener> getListeners();
+    Iterator<SMTPDeliveryFutureListener> getListeners();
        
 
 }
