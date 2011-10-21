@@ -22,7 +22,7 @@ import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * Execute the wrapped {@link AssertCheck} in an asynchronous way by using a {@link SMTPClientFutureListener}
+ * Execute the wrapped {@link AssertCheck} in an asynchronous way by using a {@link SMTPDeliveryFutureListener}
  * 
  * @author Norman Maurer
  *
@@ -36,17 +36,19 @@ public class AsyncAssertCheck extends AssertCheck{
     }
     
     /**
-     * Register an {@link SMTPClientFutureListener} to the given {@link SMTPClientFuture} to call {@link #onDeliveryResult(Iterator)} once the {@link SMTPClientFutureListener#operationComplete(Iterator)}
+     * Register an {@link SMTPDeliveryFutureListener} to the given {@link SMTPDeliveryFuture} to call {@link #onDeliveryResult(Iterator)} once the {@link SMTPDeliveryFutureListener#operationComplete(Iterator)}
      * is called
      * 
      */
     @Override
-    public void onSMTPClientFuture(SMTPClientFuture future) throws Exception {
+    public void onSMTPClientFuture(SMTPDeliveryFuture future) throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
-        future.addListener(new SMTPClientFutureListener() {
+        future.addListener(new SMTPDeliveryFutureListener() {
             
             @Override
-            public void operationComplete(Iterator<DeliveryResult> result) {
+            public void operationComplete(SMTPDeliveryFuture future) {
+                Iterator<DeliveryResult> result = future.getNoWait();
+
                 onDeliveryResult(result);
                 latch.countDown();
             }

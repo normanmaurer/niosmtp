@@ -27,6 +27,7 @@ import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.client.callback.WelcomeResponseCallback;
+import me.normanmaurer.niosmtp.client.impl.SMTPDeliveryFutureImpl;
 import me.normanmaurer.niosmtp.core.ArrayIterator;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
@@ -34,17 +35,17 @@ import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 
 
 /**
- * {@link SMTPClientImpl} which use the wrapped {@link SMTPClientTransport} to deliver email
+ * {@link SMTPDeliveryAgent} which use the wrapped {@link SMTPClientTransport} to deliver email
  * 
  * 
  * @author Norman Maurer
  * 
  */
-public class SMTPClientImpl implements SMTPClientConstants,SMTPClient, SMTPClientSessionConstants {
+public class SMTPDeliveryAgent implements SMTPClientConstants, SMTPDeliverySessionConstants {
 
-    private SMTPClientTransport transport;
+    private final SMTPClientTransport transport;
 
-    public SMTPClientImpl(SMTPClientTransport transport) {
+    public SMTPDeliveryAgent(final SMTPClientTransport transport) {
         this.transport = transport;
     }
 
@@ -52,13 +53,22 @@ public class SMTPClientImpl implements SMTPClientConstants,SMTPClient, SMTPClien
     
 
 
-    @Override
-    public SMTPClientFuture deliver(InetSocketAddress host, final SMTPClientConfig config, final SMTPTransaction... transactions) {
+    /**
+     * Deliver the given {@link SMTPDeliveryTransaction}'s 
+     * 
+     * The implementation may choose to do the deliver in an async fashion. 
+     * 
+     * @param host
+     * @param config
+     * @param transation
+     * @return future
+     */
+    public SMTPDeliveryFuture deliver(InetSocketAddress host, final SMTPClientConfig config, final SMTPDeliveryTransaction... transactions) {
         if (transactions == null || transactions.length == 0) {
             throw new IllegalArgumentException("SMTPTransaction parameter must be not null and the length must be > 0");
         }
 
-        final SMTPClientFutureImpl future = new SMTPClientFutureImpl();
+        final SMTPDeliveryFutureImpl future = new SMTPDeliveryFutureImpl();
 
         
         transport.connect(host, config,new SMTPResponseCallback() {
@@ -84,9 +94,9 @@ public class SMTPClientImpl implements SMTPClientConstants,SMTPClient, SMTPClien
             private void initSession(SMTPClientSession session) {
                 Map<String, Object> attrs = session.getAttributes();
                 
-                Iterator<SMTPTransaction> transactionIt = new ArrayIterator<SMTPTransaction>(transactions);
+                Iterator<SMTPDeliveryTransaction> transactionIt = new ArrayIterator<SMTPDeliveryTransaction>(transactions);
                 attrs.put(SMTP_TRANSACTIONS_KEY, transactionIt);
-                SMTPTransaction transaction = transactionIt.next();
+                SMTPDeliveryTransaction transaction = transactionIt.next();
                 attrs.put(CURRENT_SMTP_TRANSACTION_KEY, transaction);
                 attrs.put(RECIPIENTS_KEY, transaction.getRecipients().iterator());
 

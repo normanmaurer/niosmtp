@@ -29,9 +29,9 @@ import java.util.Iterator;
 import me.normanmaurer.niosmtp.Authentication;
 import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.client.DeliveryResult;
-import me.normanmaurer.niosmtp.client.SMTPClientFuture;
-import me.normanmaurer.niosmtp.client.SMTPClientImpl;
-import me.normanmaurer.niosmtp.client.SMTPTransactionImpl;
+import me.normanmaurer.niosmtp.client.SMTPDeliveryFuture;
+import me.normanmaurer.niosmtp.client.SMTPDeliveryAgent;
+import me.normanmaurer.niosmtp.client.impl.SMTPDeliveryTransactionImpl;
 import me.normanmaurer.niosmtp.core.AuthenticationImpl;
 import me.normanmaurer.niosmtp.core.SMTPClientConfigImpl;
 import me.normanmaurer.niosmtp.core.SimpleMessageInput;
@@ -77,7 +77,7 @@ public abstract class AbstractSMTPClientAuthLoginTest extends AbstractSMTPClient
 
     @Test
     public void testRejectBecauseOfBadAuth() throws Exception {
-        int port = 6028;
+        int port = TestUtils.getFreePort();
 
         NettyServer smtpServer = create(new SimpleHook());
         smtpServer.setListenAddresses(Arrays.asList(new InetSocketAddress(port)));
@@ -86,13 +86,13 @@ public abstract class AbstractSMTPClientAuthLoginTest extends AbstractSMTPClient
 
        
         SMTPClientTransport transport = createSMTPClient();
-        SMTPClientImpl c = new SMTPClientImpl(transport);
+        SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
 
         try {
             SMTPClientConfigImpl conf = createConfig();
             conf.setAuthentication(createAuthentication("myuser", "mybadpassword"));
 
-            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
+            SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
             DeliveryResult dr = future.get().next();
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());

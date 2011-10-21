@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.client;
+package me.normanmaurer.niosmtp.client.impl;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -24,18 +24,21 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 
+import me.normanmaurer.niosmtp.client.DeliveryResult;
+import me.normanmaurer.niosmtp.client.SMTPDeliveryFuture;
+import me.normanmaurer.niosmtp.client.SMTPDeliveryFutureListener;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
- * Basic {@link SMTPClientFuture} implementation 
+ * Basic {@link SMTPDeliveryFuture} implementation 
  * @author Norman Maurer
  *
  */
-public class SMTPClientFutureImpl implements SMTPClientFuture{
+public class SMTPDeliveryFutureImpl implements SMTPDeliveryFuture{
     
     private boolean isReady = false;
     private boolean isCancelled = false;
-    private final List<SMTPClientFutureListener> listeners = new ArrayList<SMTPClientFutureListener>();
+    private final List<SMTPDeliveryFutureListener> listeners = new ArrayList<SMTPDeliveryFutureListener>();
     private Iterable<DeliveryResult> result;
     private SMTPClientSession session;
     
@@ -55,7 +58,7 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
             
             // notify the listeners
             for (int i = 0; i < listeners.size(); i++) {
-                listeners.get(i).operationComplete(result.iterator());
+                listeners.get(i).operationComplete(this);
             }
         }
     }
@@ -96,15 +99,15 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
     }
 
     @Override
-    public synchronized void addListener(SMTPClientFutureListener listener) {
+    public synchronized void addListener(SMTPDeliveryFutureListener listener) {
         listeners.add(listener);
         if (isDone()) {
-            listener.operationComplete(result.iterator());
+            listener.operationComplete(this);
         }
     }
 
     @Override
-    public synchronized void removeListener(SMTPClientFutureListener listener) {
+    public synchronized void removeListener(SMTPDeliveryFutureListener listener) {
         listeners.remove(listener);
     }
 
@@ -120,15 +123,34 @@ public class SMTPClientFutureImpl implements SMTPClientFuture{
     @Override
     public Iterator<DeliveryResult> get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         checkReady(unit.toMillis(timeout));
-        if (isDone()) {
-            return result.iterator();
-        } else {
-            return null;
-        }
+        return getNoWait();
     }
 
     public synchronized void setSMTPClientSession(SMTPClientSession session) {
         this.session = session;
+    }
+
+
+    @Override
+    public synchronized Iterator<DeliveryResult> getNoWait() {
+        if (result == null) {
+            return null;
+        } else {
+            return result.iterator();
+        }
+    }
+
+
+    @Override
+    public synchronized SMTPClientSession getSession() {
+        return session;
+    }
+
+
+    @Override
+    public synchronized Iterator<SMTPDeliveryFutureListener> getListeners() {
+        // make a copy of the listeners to be sure we don't it a ConcurrentModificationException later
+        return new ArrayList<SMTPDeliveryFutureListener>(listeners).iterator();
     }
 
 }

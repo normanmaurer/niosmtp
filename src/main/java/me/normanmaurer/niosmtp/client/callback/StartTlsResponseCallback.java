@@ -21,7 +21,7 @@ import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
-import me.normanmaurer.niosmtp.client.SMTPTransaction;
+import me.normanmaurer.niosmtp.client.SMTPDeliveryTransaction;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
@@ -48,7 +48,7 @@ public class StartTlsResponseCallback extends AbstractResponseCallback implement
     
     @Override
     public void onResponse(SMTPClientSession session, SMTPResponse response) {
-        String mail = ((SMTPTransaction) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
+        String mail = ((SMTPDeliveryTransaction) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
 
         
         int code = response.getCode();

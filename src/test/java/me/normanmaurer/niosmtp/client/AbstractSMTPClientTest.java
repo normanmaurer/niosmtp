@@ -27,10 +27,10 @@ import java.util.Iterator;
 import me.normanmaurer.niosmtp.SMTPConnectionException;
 import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.client.DeliveryResult;
-import me.normanmaurer.niosmtp.client.SMTPClientImpl;
-import me.normanmaurer.niosmtp.client.SMTPClientFuture;
-import me.normanmaurer.niosmtp.client.SMTPTransaction;
-import me.normanmaurer.niosmtp.client.SMTPTransactionImpl;
+import me.normanmaurer.niosmtp.client.SMTPDeliveryAgent;
+import me.normanmaurer.niosmtp.client.SMTPDeliveryFuture;
+import me.normanmaurer.niosmtp.client.SMTPDeliveryTransaction;
+import me.normanmaurer.niosmtp.client.impl.SMTPDeliveryTransactionImpl;
 import me.normanmaurer.niosmtp.core.SMTPClientConfigImpl;
 import me.normanmaurer.niosmtp.core.SimpleMessageInput;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
@@ -87,7 +87,7 @@ public abstract class AbstractSMTPClientTest {
     
     
     private void checkRejectMailFrom(AssertCheck check) throws Exception {
-        int port = 6028;
+        int port = TestUtils.getFreePort();
 
         NettyServer smtpServer = create(new SimpleHook() {
 
@@ -103,11 +103,11 @@ public abstract class AbstractSMTPClientTest {
 
        
         SMTPClientTransport transport = createSMTPClient();
-        SMTPClientImpl c = new SMTPClientImpl(transport);
+        SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
 
         try {
             SMTPClientConfigImpl conf = createConfig();
-            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
+            SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
             check.onSMTPClientFuture(future);
         } finally {
             smtpServer.unbind();
@@ -152,7 +152,7 @@ public abstract class AbstractSMTPClientTest {
     
     
     private void checkRejectHelo(AssertCheck check) throws Exception{
-        int port = 6028;
+        int port = TestUtils.getFreePort();
 
         NettyServer smtpServer = create(new SimpleHook() {
 
@@ -171,12 +171,12 @@ public abstract class AbstractSMTPClientTest {
        
         
         SMTPClientTransport transport = createSMTPClient();
-        SMTPClientImpl c = new SMTPClientImpl(transport);
+        SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
 
 
         try {
             SMTPClientConfigImpl conf = createConfig();
-            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
+            SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
             check.onSMTPClientFuture(future);
         } finally {
             smtpServer.unbind();
@@ -220,7 +220,7 @@ public abstract class AbstractSMTPClientTest {
     
     
     private void checkRejectAllRecipients(AssertCheck check) throws Exception {
-        int port = 6028;
+        int port = TestUtils.getFreePort();
 
 
         NettyServer smtpServer = create(new SimpleHook() {
@@ -241,12 +241,12 @@ public abstract class AbstractSMTPClientTest {
        
         
         SMTPClientTransport transport = createSMTPClient();
-        SMTPClientImpl c = new SMTPClientImpl(transport);
+        SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
 
         try {
             SMTPClientConfigImpl conf = createConfig();
 
-            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
+            SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
             check.onSMTPClientFuture(future);
         } finally {
             smtpServer.unbind();
@@ -288,7 +288,7 @@ public abstract class AbstractSMTPClientTest {
     
     
     private void checkRejectData(AssertCheck check) throws Exception {
-        int port = 6028;
+        int port = TestUtils.getFreePort();
 
         NettyServer smtpServer = create(new SimpleHook() {
 
@@ -307,12 +307,12 @@ public abstract class AbstractSMTPClientTest {
        
         
         SMTPClientTransport transport = createSMTPClient();
-        SMTPClientImpl c = new SMTPClientImpl(transport);
+        SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
 
         try {
             SMTPClientConfigImpl conf = createConfig();
 
-            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
+            SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
             check.onSMTPClientFuture(future);
         } finally {
             smtpServer.unbind();
@@ -354,7 +354,7 @@ public abstract class AbstractSMTPClientTest {
     
     
     private void checkRejectOneRecipient(AssertCheck check) throws Exception {
-        int port = 6028;
+        int port = TestUtils.getFreePort();
 
 
         NettyServer smtpServer = create(new SimpleHook() {
@@ -377,12 +377,12 @@ public abstract class AbstractSMTPClientTest {
        
         
         SMTPClientTransport transport = createSMTPClient();
-        SMTPClientImpl c = new SMTPClientImpl(transport);
+        SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
 
         try {
             SMTPClientConfigImpl conf = createConfig();
 
-            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com", "to3@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
+            SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com", "to3@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
             check.onSMTPClientFuture(future);
         } finally {
             smtpServer.unbind();
@@ -432,7 +432,7 @@ public abstract class AbstractSMTPClientTest {
     
     
     private void checkMultiplePerConnection(AssertCheck check) throws Exception {
-        int port = 6028;
+        int port = TestUtils.getFreePort();
 
 
         NettyServer smtpServer = create(new SimpleHook() {
@@ -446,13 +446,13 @@ public abstract class AbstractSMTPClientTest {
        
         
         SMTPClientTransport transport = createSMTPClient();
-        SMTPClientImpl c = new SMTPClientImpl(transport);
+        SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
 
         try {
             SMTPClientConfigImpl conf = createConfig();
-            SMTPTransaction transaction = new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com", "to3@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes())));
+            SMTPDeliveryTransaction transaction = new SMTPDeliveryTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com", "to3@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes())));
             
-            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPTransaction[] {transaction, transaction});
+            SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryTransaction[] {transaction, transaction});
             check.onSMTPClientFuture(future);
             
         } finally {
@@ -530,11 +530,11 @@ public abstract class AbstractSMTPClientTest {
     private void checkConnectionRefused(AssertCheck check) throws Exception {
         
         SMTPClientTransport transport = createSMTPClient();
-        SMTPClientImpl c = new SMTPClientImpl(transport);
+        SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
 
         SMTPClientConfigImpl conf = createConfig();
 
-        SMTPClientFuture future = c.deliver(new InetSocketAddress(11111), conf, new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
+        SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(11111), conf, new SMTPDeliveryTransactionImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
         try {
             check.onSMTPClientFuture(future);
         } finally {

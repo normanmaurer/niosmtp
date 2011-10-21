@@ -14,27 +14,37 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.client;
+package me.normanmaurer.niosmtp.client.impl;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import me.normanmaurer.niosmtp.MessageInput;
+import me.normanmaurer.niosmtp.client.SMTPDeliveryTransaction;
 
 /**
- * Simple pojo implementation of a {@link SMTPTransaction}
+ * Simple pojo implementation of a {@link SMTPDeliveryTransaction}
  * 
  * @author Norman Maurer
  *
  */
-public class SMTPTransactionImpl implements SMTPTransaction{
+public class SMTPDeliveryTransactionImpl implements SMTPDeliveryTransaction{
 
     private final Collection<String> recipients;
     private final String sender;
     private final MessageInput message;
 
-    public SMTPTransactionImpl(final String sender, final Collection<String> recipients, final MessageInput message) {
+    public SMTPDeliveryTransactionImpl(final String sender, final Collection<String> recipients, final MessageInput message) {
+        this(sender, recipients, message, true);
+    }
+    
+    private SMTPDeliveryTransactionImpl(final String sender, final Collection<String> recipients, final MessageInput message, boolean wrapRecipients) {
         this.sender = sender;
-        this.recipients = recipients;
+        if (wrapRecipients) {
+            this.recipients = Collections.unmodifiableCollection(recipients);
+        } else {
+            this.recipients = recipients;
+        }
         if (recipients == null || recipients.isEmpty()) {
             throw new IllegalArgumentException("At least one recipient must be given");
         }
@@ -42,13 +52,14 @@ public class SMTPTransactionImpl implements SMTPTransaction{
     }
     
     
+    
     /**
-     * Construct a {@link SMTPTransaction} which will use a null-sender
+     * Construct a {@link SMTPDeliveryTransaction} which will use a null-sender
      * 
      * @param recipients
      * @param message
      */
-    public SMTPTransactionImpl( final Collection<String> recipients, final MessageInput message) {
+    public SMTPDeliveryTransactionImpl( final Collection<String> recipients, final MessageInput message) {
         this(null, recipients, message);
     }
     
@@ -68,22 +79,25 @@ public class SMTPTransactionImpl implements SMTPTransaction{
         return message;
     }
     
+  
     
     /**
-     * Create an array of {@link SMTPTransaction}'s which use the same sender and recipients but different {@link MessageInput}'s
+     * Create an array of {@link SMTPDeliveryTransaction}'s which use the same sender and recipients but different {@link MessageInput}'s
      * 
      * @param sender
      * @param recipients
      * @param messages
      * @return transactions
      */
-    public static SMTPTransaction[] create(final String sender, final Collection<String> recipients, final MessageInput... messages) {
+    public static SMTPDeliveryTransaction[] create(final String sender, final Collection<String> recipients, final MessageInput... messages) {
         if (messages == null || messages.length <1 ){
             throw new IllegalArgumentException("At least one MessageInput must be given");
         }
-        SMTPTransaction[] transactions = new SMTPTransaction[messages.length];
+        
+        Collection<String> rcpts = Collections.unmodifiableCollection(recipients);
+        SMTPDeliveryTransaction[] transactions = new SMTPDeliveryTransaction[messages.length];
         for (int i = 0; i < transactions.length; i++) {
-            transactions[i] = new SMTPTransactionImpl(sender, recipients, messages[i]);
+            transactions[i] = new SMTPDeliveryTransactionImpl(sender, rcpts , messages[i], false);
         }
         return transactions;
     }

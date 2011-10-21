@@ -90,7 +90,7 @@ public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory i
      * @author Norman Maurer
      *
      */
-    private final static class SslHandshakeHandler extends SimpleChannelUpstreamHandler {
+    protected final static class SslHandshakeHandler extends SimpleChannelUpstreamHandler {
 
         @Override
         public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {

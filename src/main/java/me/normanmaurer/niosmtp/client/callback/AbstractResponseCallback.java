@@ -26,31 +26,31 @@ import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus;
-import me.normanmaurer.niosmtp.client.DeliveryRecipientStatusImpl;
 import me.normanmaurer.niosmtp.client.DeliveryResult;
-import me.normanmaurer.niosmtp.client.DeliveryResultImpl;
-import me.normanmaurer.niosmtp.client.SMTPClientFuture;
-import me.normanmaurer.niosmtp.client.SMTPClientFutureImpl;
-import me.normanmaurer.niosmtp.client.SMTPClientSessionConstants;
-import me.normanmaurer.niosmtp.client.SMTPTransaction;
+import me.normanmaurer.niosmtp.client.SMTPDeliveryFuture;
+import me.normanmaurer.niosmtp.client.SMTPDeliverySessionConstants;
+import me.normanmaurer.niosmtp.client.SMTPDeliveryTransaction;
+import me.normanmaurer.niosmtp.client.impl.DeliveryRecipientStatusImpl;
+import me.normanmaurer.niosmtp.client.impl.DeliveryResultImpl;
+import me.normanmaurer.niosmtp.client.impl.SMTPDeliveryFutureImpl;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
- * Abstract base implementation of {@link SMTPResponseCallback} which comple the {@link SMTPClientFuture} on an {@link Exception}
+ * Abstract base implementation of {@link SMTPResponseCallback} which comple the {@link SMTPDeliveryFuture} on an {@link Exception}
  * 
  * @author Norman Maurer
  *
  */
-public abstract class AbstractResponseCallback implements SMTPResponseCallback, SMTPClientSessionConstants, SMTPClientConstants {
+public abstract class AbstractResponseCallback implements SMTPResponseCallback, SMTPDeliverySessionConstants, SMTPClientConstants {
     
     @SuppressWarnings("unchecked")
     @Override
     public void onException(SMTPClientSession session, Throwable t) {
-        SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
+        SMTPDeliveryFutureImpl future = (SMTPDeliveryFutureImpl) session.getAttributes().get(FUTURE_KEY);
         
         List<DeliveryResult> resultList = ((List<DeliveryResult>) session.getAttributes().get(DELIVERY_RESULT_LIST_KEY));
-        Iterator<SMTPTransaction> transactions = ((Iterator<SMTPTransaction>) session.getAttributes().get(SMTP_TRANSACTIONS_KEY));
+        Iterator<SMTPDeliveryTransaction> transactions = ((Iterator<SMTPDeliveryTransaction>) session.getAttributes().get(SMTP_TRANSACTIONS_KEY));
         
         resultList.add(DeliveryResultImpl.create(t));
         while(transactions.hasNext()) {
@@ -84,8 +84,8 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
     @SuppressWarnings("unchecked")
     private void initSession(SMTPClientSession session) {
         Map<String, Object> attrs = session.getAttributes();
-        Iterator<SMTPTransaction> transactionList = ((Iterator<SMTPTransaction>) session.getAttributes().get(SMTP_TRANSACTIONS_KEY));
-        SMTPTransaction transaction =  transactionList.next();
+        Iterator<SMTPDeliveryTransaction> transactionList = ((Iterator<SMTPDeliveryTransaction>) session.getAttributes().get(SMTP_TRANSACTIONS_KEY));
+        SMTPDeliveryTransaction transaction =  transactionList.next();
         
         attrs.put(CURRENT_SMTP_TRANSACTION_KEY,transaction);
         attrs.put(RECIPIENTS_KEY, transaction.getRecipients().iterator());
@@ -104,7 +104,7 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
      * @param session
      */
     protected void pipelining(SMTPClientSession session) {
-        SMTPTransaction transaction = (SMTPTransaction) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY);
+        SMTPDeliveryTransaction transaction = (SMTPDeliveryTransaction) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY);
         
         session.getAttributes().put(PIPELINING_ACTIVE_KEY, true);
         session.send(SMTPRequestImpl.mail(transaction.getSender()), MailResponseCallback.INSTANCE);
@@ -116,16 +116,16 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
     
     
     /**
-     * Set the DeliveryStatus and notify the {@link SMTPClientFuture} if needed
+     * Set the DeliveryStatus and notify the {@link SMTPDeliveryFuture} if needed
      * 
      * @param session
      */
     @SuppressWarnings("unchecked")
     protected void setDeliveryStatus(SMTPClientSession session) {
-        SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
+        SMTPDeliveryFutureImpl future = (SMTPDeliveryFutureImpl) session.getAttributes().get(FUTURE_KEY);
         List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
         List<DeliveryResult> resultList = ((List<DeliveryResult>) session.getAttributes().get(DELIVERY_RESULT_LIST_KEY));       
-        Iterator<SMTPTransaction> transactions = ((Iterator<SMTPTransaction>) session.getAttributes().get(SMTP_TRANSACTIONS_KEY));
+        Iterator<SMTPDeliveryTransaction> transactions = ((Iterator<SMTPDeliveryTransaction>) session.getAttributes().get(SMTP_TRANSACTIONS_KEY));
 
         resultList.add(new DeliveryResultImpl(statusList));
         
@@ -140,7 +140,7 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
             if (session.getSupportedExtensions().contains(PIPELINING_EXTENSION) && session.getConfig().getPipeliningMode() != PipeliningMode.NO) {
                 pipelining(session);
             } else {
-                String sender = ((SMTPTransaction) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
+                String sender = ((SMTPDeliveryTransaction) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
 
                 session.send(SMTPRequestImpl.mail(sender), MailResponseCallback.INSTANCE);
             }

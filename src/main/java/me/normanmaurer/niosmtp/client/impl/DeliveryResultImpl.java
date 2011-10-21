@@ -14,13 +14,15 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.client;
+package me.normanmaurer.niosmtp.client.impl;
 
 import java.net.ConnectException;
 import java.util.Iterator;
 
 import me.normanmaurer.niosmtp.SMTPConnectionException;
 import me.normanmaurer.niosmtp.SMTPException;
+import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus;
+import me.normanmaurer.niosmtp.client.DeliveryResult;
 
 /**
  * Simple {@link DeliveryResult} implementation 

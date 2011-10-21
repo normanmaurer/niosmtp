@@ -25,7 +25,7 @@ import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus.Status;
-import me.normanmaurer.niosmtp.client.DeliveryRecipientStatusImpl;
+import me.normanmaurer.niosmtp.client.impl.DeliveryRecipientStatusImpl;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 

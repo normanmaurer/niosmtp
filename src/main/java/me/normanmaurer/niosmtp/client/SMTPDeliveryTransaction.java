@@ -21,12 +21,12 @@ import java.util.Collection;
 import me.normanmaurer.niosmtp.MessageInput;
 
 /**
- * A {@link SMTPTransaction} is a complete transaction which is used to deliver an email per SMTP. 
+ * A {@link SMTPDeliveryTransaction} is a complete transaction which is used to deliver an email per SMTP. 
  * 
  * @author Norman Maurer
  *
  */
-public interface SMTPTransaction {
+public interface SMTPDeliveryTransaction {
 
     /**
      * Return the sender which should be used for the <code>MAIL FROM</code>. This may return <code>null</code> if a null-sender should be used
@@ -36,7 +36,10 @@ public interface SMTPTransaction {
     public String getSender();
 
     /**
-     * Return a {@link Collection} of recipients which should be used for the <code>RCPT TO</code>. The returned {@link Collection} must at least contain one element
+     * Return a {@link Collection} of recipients which should be used for the <code>RCPT TO</code>. The returned {@link Collection} must at least contain one element.
+     * <br/>
+     * <br/>
+     * <strong>The returned {@link Collection} is unmodifiable</strong>
      * 
      * @return recipients not null
      */

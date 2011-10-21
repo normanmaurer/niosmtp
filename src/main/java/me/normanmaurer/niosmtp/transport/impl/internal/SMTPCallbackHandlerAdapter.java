@@ -32,7 +32,7 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
  * @author Norman Maurer
  *
  */
-public class SMTPCallbackHandlerAdapter extends SimpleChannelUpstreamHandler {
+class SMTPCallbackHandlerAdapter extends SimpleChannelUpstreamHandler {
     
     // Attachment which will get set once we handled the response or exception
     private final static Object HANDLED = new Object();

@@ -46,7 +46,7 @@ import org.slf4j.Logger;
  * @author Norman Maurer
  *
  */
-public class NettySMTPClientSession implements SMTPClientSession, SMTPClientConstants, NettyConstants{
+class NettySMTPClientSession implements SMTPClientSession, SMTPClientConstants, NettyConstants{
 
     private int closeHandlerCount = 0;
     private int callbackCount = 0;

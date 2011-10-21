@@ -24,9 +24,9 @@ import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus;
-import me.normanmaurer.niosmtp.client.DeliveryRecipientStatusImpl;
-import me.normanmaurer.niosmtp.client.SMTPClientFutureImpl;
-import me.normanmaurer.niosmtp.client.SMTPTransaction;
+import me.normanmaurer.niosmtp.client.SMTPDeliveryTransaction;
+import me.normanmaurer.niosmtp.client.impl.DeliveryRecipientStatusImpl;
+import me.normanmaurer.niosmtp.client.impl.SMTPDeliveryFutureImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
@@ -52,9 +52,9 @@ public class DataResponseCallback extends AbstractPipelineResponseCallback {
     @Override
     public void onResponseInternal(SMTPClientSession session, SMTPResponse response) {
 
-        SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
+        SMTPDeliveryFutureImpl future = (SMTPDeliveryFutureImpl) session.getAttributes().get(FUTURE_KEY);
         List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
-        MessageInput msg = ((SMTPTransaction) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getMessage();
+        MessageInput msg = ((SMTPDeliveryTransaction) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getMessage();
         boolean pipeliningActive = session.getAttributes().containsKey(PIPELINING_ACTIVE_KEY);
 
         int code = response.getCode();

@@ -23,6 +23,13 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
+/**
+ * {@link SimpleChannelUpstreamHandler} sub-class which acts as adapter. It will call the wrapped {@link CloseListener} and call the {@link CloseListener#onClose(SMTPClientSession)}
+ * method once the {@link #channelClosed(ChannelHandlerContext, ChannelStateEvent)} method is executed
+ * 
+ * @author Norman Maurer
+ *
+ */
 public class CloseListenerAdapter extends SimpleChannelUpstreamHandler{
 
     private CloseListener listener;

@@ -14,10 +14,18 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.client;
+package me.normanmaurer.niosmtp.client.impl;
 
 import me.normanmaurer.niosmtp.SMTPResponse;
+import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus;
 
+/**
+ * Simple POJO implementation of {@link DeliveryRecipientStatus}
+ * 
+ * 
+ * @author Norman Maurer
+ *
+ */
 public class DeliveryRecipientStatusImpl implements DeliveryRecipientStatus{
 
     private String address;

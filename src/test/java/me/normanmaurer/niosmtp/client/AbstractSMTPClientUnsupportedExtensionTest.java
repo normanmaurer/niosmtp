@@ -44,9 +44,9 @@ import org.junit.Test;
 import me.normanmaurer.niosmtp.SMTPUnsupportedExtensionException;
 import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.client.DeliveryResult;
-import me.normanmaurer.niosmtp.client.SMTPClientFuture;
-import me.normanmaurer.niosmtp.client.SMTPClientImpl;
-import me.normanmaurer.niosmtp.client.SMTPTransactionImpl;
+import me.normanmaurer.niosmtp.client.SMTPDeliveryFuture;
+import me.normanmaurer.niosmtp.client.SMTPDeliveryAgent;
+import me.normanmaurer.niosmtp.client.impl.SMTPDeliveryTransactionImpl;
 import me.normanmaurer.niosmtp.core.SMTPClientConfigImpl;
 import me.normanmaurer.niosmtp.core.SimpleMessageInput;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
@@ -96,7 +96,7 @@ public abstract class AbstractSMTPClientUnsupportedExtensionTest {
     
     
     private void checkDependOnPipelining(AssertCheck check) throws Exception {
-        int port = 6028;
+        int port = TestUtils.getFreePort();
 
         SMTPConfigurationImpl config = new SMTPConfigurationImpl();
         SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain() {
@@ -131,12 +131,12 @@ public abstract class AbstractSMTPClientUnsupportedExtensionTest {
 
         
         SMTPClientTransport transport = createFactory().createPlain();
-        SMTPClientImpl c = new SMTPClientImpl(transport);
+        SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
 
         SMTPClientConfigImpl conf = createConfig();
         conf.setPipeliningMode(PipeliningMode.DEPEND);
 
-        SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
+        SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryTransactionImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
         try {
             
             check.onSMTPClientFuture(future);
@@ -179,7 +179,7 @@ public abstract class AbstractSMTPClientUnsupportedExtensionTest {
     }
 
     private void checkDependOnStartTLS(AssertCheck check) throws Exception {
-        int port = 6028;
+        int port = TestUtils.getFreePort();
 
         SMTPConfigurationImpl config = new SMTPConfigurationImpl() {
 
@@ -215,11 +215,11 @@ public abstract class AbstractSMTPClientUnsupportedExtensionTest {
 
         
         SMTPClientTransport transport = createFactory().createStartTLS(BogusSslContextFactory.getClientContext(), true);
-        SMTPClientImpl c = new SMTPClientImpl(transport);
+        SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
 
         SMTPClientConfigImpl conf = createConfig();
 
-        SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPTransactionImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
+        SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryTransactionImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
         try {
             check.onSMTPClientFuture(future);
         } finally {

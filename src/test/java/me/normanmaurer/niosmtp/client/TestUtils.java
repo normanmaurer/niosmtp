@@ -18,36 +18,38 @@
  ****************************************************************/
 package me.normanmaurer.niosmtp.client;
 
-import java.util.Iterator;
+import java.io.IOException;
+import java.net.ServerSocket;
 
 /**
- * Callback which should be called when a {@link SMTPDeliveryFuture} was received. 
+ * Utility class for testing
  * 
  * 
  * @author Norman Maurer
  *
  */
-public abstract class AssertCheck {
+public class TestUtils {
+
+    private final static int START_PORT = 20000;
+    private final static int END_PORT = 30000;
     
     /**
-     * Take the {@link SMTPDeliveryFuture} and bass the {@link DeliveryResult}' to the {@link #onDeliveryResult(Iterator)} method.
+     * Return a free port which can be used to bind to
      * 
-     * This implementation does this by called {@link SMTPDeliveryFuture#get()} and so blocks until its ready. 
-     * 
-     * 
-     * @param future
-     * @throws Exception
+     * @return port
      */
-    public void onSMTPClientFuture(SMTPDeliveryFuture future) throws Exception {
-        onDeliveryResult(future.get()); 
+    public synchronized static int getFreePort() {
+        for(int start = START_PORT; start <= END_PORT; start++) {
+            try {
+                ServerSocket socket = new ServerSocket(start);
+                socket.setReuseAddress(true);
+                socket.close();
+                return start;
+            } catch (IOException e) {
+                // ignore 
+            }
+            
+        }
+        throw new RuntimeException("Unable to find a free port....");
     }
-    
-    /**
-     * Callback which will be called once the {@link SMTPDeliveryFuture#isDone()} is true
-     * 
-     * Assert checks should be performed here
-     * 
-     * @param result
-     */
-    protected abstract void onDeliveryResult(Iterator<DeliveryResult> result);
 }

@@ -28,7 +28,7 @@ import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.SMTPUnsupportedExtensionException;
-import me.normanmaurer.niosmtp.client.SMTPTransaction;
+import me.normanmaurer.niosmtp.client.SMTPDeliveryTransaction;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.transport.DeliveryMode;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
@@ -76,7 +76,7 @@ public class EhloResponseCallback extends AbstractResponseCallback implements SM
 
         int code = response.getCode();
 
-        String mail = ((SMTPTransaction)session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
+        String mail = ((SMTPDeliveryTransaction)session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
         if (code < 400) {
 
             // Check if we depend on pipelining 

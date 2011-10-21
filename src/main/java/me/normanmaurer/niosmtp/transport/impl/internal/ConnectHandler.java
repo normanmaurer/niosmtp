@@ -24,11 +24,21 @@ import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.transport.DeliveryMode;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.slf4j.Logger;
 
+/**
+ * {@link SimpleChannelUpstreamHandler} sub-class which acts as adapter for an {@link SMTPResponseCallback}. 
+ * 
+ * The special thing about this implementation is that I will remove itself from the {@link ChannelPipeline} after the first {@link #messageReceived(ChannelHandlerContext, MessageEvent)}
+ * was executed. It also takes care to create the {@link NettySMTPClientSession} and inject it the wrapped {@link SMTPResponseCallback}.
+ * 
+ * @author Norman Maurer
+ *
+ */
 class ConnectHandler extends SimpleChannelUpstreamHandler {
 
     private SSLEngine engine;

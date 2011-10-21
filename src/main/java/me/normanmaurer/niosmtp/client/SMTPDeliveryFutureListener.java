@@ -16,28 +16,19 @@
 */
 package me.normanmaurer.niosmtp.client;
 
-import java.net.InetSocketAddress;
-
-import me.normanmaurer.niosmtp.SMTPClientConfig;
 
 /**
- * SMTP Client which allows to deliver email to an SMTP Server in a async manner
+ * A listener which will get informed once the SMTP delivery was done
  * 
  * @author Norman Maurer
  *
  */
-public interface SMTPClient {
+public interface SMTPDeliveryFutureListener {
 
     /**
-     * Deliver the given {@link SMTPTransaction}'s 
+     * Callback which will get called once the operation was complete
      * 
-     * The implementation may choose to do the deliver in an async fashion. 
-     * 
-     * @param host
-     * @param config
-     * @param transation
-     * @return future
+     * @param status
      */
-    public SMTPClientFuture deliver(InetSocketAddress host, final SMTPClientConfig config, final SMTPTransaction... transaction);
-
+    void operationComplete(SMTPDeliveryFuture future); 
 }
