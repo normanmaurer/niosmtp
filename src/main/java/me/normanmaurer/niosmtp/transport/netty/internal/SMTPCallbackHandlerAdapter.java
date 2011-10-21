@@ -70,12 +70,11 @@ class SMTPCallbackHandlerAdapter extends SimpleChannelUpstreamHandler {
         // https://issues.jboss.org/browse/NETTY-430
         if ((e.getCause() instanceof NullPointerException) == false && ctx.getAttachment() == null) {
             ctx.setAttachment(HANDLED);
-
             callback.onException(session, e.getCause());
             // Remove this handler once we handed over the exception to the callback
             ctx.getChannel().getPipeline().remove(this);
+        } else {
+            super.exceptionCaught(ctx, e);
         }
-
-
     }
 }
