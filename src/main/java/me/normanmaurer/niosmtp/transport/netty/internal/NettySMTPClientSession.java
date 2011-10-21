@@ -17,20 +17,16 @@
 package me.normanmaurer.niosmtp.transport.netty.internal;
 
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import javax.net.ssl.SSLEngine;
 
 import me.normanmaurer.niosmtp.MessageInput;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPClientConstants;
-import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.SMTPRequest;
-import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
+import me.normanmaurer.niosmtp.SMTPResponseCallback;
+import me.normanmaurer.niosmtp.transport.AbstractSMTPClientSession;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
+import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
@@ -46,47 +42,22 @@ import org.slf4j.Logger;
  * @author Norman Maurer
  *
  */
-class NettySMTPClientSession implements SMTPClientSession, SMTPClientConstants, NettyConstants{
+class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPClientSession, SMTPClientConstants, NettyConstants{
 
     private int closeHandlerCount = 0;
     private int callbackCount = 0;
     private Channel channel;
     private SSLEngine engine;
-    private Set<String> extensions = new HashSet<String>();
-    private Logger logger;
-    private Map<String, Object> attrs = new HashMap<String, Object>();
-    private SMTPDeliveryMode mode;
-    private SMTPClientConfig config;
 
     public NettySMTPClientSession(Channel channel, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode,  SSLEngine engine) {
-        this.logger = logger;
+        super(logger, config, mode);      
         this.channel = channel;
-        this.engine = engine;
-        this.mode = mode;
-        this.config = config;
-    }
-    
-    
-    @Override
-    public Set<String> getSupportedExtensions() {
-        return extensions;
-    }
-
-    public void setSupportedExtensions(Set<String> extensions) {
-        this.extensions = extensions;
     }
     
     @Override
     public String getId() {
         return channel.getId() + "";
     }
-
-    @Override
-    public Logger getLogger() {
-        return logger;
-    }
-
-
 
     @Override
     public void startTLS() {
@@ -127,24 +98,6 @@ class NettySMTPClientSession implements SMTPClientSession, SMTPClientConstants, 
     @Override
     public boolean isEncrypted() {
         return channel.getPipeline().get(SslHandler.class) != null;
-    }
-
-
-    @Override
-    public Map<String, Object> getAttributes() {
-        return attrs;
-    }
-
-
-    @Override
-    public SMTPDeliveryMode getDeliveryMode() {
-        return mode;
-    }
-
-
-    @Override
-    public SMTPClientConfig getConfig() {
-        return config;
     }
 
 

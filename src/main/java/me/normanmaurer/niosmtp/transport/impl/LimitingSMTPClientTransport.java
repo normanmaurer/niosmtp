@@ -1,0 +1,207 @@
+/**
+* Licensed to niosmtp developers ('niosmtp') under one or more
+* contributor license agreements. See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* niosmtp licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License. You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+package me.normanmaurer.niosmtp.transport.impl;
+
+import java.net.InetSocketAddress;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import me.normanmaurer.niosmtp.MessageInput;
+import me.normanmaurer.niosmtp.SMTPClientConfig;
+import me.normanmaurer.niosmtp.SMTPConnectionException;
+import me.normanmaurer.niosmtp.SMTPRequest;
+import me.normanmaurer.niosmtp.SMTPResponse;
+import me.normanmaurer.niosmtp.SMTPResponseCallback;
+import me.normanmaurer.niosmtp.transport.SMTPClientSession;
+import me.normanmaurer.niosmtp.transport.SMTPClientSession.CloseListener;
+import me.normanmaurer.niosmtp.transport.AbstractSMTPClientSession;
+import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
+import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
+
+/**
+ * {@link SMTPClientTransport} implementation which allows to wrap another {@link SMTPClientTransport} and act as connection limiter.
+ * 
+ * If the {@link #connect(InetSocketAddress, SMTPClientConfig, SMTPResponseCallback)} method is called and the max configured connections are reached its just
+ * queued and dispatched once another connection was closed.
+ * 
+ * If a the configured queue size is reached this implementation will call the {@link SMTPResponseCallback#onException(SMTPClientSession, Throwable) method to notify
+ * the callback about the problems
+ * 
+ * @author Norman Maurer
+ *
+ */
+public class LimitingSMTPClientTransport implements SMTPClientTransport {
+
+    private final Logger logger = LoggerFactory.getLogger(LimitingSMTPClientTransport.class);
+    
+    private final static SMTPConnectionException CONNECTION_EXCEPTION = new SMTPConnectionException("Unable to connect before SMTPClientTransport was destroyed");
+    private final static SMTPConnectionException QUEUE_LIMIT_REACHED_EXCEPTION = new SMTPConnectionException("To many queued connection attempts");
+    private final static SMTPConnectionException NOT_CONNECTED_EXCEPTION = new SMTPConnectionException("Not connected");
+
+    private final SMTPClientTransport transport;
+    private final int connectionLimit;
+    private final CloseListener closeListener = new ReleaseConnectionCloseHandler();
+    private final AtomicInteger connectionCount = new AtomicInteger(0);
+    private final ConcurrentLinkedQueue<QueuedConnectRequest> connectionQueue = new ConcurrentLinkedQueue<QueuedConnectRequest>();
+    private final int maxQueuedConnectionLimit;
+    
+    public LimitingSMTPClientTransport(SMTPClientTransport transport, int connectionLimit, int maxQueuedConnectionLimit)  {
+        this.transport = transport;
+        this.connectionLimit = connectionLimit;
+        this.maxQueuedConnectionLimit = maxQueuedConnectionLimit;
+    }
+    
+    @Override
+    public SMTPDeliveryMode getDeliveryMode() {
+        return transport.getDeliveryMode();
+    }
+
+    @Override
+    public void connect(InetSocketAddress remote, SMTPClientConfig config, final SMTPResponseCallback callback) {
+        if (connectionCount.incrementAndGet() > connectionLimit)  {
+            connectionCount.decrementAndGet();
+            if (connectionQueue.size() > maxQueuedConnectionLimit) {
+                callback.onException(new UnconnectedSMTPClientSession(logger, config, getDeliveryMode()), QUEUE_LIMIT_REACHED_EXCEPTION);
+            } else {
+                connectionQueue.add(new QueuedConnectRequest(remote, config, callback));
+            }
+        } else {
+            connectToServer(remote, config, callback);
+        }
+        
+    }
+
+    private void connectToServer(InetSocketAddress remote, SMTPClientConfig config, final SMTPResponseCallback callback) {
+        transport.connect(remote, config, new SMTPResponseCallback() {
+            
+            @Override
+            public void onResponse(SMTPClientSession session, SMTPResponse response) {
+                session.addCloseListener(closeListener);
+                callback.onResponse(session, response);
+            }
+            
+            @Override
+            public void onException(SMTPClientSession session, Throwable t) {
+                session.addCloseListener(closeListener);
+                callback.onException(session, t);
+            }
+        });
+    }
+    
+    
+    @Override
+    public void destroy() {        
+        // loop over all queued connection requests and fail them all
+        QueuedConnectRequest request = null;
+        while((request = connectionQueue.poll()) != null) {
+            request.callback.onException(new UnconnectedSMTPClientSession(logger, request.config, getDeliveryMode()), CONNECTION_EXCEPTION);
+        }
+        transport.destroy();
+
+    }
+    
+    private final class QueuedConnectRequest {
+        private final InetSocketAddress address;
+        private final SMTPClientConfig config;
+        private final SMTPResponseCallback callback;
+
+        public QueuedConnectRequest(InetSocketAddress address, SMTPClientConfig config, SMTPResponseCallback callback) {
+            this.address = address;
+            this.config = config;
+            this.callback = callback;
+        }
+        
+    }
+    
+    /**
+     * {@link CloseListener} which will dispatch the next queued connection request as soon as the {@link SMTPClientSession} was closed
+     * 
+     * @author Norman Maurer
+     *
+     */
+    private final class ReleaseConnectionCloseHandler implements SMTPClientSession.CloseListener {
+
+        @Override
+        public void onClose(SMTPClientSession session) {
+            while(connectionCount.incrementAndGet() <= connectionLimit) {
+                QueuedConnectRequest request = connectionQueue.poll();
+                if (request != null) {
+                    connectToServer(request.address, request.config, request.callback);
+                } else {
+                    break;
+                }
+            } 
+            connectionCount.decrementAndGet();
+        }
+        
+    }
+
+    private class UnconnectedSMTPClientSession extends AbstractSMTPClientSession {
+
+        private final String id = UUID.randomUUID().toString();
+        
+        public UnconnectedSMTPClientSession(Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode) {
+            super(logger, config, mode);
+        }
+
+        @Override
+        public String getId() {
+            return id;
+        }
+
+        @Override
+        public boolean isEncrypted() {
+            return false;
+        }
+
+        @Override
+        public void startTLS() {
+            // Do nothing
+        }
+
+        @Override
+        public void send(SMTPRequest request, SMTPResponseCallback callback) {
+            callback.onException(UnconnectedSMTPClientSession.this, NOT_CONNECTED_EXCEPTION);
+        }
+
+        @Override
+        public void send(MessageInput request, SMTPResponseCallback callback) {
+            callback.onException(UnconnectedSMTPClientSession.this, NOT_CONNECTED_EXCEPTION);
+        }
+
+        @Override
+        public void close() {
+            // do nothing
+        }
+
+        @Override
+        public boolean isClosed() {
+            return true;
+        }
+
+        @Override
+        public void addCloseListener(CloseListener listener) {
+            listener.onClose(UnconnectedSMTPClientSession.this);
+        }
+        
+    }
+
+}
