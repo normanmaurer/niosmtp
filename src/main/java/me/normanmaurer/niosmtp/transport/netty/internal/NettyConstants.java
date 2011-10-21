@@ -14,9 +14,9 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.transport.impl.internal;
+package me.normanmaurer.niosmtp.transport.netty.internal;
 
-import me.normanmaurer.niosmtp.transport.impl.internal.SecureSMTPClientPipelineFactory.SslHandshakeHandler;
+import me.normanmaurer.niosmtp.transport.netty.internal.SecureSMTPClientPipelineFactory.SslHandshakeHandler;
 
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.handler.ssl.SslHandler;

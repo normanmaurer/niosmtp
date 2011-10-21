@@ -18,7 +18,7 @@ package me.normanmaurer.niosmtp.client.nio;
 
 import me.normanmaurer.niosmtp.client.AbstractSMTPClientAuthLoginTest;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransportFactory;
-import me.normanmaurer.niosmtp.transport.impl.NettySMTPClientTransportFactory;
+import me.normanmaurer.niosmtp.transport.netty.NettySMTPClientTransportFactory;
 
 
 /**

@@ -14,53 +14,59 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.transport.impl.internal;
+package me.normanmaurer.niosmtp.transport.netty.internal;
 
-import me.normanmaurer.niosmtp.SMTPResponseCallback;
+import javax.net.ssl.SSLEngine;
+
+import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPResponse;
-import me.normanmaurer.niosmtp.transport.SMTPClientSession;
+import me.normanmaurer.niosmtp.SMTPResponseCallback;
+import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
+import org.slf4j.Logger;
 
 /**
- * An adapter class which acts as adapter between the {@link SimpleChannelUpstreamHandler} and the {@link SMTPResponseCallback}
+ * {@link SimpleChannelUpstreamHandler} sub-class which acts as adapter for an {@link SMTPResponseCallback}. 
  * 
+ * The special thing about this implementation is that I will remove itself from the {@link ChannelPipeline} after the first {@link #messageReceived(ChannelHandlerContext, MessageEvent)}
+ * was executed. It also takes care to create the {@link NettySMTPClientSession} and inject it the wrapped {@link SMTPResponseCallback}.
  * 
  * @author Norman Maurer
  *
  */
-class SMTPCallbackHandlerAdapter extends SimpleChannelUpstreamHandler {
-    
-    // Attachment which will get set once we handled the response or exception
-    private final static Object HANDLED = new Object();
-    
-    private final SMTPResponseCallback callback;
-    private final SMTPClientSession session;
+class ConnectHandler extends SimpleChannelUpstreamHandler {
 
-    public SMTPCallbackHandlerAdapter(SMTPClientSession session, SMTPResponseCallback callback) {
+    private SSLEngine engine;
+    private SMTPDeliveryMode mode;
+    private SMTPResponseCallback callback;
+    private Logger logger;
+    private SMTPClientConfig config;
+
+    public ConnectHandler(SMTPResponseCallback callback, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode, SSLEngine engine){
         this.callback = callback;
-        this.session = session;
+        this.engine = engine;
+        this.mode = mode;
+        this.logger = logger;
+        this.config = config;
     }
-
+    
+    
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
         Object msg = e.getMessage();
-        if (msg instanceof SMTPResponse && ctx.getAttachment() == null) {
-            
-            ctx.setAttachment(HANDLED);
-            
-            callback.onResponse(session, (SMTPResponse) msg);
-            // Remove this handler once we handed over the response to the callback
+        if (msg instanceof SMTPResponse) {
+            callback.onResponse(new NettySMTPClientSession(ctx.getChannel(), logger, config, mode, engine), (SMTPResponse) msg);
             ctx.getChannel().getPipeline().remove(this);
-            
         } else {
             super.messageReceived(ctx, e);
         }
     }
-
+    
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
         // Don't trigger callback which was caused by the ChunkedWriteHandler
@@ -68,14 +74,10 @@ class SMTPCallbackHandlerAdapter extends SimpleChannelUpstreamHandler {
         // See:
         //
         // https://issues.jboss.org/browse/NETTY-430
-        if ((e.getCause() instanceof NullPointerException) == false && ctx.getAttachment() == null) {
-            ctx.setAttachment(HANDLED);
-
-            callback.onException(session, e.getCause());
-            // Remove this handler once we handed over the exception to the callback
+        if ((e.getCause() instanceof NullPointerException) == false) {
+            callback.onException(new NettySMTPClientSession(ctx.getChannel(), logger, config, mode, engine), e.getCause());
             ctx.getChannel().getPipeline().remove(this);
         }
-
 
     }
 }

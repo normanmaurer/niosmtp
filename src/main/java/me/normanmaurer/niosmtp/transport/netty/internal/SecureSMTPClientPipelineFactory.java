@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.transport.impl.internal;
+package me.normanmaurer.niosmtp.transport.netty.internal;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;

@@ -20,7 +20,7 @@ package me.normanmaurer.niosmtp.client.oio;
 
 import me.normanmaurer.niosmtp.client.AbstractSMTPClientUnsupportedExtensionTest;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransportFactory;
-import me.normanmaurer.niosmtp.transport.impl.NettySMTPClientTransportFactory;
+import me.normanmaurer.niosmtp.transport.netty.NettySMTPClientTransportFactory;
 
 
 /**
