@@ -28,7 +28,10 @@ import me.normanmaurer.niosmtp.transport.netty.internal.SMTPClientPipelineFactor
 import me.normanmaurer.niosmtp.transport.netty.internal.SecureSMTPClientPipelineFactory;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
+import org.jboss.netty.channel.ChannelFuture;
+import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelPipelineFactory;
+import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.ClientSocketChannelFactory;
 import org.jboss.netty.util.HashedWheelTimer;
 import org.jboss.netty.util.Timer;
@@ -45,7 +48,7 @@ class NettySMTPClientTransport implements SMTPClientTransport{
     private final SMTPDeliveryMode mode;
     private final Timer timer = new HashedWheelTimer();
     private final ClientSocketChannelFactory factory;
-    
+    private final DefaultChannelGroup channelGroup = new DefaultChannelGroup();
 
     NettySMTPClientTransport(SMTPDeliveryMode mode, SSLContext context, ClientSocketChannelFactory factory) {
         this.context = context;
@@ -82,7 +85,15 @@ class NettySMTPClientTransport implements SMTPClientTransport{
 
         bootstrap.setPipelineFactory(cp);
         InetSocketAddress local = config.getLocalAddress();
-        bootstrap.connect(remote, local);
+        bootstrap.connect(remote, local).addListener(new ChannelFutureListener() {
+            
+            @Override
+            public void operationComplete(ChannelFuture future) throws Exception {
+                if (future.isSuccess()) {
+                    channelGroup.add(future.getChannel());
+                }
+            }
+        });
     }
     
 
@@ -93,8 +104,9 @@ class NettySMTPClientTransport implements SMTPClientTransport{
     
     @Override
     public void destroy() {
-        factory.releaseExternalResources();
         timer.stop();
+        channelGroup.close().awaitUninterruptibly();
+        factory.releaseExternalResources();
     }
 
 

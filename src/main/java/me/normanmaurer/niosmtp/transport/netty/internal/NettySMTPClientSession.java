@@ -46,12 +46,13 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
 
     private int closeHandlerCount = 0;
     private int callbackCount = 0;
-    private Channel channel;
-    private SSLEngine engine;
+    private final Channel channel;
+    private final SSLEngine engine;
 
     public NettySMTPClientSession(Channel channel, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode,  SSLEngine engine) {
         super(logger, config, mode);      
         this.channel = channel;
+        this.engine = engine;
     }
     
     @Override
