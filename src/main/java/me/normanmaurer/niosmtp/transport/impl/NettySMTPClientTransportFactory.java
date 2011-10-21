@@ -20,7 +20,7 @@ import java.util.concurrent.Executors;
 
 import javax.net.ssl.SSLContext;
 
-import me.normanmaurer.niosmtp.transport.DeliveryMode;
+import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransportFactory;
 
@@ -73,23 +73,23 @@ public class NettySMTPClientTransportFactory implements SMTPClientTransportFacto
     
     @Override
     public SMTPClientTransport createPlain() {
-        return new NettySMTPClientTransport(DeliveryMode.PLAIN, null, factory);
+        return new NettySMTPClientTransport(SMTPDeliveryMode.PLAIN, null, factory);
     }
     
 
     @Override
     public SMTPClientTransport createSMTPS(SSLContext context) {
-        return new NettySMTPClientTransport(DeliveryMode.SMTPS, context, factory);
+        return new NettySMTPClientTransport(SMTPDeliveryMode.SMTPS, context, factory);
     }
     
 
     @Override
     public SMTPClientTransport createStartTLS(SSLContext context, boolean failOnNoSupport) {
-        DeliveryMode mode;
+        SMTPDeliveryMode mode;
         if (failOnNoSupport) {
-            mode = DeliveryMode.STARTTLS_DEPEND;
+            mode = SMTPDeliveryMode.STARTTLS_DEPEND;
         } else {
-            mode = DeliveryMode.STARTTLS_TRY;
+            mode = SMTPDeliveryMode.STARTTLS_TRY;
         }
         return new NettySMTPClientTransport(mode, context, factory);
     }

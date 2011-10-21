@@ -18,7 +18,7 @@ package me.normanmaurer.niosmtp.transport;
 
 
 
-public enum DeliveryMode {
+public enum SMTPDeliveryMode {
     PLAIN,
     SMTPS,
     STARTTLS_TRY,

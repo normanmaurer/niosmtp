@@ -22,7 +22,7 @@ import javax.net.ssl.SSLContext;
 
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
-import me.normanmaurer.niosmtp.transport.DeliveryMode;
+import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 import me.normanmaurer.niosmtp.transport.impl.internal.SMTPClientPipelineFactory;
 import me.normanmaurer.niosmtp.transport.impl.internal.SecureSMTPClientPipelineFactory;
@@ -42,12 +42,12 @@ import org.jboss.netty.util.Timer;
 class NettySMTPClientTransport implements SMTPClientTransport{
 
     private final SSLContext context;
-    private final DeliveryMode mode;
+    private final SMTPDeliveryMode mode;
     private final Timer timer = new HashedWheelTimer();
     private final ClientSocketChannelFactory factory;
     
 
-    NettySMTPClientTransport(DeliveryMode mode, SSLContext context, ClientSocketChannelFactory factory) {
+    NettySMTPClientTransport(SMTPDeliveryMode mode, SSLContext context, ClientSocketChannelFactory factory) {
         this.context = context;
         this.mode = mode;
         this.factory = factory;
@@ -87,7 +87,7 @@ class NettySMTPClientTransport implements SMTPClientTransport{
     
 
     @Override
-    public DeliveryMode getDeliveryMode() {
+    public SMTPDeliveryMode getDeliveryMode() {
         return mode;
     }
     

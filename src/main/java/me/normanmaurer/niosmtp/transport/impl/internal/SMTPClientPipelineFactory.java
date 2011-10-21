@@ -18,7 +18,7 @@ package me.normanmaurer.niosmtp.transport.impl.internal;
 
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
-import me.normanmaurer.niosmtp.transport.DeliveryMode;
+import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
@@ -71,7 +71,7 @@ public class SMTPClientPipelineFactory implements ChannelPipelineFactory, NettyC
     }
     
     protected ConnectHandler createConnectHandler() {
-        return new ConnectHandler(callback, LOGGER, config, DeliveryMode.PLAIN, null);
+        return new ConnectHandler(callback, LOGGER, config, SMTPDeliveryMode.PLAIN, null);
     }
     
 

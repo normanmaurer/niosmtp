@@ -21,7 +21,7 @@ import javax.net.ssl.SSLEngine;
 
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
-import me.normanmaurer.niosmtp.transport.DeliveryMode;
+import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -43,9 +43,9 @@ public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory i
     private final static SslHandshakeHandler SSL_HANDSHAKE_HANDLER = new SslHandshakeHandler();
     
     private final SSLContext context;
-    private final DeliveryMode mode;
+    private final SMTPDeliveryMode mode;
 
-    public SecureSMTPClientPipelineFactory(SMTPResponseCallback callback, SMTPClientConfig config, Timer timer, SSLContext context, DeliveryMode mode) {
+    public SecureSMTPClientPipelineFactory(SMTPResponseCallback callback, SMTPClientConfig config, Timer timer, SSLContext context, SMTPDeliveryMode mode) {
         super(callback, config, timer);
         this.context = context;
         this.mode = mode;
@@ -56,7 +56,7 @@ public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory i
     public ChannelPipeline getPipeline() throws Exception {        
         ChannelPipeline cp = super.getPipeline();
 
-        if (mode == DeliveryMode.SMTPS) {
+        if (mode == SMTPDeliveryMode.SMTPS) {
             cp.addFirst(SSL_HANDSHAKE_HANDLER_KEY, SSL_HANDSHAKE_HANDLER);
 
             final SslHandler sslHandler = new SslHandler(createSSLClientEngine(), false);
@@ -76,7 +76,7 @@ public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory i
 
     @Override
     protected ConnectHandler createConnectHandler() {
-        if (mode == DeliveryMode.SMTPS || mode == DeliveryMode.PLAIN) {
+        if (mode == SMTPDeliveryMode.SMTPS || mode == SMTPDeliveryMode.PLAIN) {
             return super.createConnectHandler();
         } else {
             return new ConnectHandler(callback, LOGGER, config, mode, createSSLClientEngine());

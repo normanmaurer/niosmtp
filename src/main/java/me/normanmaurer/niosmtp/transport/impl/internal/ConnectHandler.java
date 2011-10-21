@@ -21,7 +21,7 @@ import javax.net.ssl.SSLEngine;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
-import me.normanmaurer.niosmtp.transport.DeliveryMode;
+import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -42,12 +42,12 @@ import org.slf4j.Logger;
 class ConnectHandler extends SimpleChannelUpstreamHandler {
 
     private SSLEngine engine;
-    private DeliveryMode mode;
+    private SMTPDeliveryMode mode;
     private SMTPResponseCallback callback;
     private Logger logger;
     private SMTPClientConfig config;
 
-    public ConnectHandler(SMTPResponseCallback callback, Logger logger, SMTPClientConfig config, DeliveryMode mode, SSLEngine engine){
+    public ConnectHandler(SMTPResponseCallback callback, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode, SSLEngine engine){
         this.callback = callback;
         this.engine = engine;
         this.mode = mode;

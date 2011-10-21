@@ -35,11 +35,11 @@ public interface SMTPClientTransport {
 
     
     /**
-     * Return the {@link DeliveryMode} which the {@link SMTPClientTransport} use
+     * Return the {@link SMTPDeliveryMode} which the {@link SMTPClientTransport} use
      * 
      * @return mode
      */
-    public DeliveryMode getDeliveryMode();
+    public SMTPDeliveryMode getDeliveryMode();
     
     /**
      * Connect to the given {@link InetSocketAddress} and executure the {@link SMTPResponseCallback} once the Welcome {@link SMTPResponse} 

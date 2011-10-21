@@ -30,7 +30,7 @@ import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.SMTPUnsupportedExtensionException;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryTransaction;
-import me.normanmaurer.niosmtp.transport.DeliveryMode;
+import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
@@ -85,14 +85,14 @@ public class EhloResponseCallback extends AbstractResponseCallback implements SM
                 return;
             }
 
-            if (!supportsStartTLS && session.getDeliveryMode() == DeliveryMode.STARTTLS_DEPEND) {
+            if (!supportsStartTLS && session.getDeliveryMode() == SMTPDeliveryMode.STARTTLS_DEPEND) {
                 onException(session, STARTTLS_NOT_SUPPORTED_EXECTION);
                 return;
             }
             
             
             
-            if (supportsStartTLS && (session.getDeliveryMode() == DeliveryMode.STARTTLS_DEPEND || session.getDeliveryMode() == DeliveryMode.STARTTLS_TRY)) {
+            if (supportsStartTLS && (session.getDeliveryMode() == SMTPDeliveryMode.STARTTLS_DEPEND || session.getDeliveryMode() == SMTPDeliveryMode.STARTTLS_TRY)) {
                 session.send(SMTPRequestImpl.startTls(), StartTlsResponseCallback.INSTANCE);
             } else {
                 Authentication auth = session.getConfig().getAuthentication();
