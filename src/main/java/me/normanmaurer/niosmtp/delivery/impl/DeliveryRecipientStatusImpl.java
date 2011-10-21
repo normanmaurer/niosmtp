@@ -14,10 +14,10 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.client.impl;
+package me.normanmaurer.niosmtp.delivery.impl;
 
 import me.normanmaurer.niosmtp.SMTPResponse;
-import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus;
+import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus;
 
 /**
  * Simple POJO implementation of {@link DeliveryRecipientStatus}

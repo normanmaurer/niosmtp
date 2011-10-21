@@ -14,12 +14,12 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.client;
+package me.normanmaurer.niosmtp.delivery;
 
 import java.util.Iterator;
 import java.util.List;
 
-import me.normanmaurer.niosmtp.client.impl.SMTPDeliveryFutureImpl;
+import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryFutureImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**

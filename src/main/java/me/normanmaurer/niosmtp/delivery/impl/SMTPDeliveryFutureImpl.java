@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.client.impl;
+package me.normanmaurer.niosmtp.delivery.impl;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -24,9 +24,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 
-import me.normanmaurer.niosmtp.client.DeliveryResult;
-import me.normanmaurer.niosmtp.client.SMTPDeliveryFuture;
-import me.normanmaurer.niosmtp.client.SMTPDeliveryFutureListener;
+import me.normanmaurer.niosmtp.delivery.DeliveryResult;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliveryFuture;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliveryFutureListener;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**

@@ -20,6 +20,9 @@ package me.normanmaurer.niosmtp.client;
 
 import java.util.Iterator;
 
+import me.normanmaurer.niosmtp.delivery.DeliveryResult;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliveryFuture;
+
 /**
  * Callback which should be called when a {@link SMTPDeliveryFuture} was received. 
  * 

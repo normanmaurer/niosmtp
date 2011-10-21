@@ -21,6 +21,10 @@ package me.normanmaurer.niosmtp.client;
 import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 
+import me.normanmaurer.niosmtp.delivery.DeliveryResult;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliveryFuture;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliveryFutureListener;
+
 /**
  * Execute the wrapped {@link AssertCheck} in an asynchronous way by using a {@link SMTPDeliveryFutureListener}
  * 

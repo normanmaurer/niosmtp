@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.client.callback;
+package me.normanmaurer.niosmtp.delivery.callback;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -25,15 +25,15 @@ import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
-import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus;
-import me.normanmaurer.niosmtp.client.DeliveryResult;
-import me.normanmaurer.niosmtp.client.SMTPDeliveryFuture;
-import me.normanmaurer.niosmtp.client.SMTPDeliverySessionConstants;
-import me.normanmaurer.niosmtp.client.SMTPDeliveryTransaction;
-import me.normanmaurer.niosmtp.client.impl.DeliveryRecipientStatusImpl;
-import me.normanmaurer.niosmtp.client.impl.DeliveryResultImpl;
-import me.normanmaurer.niosmtp.client.impl.SMTPDeliveryFutureImpl;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
+import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus;
+import me.normanmaurer.niosmtp.delivery.DeliveryResult;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliveryFuture;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliverySessionConstants;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliveryTransaction;
+import me.normanmaurer.niosmtp.delivery.impl.DeliveryRecipientStatusImpl;
+import me.normanmaurer.niosmtp.delivery.impl.DeliveryResultImpl;
+import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryFutureImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**

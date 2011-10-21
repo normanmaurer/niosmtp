@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.client.callback;
+package me.normanmaurer.niosmtp.delivery.callback;
 
 import java.util.Iterator;
 import java.util.List;
@@ -22,9 +22,9 @@ import java.util.List;
 import me.normanmaurer.niosmtp.MessageInput;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
-import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus;
-import me.normanmaurer.niosmtp.client.DeliveryRecipientStatus.Status;
-import me.normanmaurer.niosmtp.client.impl.DeliveryRecipientStatusImpl;
+import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus;
+import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus.Status;
+import me.normanmaurer.niosmtp.delivery.impl.DeliveryRecipientStatusImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 

@@ -14,13 +14,13 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.client.impl;
+package me.normanmaurer.niosmtp.delivery.impl;
 
 import java.util.Collection;
 import java.util.Collections;
 
 import me.normanmaurer.niosmtp.MessageInput;
-import me.normanmaurer.niosmtp.client.SMTPDeliveryTransaction;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliveryTransaction;
 
 /**
  * Simple pojo implementation of a {@link SMTPDeliveryTransaction}

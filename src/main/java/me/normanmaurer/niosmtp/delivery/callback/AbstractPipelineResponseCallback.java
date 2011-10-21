@@ -14,10 +14,10 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.client.callback;
+package me.normanmaurer.niosmtp.delivery.callback;
 
 import me.normanmaurer.niosmtp.SMTPResponse;
-import me.normanmaurer.niosmtp.client.impl.SMTPDeliveryFutureImpl;
+import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryFutureImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
