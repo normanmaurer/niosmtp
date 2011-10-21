@@ -54,14 +54,14 @@ public class DeliveryRecipientStatusImpl implements DeliveryRecipientStatus{
     }
 
     @Override
-    public Status getStatus() {
+    public DeliveryStatus getStatus() {
         int code = response.getCode();
         if (code >= 200 && code <= 299) {
-            return Status.Ok;
+            return DeliveryStatus.Ok;
         } else if (code >= 400 && code <= 499) {
-            return Status.TemporaryError;
+            return DeliveryStatus.TemporaryError;
         } else {
-            return Status.PermanentError;
+            return DeliveryStatus.PermanentError;
         }
     }
 

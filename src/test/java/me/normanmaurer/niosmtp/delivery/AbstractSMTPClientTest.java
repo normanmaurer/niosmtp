@@ -126,11 +126,11 @@ public abstract class AbstractSMTPClientTest {
             assertNull(dr.getException());
             Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
             DeliveryRecipientStatus status = it.next();
-            assertEquals(DeliveryRecipientStatus.Status.PermanentError, status.getStatus());
+            assertEquals(DeliveryRecipientStatus.DeliveryStatus.PermanentError, status.getStatus());
             assertEquals(554, status.getResponse().getCode());
 
             status = it.next();
-            assertEquals(DeliveryRecipientStatus.Status.PermanentError, status.getStatus());
+            assertEquals(DeliveryRecipientStatus.DeliveryStatus.PermanentError, status.getStatus());
             assertEquals(554, status.getResponse().getCode());
             
             assertFalse(it.hasNext());
@@ -195,11 +195,11 @@ public abstract class AbstractSMTPClientTest {
             assertNull(dr.getException());
             Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
             DeliveryRecipientStatus status = it.next();
-            assertEquals(DeliveryRecipientStatus.Status.PermanentError, status.getStatus());
+            assertEquals(DeliveryRecipientStatus.DeliveryStatus.PermanentError, status.getStatus());
             assertEquals(554, status.getResponse().getCode());
 
             status = it.next();
-            assertEquals(DeliveryRecipientStatus.Status.PermanentError, status.getStatus());
+            assertEquals(DeliveryRecipientStatus.DeliveryStatus.PermanentError, status.getStatus());
             assertEquals(554, status.getResponse().getCode());
             
             assertFalse(it.hasNext());            
@@ -265,11 +265,11 @@ public abstract class AbstractSMTPClientTest {
             assertNull(dr.getException());
             Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
             DeliveryRecipientStatus status = it.next();
-            assertEquals(DeliveryRecipientStatus.Status.PermanentError, status.getStatus());
+            assertEquals(DeliveryRecipientStatus.DeliveryStatus.PermanentError, status.getStatus());
             assertEquals(554, status.getResponse().getCode());
 
             status = it.next();
-            assertEquals(DeliveryRecipientStatus.Status.PermanentError, status.getStatus());
+            assertEquals(DeliveryRecipientStatus.DeliveryStatus.PermanentError, status.getStatus());
             assertEquals(554, status.getResponse().getCode());
             
             assertFalse(it.hasNext());
@@ -331,11 +331,11 @@ public abstract class AbstractSMTPClientTest {
             assertNull(dr.getException());
             Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
             DeliveryRecipientStatus status = it.next();
-            assertEquals(DeliveryRecipientStatus.Status.PermanentError, status.getStatus());
+            assertEquals(DeliveryRecipientStatus.DeliveryStatus.PermanentError, status.getStatus());
             assertEquals(554, status.getResponse().getCode());
 
             status = it.next();
-            assertEquals(DeliveryRecipientStatus.Status.PermanentError, status.getStatus());
+            assertEquals(DeliveryRecipientStatus.DeliveryStatus.PermanentError, status.getStatus());
             assertEquals(554, status.getResponse().getCode());
             
             assertFalse(it.hasNext());
@@ -401,17 +401,17 @@ public abstract class AbstractSMTPClientTest {
             assertNull(dr.getException());
             Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
             DeliveryRecipientStatus status = it.next();
-            assertEquals(DeliveryRecipientStatus.Status.Ok, status.getStatus());
+            assertEquals(DeliveryRecipientStatus.DeliveryStatus.Ok, status.getStatus());
             assertEquals(250, status.getResponse().getCode());
             assertEquals("to@example.com", status.getAddress());
             
             status = it.next();
-            assertEquals(DeliveryRecipientStatus.Status.PermanentError, status.getStatus());
+            assertEquals(DeliveryRecipientStatus.DeliveryStatus.PermanentError, status.getStatus());
             assertEquals(554, status.getResponse().getCode());
             assertEquals("to2@example.com", status.getAddress());
 
             status = it.next();
-            assertEquals(DeliveryRecipientStatus.Status.Ok, status.getStatus());
+            assertEquals(DeliveryRecipientStatus.DeliveryStatus.Ok, status.getStatus());
             assertEquals(250, status.getResponse().getCode());
             assertEquals("to3@example.com", status.getAddress());
             
@@ -475,17 +475,17 @@ public abstract class AbstractSMTPClientTest {
             assertNull(dr.getException());
             Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
             DeliveryRecipientStatus status = it.next();
-            assertEquals(DeliveryRecipientStatus.Status.Ok, status.getStatus());
+            assertEquals(DeliveryRecipientStatus.DeliveryStatus.Ok, status.getStatus());
             assertEquals(250, status.getResponse().getCode());
             assertEquals("to@example.com", status.getAddress());
             
             status = it.next();
-            assertEquals(DeliveryRecipientStatus.Status.Ok, status.getStatus());
+            assertEquals(DeliveryRecipientStatus.DeliveryStatus.Ok, status.getStatus());
             assertEquals(250, status.getResponse().getCode());
             assertEquals("to2@example.com", status.getAddress());
 
             status = it.next();
-            assertEquals(DeliveryRecipientStatus.Status.Ok, status.getStatus());
+            assertEquals(DeliveryRecipientStatus.DeliveryStatus.Ok, status.getStatus());
             assertEquals(250, status.getResponse().getCode());
             assertEquals("to3@example.com", status.getAddress());
             
@@ -497,17 +497,17 @@ public abstract class AbstractSMTPClientTest {
             assertNull(dr.getException());
             it = dr.getRecipientStatus();
             status = it.next();
-            assertEquals(DeliveryRecipientStatus.Status.Ok, status.getStatus());
+            assertEquals(DeliveryRecipientStatus.DeliveryStatus.Ok, status.getStatus());
             assertEquals(250, status.getResponse().getCode());
             assertEquals("to@example.com", status.getAddress());
             
             status = it.next();
-            assertEquals(DeliveryRecipientStatus.Status.Ok, status.getStatus());
+            assertEquals(DeliveryRecipientStatus.DeliveryStatus.Ok, status.getStatus());
             assertEquals(250, status.getResponse().getCode());
             assertEquals("to2@example.com", status.getAddress());
 
             status = it.next();
-            assertEquals(DeliveryRecipientStatus.Status.Ok, status.getStatus());
+            assertEquals(DeliveryRecipientStatus.DeliveryStatus.Ok, status.getStatus());
             assertEquals(250, status.getResponse().getCode());
             assertEquals("to3@example.com", status.getAddress());
             

@@ -99,11 +99,11 @@ public abstract class AbstractSMTPClientAuthLoginTest extends AbstractSMTPClient
             assertNull(dr.getException());
             Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
             DeliveryRecipientStatus status = it.next();
-            assertEquals(DeliveryRecipientStatus.Status.PermanentError, status.getStatus());
+            assertEquals(DeliveryRecipientStatus.DeliveryStatus.PermanentError, status.getStatus());
             assertEquals(535, status.getResponse().getCode());
 
             status = it.next();
-            assertEquals(DeliveryRecipientStatus.Status.PermanentError, status.getStatus());
+            assertEquals(DeliveryRecipientStatus.DeliveryStatus.PermanentError, status.getStatus());
             assertEquals(535, status.getResponse().getCode());
             
             assertFalse(it.hasNext());

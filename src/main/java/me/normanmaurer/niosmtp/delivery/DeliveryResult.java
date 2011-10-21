@@ -33,14 +33,14 @@ public interface DeliveryResult {
      * 
      * @return success
      */
-    public boolean isSuccess();
+    boolean isSuccess();
     
     /**
      * Return the {@link SMTPException} which was thrown while try to deliver
      * 
      * @return exception
      */
-    public SMTPException getException();
+    SMTPException getException();
     
     /**
      * Return an {@link Iterator} which holds all {@link DeliveryRecipientStatus} objects for the 
@@ -48,5 +48,5 @@ public interface DeliveryResult {
      * 
      * @return status
      */
-    public Iterator<DeliveryRecipientStatus> getRecipientStatus();
+    Iterator<DeliveryRecipientStatus> getRecipientStatus();
 }

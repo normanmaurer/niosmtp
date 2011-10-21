@@ -35,19 +35,19 @@ public interface Authentication {
      * 
      * @return mode
      */
-    public AuthMode getMode();
+    AuthMode getMode();
     
     /**
      * Return the username
      * 
      * @return username
      */
-    public String getUsername();
+    String getUsername();
     
     /**
      * Return password
      * 
      * @return password
      */
-    public String getPassword();
+    String getPassword();
 }

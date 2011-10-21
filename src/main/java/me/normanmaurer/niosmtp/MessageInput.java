@@ -39,7 +39,7 @@ public interface MessageInput {
      * @return 7bit
      * @throws IOException
      */
-    public InputStream get7bit() throws IOException;
+    InputStream get7bit() throws IOException;
     
     
     /**
@@ -54,6 +54,6 @@ public interface MessageInput {
      * @return convertedMsg
      * @throws IOException
      */
-    public InputStream get8Bit() throws IOException;
+    InputStream get8Bit() throws IOException;
     
 }

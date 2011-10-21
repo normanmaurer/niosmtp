@@ -50,7 +50,7 @@ public interface SMTPResponseCallback {
      * @param session
      * @param response
      */
-    public void onResponse(SMTPClientSession session, SMTPResponse response);
+    void onResponse(SMTPClientSession session, SMTPResponse response);
     
     /**
      * Method which will get executed if an {@link Exception} was thrown. Be Aware that the {@link SMTPClientSession} can be null if 
@@ -59,7 +59,7 @@ public interface SMTPResponseCallback {
      * @param session
      * @param t
      */
-    public void onException(SMTPClientSession session, Throwable t);
+    void onException(SMTPClientSession session, Throwable t);
     
 }
 

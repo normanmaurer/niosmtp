@@ -50,21 +50,21 @@ public interface SMTPClientConfig {
      * 
      * @return name
      */
-    public String getHeloName();
+    String getHeloName();
     
     /**
      * Return the connection timeout (in seconds) for the client
      * 
      * @return connectionTimeout
      */
-    public int getConnectionTimeout();
+    int getConnectionTimeout();
     
     /**
      * Return the response timeout (in seconds) for the SMTP Server to send the response
      * 
      * @return responseTimeout
      */
-    public int getResponseTimeout();
+    int getResponseTimeout();
 
     
     /**
@@ -72,14 +72,14 @@ public interface SMTPClientConfig {
      * 
      * @return local
      */
-    public InetSocketAddress getLocalAddress();
+    InetSocketAddress getLocalAddress();
  
     /**
      * Return {@link PipeliningMode} if the client should use PIPELINING if possible
      * 
      * @return pipelining
      */
-    public PipeliningMode getPipeliningMode();
+    PipeliningMode getPipeliningMode();
     
     
     /**
@@ -88,5 +88,5 @@ public interface SMTPClientConfig {
      * 
      * @return auth 
      */
-    public Authentication getAuthentication();
+    Authentication getAuthentication();
 }

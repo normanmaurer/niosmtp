@@ -38,12 +38,12 @@ public interface SMTPResponse {
      * 
      * @return code
      */
-    public int getCode();
+    int getCode();
 
     /**
      * Return all lines of the response as an unmodifiable {@link List}. This may be null
      * 
      * @return lines
      */
-    public List<String> getLines();
+    List<String> getLines();
 }

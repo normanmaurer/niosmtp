@@ -41,14 +41,14 @@ public interface SMTPClientSession {
      * 
      * @return mode
      */
-    public SMTPDeliveryMode getDeliveryMode();
+    SMTPDeliveryMode getDeliveryMode();
     
     /**
      * Return a map of attributes which can be used to store data which should be used within the scope of the {@link SMTPClientSession}
      * 
      * @return attributes
      */
-    public Map<String, Object> getAttributes();
+    Map<String, Object> getAttributes();
     
     /**
      * Return a {@link Set} of all supported EXTENSIONS. This will be set in the EHLO Response so you will get an empty {@link Set} before the EHLO
@@ -56,40 +56,40 @@ public interface SMTPClientSession {
      * 
      * @return extensions
      */
-    public Set<String> getSupportedExtensions();
+    Set<String> getSupportedExtensions();
     
     /**
      * Set the supported EXTENSIONS for the {@link SMTPClientSession}. 
      * 
      * @param extensions
      */
-    public void setSupportedExtensions(Set<String> extensions);
+    void setSupportedExtensions(Set<String> extensions);
 
     /**
      * Return the id of the {@link SMTPClientSession}.
      * 
      * @return id
      */
-    public String getId();
+    String getId();
     
     /**
      * Return the {@link Logger} which belongs the {@link SMTPClientSession}
      * 
      * @return logger
      */
-    public Logger getLogger();
+    Logger getLogger();
     
     /**
      * Return <code>true</code> if the {@link SMTPClientSession} is encrypted
      * 
      * @return
      */
-    public boolean isEncrypted();
+    boolean isEncrypted();
     
     /**
      * Start TLS encryption
      */
-    public void startTLS();
+    void startTLS();
         
     /**
      * Send the given {@link SMTPRequest} to the connected SMTP-Server. The given {@link SMTPResponseCallback} will get called
@@ -98,7 +98,7 @@ public interface SMTPClientSession {
      * @param request
      * @param callback
      */
-    public void send(SMTPRequest request, SMTPResponseCallback callback);
+    void send(SMTPRequest request, SMTPResponseCallback callback);
     
     /**
      * Send the given {@link MessageInput} to the connected SMTP-Server. The given {@link SMTPResponseCallback} will get called
@@ -107,12 +107,12 @@ public interface SMTPClientSession {
      * @param request
      * @param callback
      */
-    public void send(MessageInput request, SMTPResponseCallback callback);
+    void send(MessageInput request, SMTPResponseCallback callback);
 
     /**
      * Close the {@link SMTPClientSession}
      */
-    public void close();
+    void close();
     
     
     /**
@@ -120,7 +120,7 @@ public interface SMTPClientSession {
      * 
      * @return closed
      */
-    public boolean isClosed();
+    boolean isClosed();
     
     
     /**
@@ -128,7 +128,7 @@ public interface SMTPClientSession {
      * 
      * @return config
      */
-    public SMTPClientConfig getConfig();
+    SMTPClientConfig getConfig();
     
     /**
      * Add an {@link CloseListener} which will get notified once the {@link SMTPClientSession} was closed. This may be because the client or the server
@@ -136,7 +136,7 @@ public interface SMTPClientSession {
      * 
      * @param listener
      */
-    public void addCloseListener(CloseListener listener);
+    void addCloseListener(CloseListener listener);
     
     /**
      * Listener which will get notified once the {@link SMTPClientSession} was closed
@@ -151,7 +151,7 @@ public interface SMTPClientSession {
          * 
          * @param session
          */
-        public void onClose(SMTPClientSession session);
+        void onClose(SMTPClientSession session);
     }
 
 }

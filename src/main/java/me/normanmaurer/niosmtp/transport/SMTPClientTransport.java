@@ -39,7 +39,7 @@ public interface SMTPClientTransport {
      * 
      * @return mode
      */
-    public SMTPDeliveryMode getDeliveryMode();
+    SMTPDeliveryMode getDeliveryMode();
     
     /**
      * Connect to the given {@link InetSocketAddress} and executure the {@link SMTPResponseCallback} once the Welcome {@link SMTPResponse} 
@@ -49,13 +49,13 @@ public interface SMTPClientTransport {
      * @param config
      * @param callback
      */
-    public void connect(InetSocketAddress remote, SMTPClientConfig config, SMTPResponseCallback callback);
+    void connect(InetSocketAddress remote, SMTPClientConfig config, SMTPResponseCallback callback);
     
     
 
     /**
      * Destroy this {@link SMTPClientTransport} and release all resources
      */
-    public void destroy();
+    void destroy();
     
 }

@@ -23,7 +23,7 @@ import me.normanmaurer.niosmtp.MessageInput;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus;
-import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus.Status;
+import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus.DeliveryStatus;
 import me.normanmaurer.niosmtp.delivery.impl.DeliveryRecipientStatusImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
@@ -63,7 +63,7 @@ public class PostDataResponseCallback extends AbstractResponseCallback {
             Iterator<DeliveryRecipientStatus> status = statusList.iterator();
             while(status.hasNext()) {
                 DeliveryRecipientStatus s = status.next();
-                if (s.getStatus() == Status.Ok) {
+                if (s.getStatus() == DeliveryStatus.Ok) {
                     ((DeliveryRecipientStatusImpl)s).setResponse(response);
                 }
             }

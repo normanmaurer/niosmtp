@@ -31,12 +31,12 @@ public interface SMTPRequest {
      * 
      * @return command
      */
-    public String getCommand();
+    String getCommand();
     
     /**
      * Return the argument. This may be null
      * 
      * @return argument
      */
-    public String getArgument();
+    String getArgument();
 }

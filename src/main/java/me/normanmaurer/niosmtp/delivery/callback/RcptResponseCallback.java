@@ -25,7 +25,7 @@ import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus;
-import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus.Status;
+import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus.DeliveryStatus;
 import me.normanmaurer.niosmtp.delivery.impl.DeliveryRecipientStatusImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
@@ -79,7 +79,7 @@ public class RcptResponseCallback extends AbstractPipelineResponseCallback {
 
             boolean success = false;
             for (int i = 0; i < statusList.size(); i++) {
-                if (statusList.get(i).getStatus() == Status.Ok) {
+                if (statusList.get(i).getStatus() == DeliveryStatus.Ok) {
                     success = true;
                     break;
                 }

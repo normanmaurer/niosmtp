@@ -33,7 +33,7 @@ public interface SMTPDeliveryTransaction {
      * 
      * @return sender
      */
-    public String getSender();
+    String getSender();
 
     /**
      * Return a {@link Collection} of recipients which should be used for the <code>RCPT TO</code>. The returned {@link Collection} must at least contain one element.
@@ -43,12 +43,12 @@ public interface SMTPDeliveryTransaction {
      * 
      * @return recipients not null
      */
-    public Collection<String> getRecipients();
+    Collection<String> getRecipients();
     
     /**
      * Return the {@link MessageInput} which should be used to submit the message after the <code>DATA</code> command was issued
      * 
      * @return messageInput not null
      */
-    public MessageInput getMessage();
+    MessageInput getMessage();
 }

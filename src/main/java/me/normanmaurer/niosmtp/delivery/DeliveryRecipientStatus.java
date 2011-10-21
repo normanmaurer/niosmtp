@@ -26,7 +26,7 @@ import me.normanmaurer.niosmtp.SMTPResponse;
  */
 public interface DeliveryRecipientStatus {
 
-    public enum Status{
+    public enum DeliveryStatus{
         /**
          * Email was successful delivered to the recipient
          * 
@@ -49,7 +49,7 @@ public interface DeliveryRecipientStatus {
      * 
      * @return response
      */
-    public SMTPResponse getResponse();
+    SMTPResponse getResponse();
     
 
     /**
@@ -57,12 +57,12 @@ public interface DeliveryRecipientStatus {
      * 
      * @return status
      */
-    public Status getStatus();
+    DeliveryStatus getStatus();
     
     /**
      * Return the email-address of the recipient
      * 
      * @return address
      */
-    public String getAddress();
+    String getAddress();
 }
