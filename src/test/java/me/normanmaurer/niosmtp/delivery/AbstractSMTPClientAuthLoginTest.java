@@ -36,6 +36,7 @@ import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgent;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryFuture;
 import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryTransactionImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
+import me.normanmaurer.niosmtp.util.TestUtils;
 
 import org.apache.james.protocols.api.handler.WiringException;
 import org.apache.james.protocols.impl.NettyServer;

@@ -51,6 +51,7 @@ import me.normanmaurer.niosmtp.delivery.SMTPDeliveryFuture;
 import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryTransactionImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransportFactory;
+import me.normanmaurer.niosmtp.util.TestUtils;
 
 
 public abstract class AbstractSMTPClientUnsupportedExtensionTest {
