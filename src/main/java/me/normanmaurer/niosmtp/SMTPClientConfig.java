@@ -27,30 +27,6 @@ import java.net.InetSocketAddress;
  */
 public interface SMTPClientConfig {
 
-    public enum PipeliningMode {
-        
-        /**
-         * Don't use PIPELINING
-         */
-        NO,
-        
-        /**
-         * Use PIPELINING if the server supports it
-         */
-        TRY,
-        
-        /**
-         * Use PIPELINING if the server supports it otherwise fail
-         */
-        DEPEND
-    }
-    
-    /**
-     * Return the name which will get used for the HELO/EHLO
-     * 
-     * @return name
-     */
-    String getHeloName();
     
     /**
      * Return the connection timeout (in seconds) for the client
@@ -73,20 +49,4 @@ public interface SMTPClientConfig {
      * @return local
      */
     InetSocketAddress getLocalAddress();
- 
-    /**
-     * Return {@link PipeliningMode} if the client should use PIPELINING if possible
-     * 
-     * @return pipelining
-     */
-    PipeliningMode getPipeliningMode();
-    
-    
-    /**
-     * Return the {@link Authentication} to use or <code>null</code> if none should be used
-     * 
-     * 
-     * @return auth 
-     */
-    Authentication getAuthentication();
 }

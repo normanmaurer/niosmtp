@@ -21,7 +21,6 @@ import java.util.Iterator;
 import java.util.Set;
 
 import me.normanmaurer.niosmtp.Authentication;
-import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPRequest;
@@ -29,6 +28,8 @@ import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.SMTPUnsupportedExtensionException;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryTransaction;
 import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
@@ -80,7 +81,7 @@ public class EhloResponseCallback extends AbstractResponseCallback implements SM
         if (code < 400) {
 
             // Check if we depend on pipelining 
-            if (!supportsPipelining && session.getConfig().getPipeliningMode() == PipeliningMode.DEPEND) {
+            if (!supportsPipelining && ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() == PipeliningMode.DEPEND) {
                 onException(session, PIPELINING_NOT_SUPPORTED_EXECTION);
                 return;
             }
@@ -95,13 +96,13 @@ public class EhloResponseCallback extends AbstractResponseCallback implements SM
             if (supportsStartTLS && (session.getDeliveryMode() == SMTPDeliveryMode.STARTTLS_DEPEND || session.getDeliveryMode() == SMTPDeliveryMode.STARTTLS_TRY)) {
                 session.send(SMTPRequestImpl.startTls(), StartTlsResponseCallback.INSTANCE);
             } else {
-                Authentication auth = session.getConfig().getAuthentication();
+                Authentication auth = ((SMTPDeliveryAgentConfig)session.getConfig()).getAuthentication();
                 if (auth == null) {
                     // We use a SMTPPipelinedRequest if the SMTPServer supports
                     // PIPELINING. This will allow the NETTY to get
                     // the MAX throughput as the encoder will write it out in one
                     // buffer if possible. This result in less system calls
-                    if (supportsPipelining && session.getConfig().getPipeliningMode() != PipeliningMode.NO) {
+                    if (supportsPipelining && ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() != PipeliningMode.NO) {
                         pipelining(session);
                     } else {
                         session.send(SMTPRequestImpl.mail(mail), MailResponseCallback.INSTANCE);

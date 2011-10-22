@@ -19,13 +19,14 @@ package me.normanmaurer.niosmtp.delivery.callback;
 import java.util.Iterator;
 import java.util.List;
 
-import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig;
 import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus.DeliveryStatus;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.delivery.impl.DeliveryRecipientStatusImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
@@ -72,7 +73,7 @@ public class RcptResponseCallback extends AbstractPipelineResponseCallback {
             // only write the request if the SMTPServer does not support
             // PIPELINING and we don't want to use it
             // as otherwise we already sent this
-            if (!pipeliningActive || session.getConfig().getPipeliningMode() == PipeliningMode.NO) {
+            if (!pipeliningActive || ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() == PipeliningMode.NO) {
                 session.send(SMTPRequestImpl.rcpt(rcpt), RcptResponseCallback.INSTANCE);
             }
         } else {
@@ -88,7 +89,7 @@ public class RcptResponseCallback extends AbstractPipelineResponseCallback {
                 // only write the request if the SMTPServer does not support
                 // PIPELINING and we don't want to use it
                 // as otherwise we already sent this
-                if (!pipeliningActive || session.getConfig().getPipeliningMode() == PipeliningMode.NO) {
+                if (!pipeliningActive || ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() == PipeliningMode.NO) {
                     session.send(SMTPRequestImpl.data(), DataResponseCallback.INSTANCE);
                 }
 

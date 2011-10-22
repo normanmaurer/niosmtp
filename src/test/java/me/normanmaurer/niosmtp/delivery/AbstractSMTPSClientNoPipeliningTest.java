@@ -16,15 +16,14 @@
 */
 package me.normanmaurer.niosmtp.delivery;
 
-import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
-import me.normanmaurer.niosmtp.core.SMTPClientConfigImpl;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig.PipeliningMode;
 
 public abstract class AbstractSMTPSClientNoPipeliningTest extends AbstractSMTPSClientTest{
 
     
     @Override
-    protected SMTPClientConfigImpl createConfig() {
-        SMTPClientConfigImpl config = super.createConfig();
+    protected SMTPDeliveryAgentConfigImpl createConfig() {
+        SMTPDeliveryAgentConfigImpl config = super.createConfig();
         config.setPipeliningMode(PipeliningMode.NO);
         return config;
     }

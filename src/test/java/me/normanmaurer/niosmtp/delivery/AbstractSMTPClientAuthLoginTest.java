@@ -28,7 +28,6 @@ import java.util.Iterator;
 
 import me.normanmaurer.niosmtp.Authentication;
 import me.normanmaurer.niosmtp.core.AuthenticationImpl;
-import me.normanmaurer.niosmtp.core.SMTPClientConfigImpl;
 import me.normanmaurer.niosmtp.core.SimpleMessageInput;
 import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.delivery.DeliveryResult;
@@ -66,8 +65,8 @@ public abstract class AbstractSMTPClientAuthLoginTest extends AbstractSMTPClient
     }
 
     @Override
-    protected SMTPClientConfigImpl createConfig() {
-        SMTPClientConfigImpl config =  super.createConfig();
+    protected SMTPDeliveryAgentConfigImpl createConfig() {
+        SMTPDeliveryAgentConfigImpl config =  super.createConfig();
         config.setAuthentication(createAuthentication(VALID_USER, VALID_PASS));
         return config;
     }
@@ -90,7 +89,7 @@ public abstract class AbstractSMTPClientAuthLoginTest extends AbstractSMTPClient
         SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
 
         try {
-            SMTPClientConfigImpl conf = createConfig();
+            SMTPDeliveryAgentConfigImpl conf = createConfig();
             conf.setAuthentication(createAuthentication("myuser", "mybadpassword"));
 
             SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));

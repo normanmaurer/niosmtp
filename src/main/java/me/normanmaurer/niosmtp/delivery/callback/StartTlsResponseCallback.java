@@ -16,12 +16,13 @@
 */
 package me.normanmaurer.niosmtp.delivery.callback;
 
-import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryTransaction;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
@@ -59,7 +60,7 @@ public class StartTlsResponseCallback extends AbstractResponseCallback implement
 
             // We use a SMTPPipelinedRequest if the SMTPServer supports PIPELINING. This will allow the NETTY to get
             // the MAX throughput as the encoder will write it out in one buffer if possible. This result in less system calls
-            if (session.getSupportedExtensions().contains(PIPELINING_EXTENSION) && session.getConfig().getPipeliningMode() != PipeliningMode.NO) {
+            if (session.getSupportedExtensions().contains(PIPELINING_EXTENSION) && ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() != PipeliningMode.NO) {
                 pipelining(session);
             } else {
                 session.send(SMTPRequestImpl.mail(mail), MailResponseCallback.INSTANCE);

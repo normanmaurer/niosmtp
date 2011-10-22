@@ -25,7 +25,6 @@ import java.util.Iterator;
 
 
 import me.normanmaurer.niosmtp.SMTPConnectionException;
-import me.normanmaurer.niosmtp.core.SMTPClientConfigImpl;
 import me.normanmaurer.niosmtp.core.SimpleMessageInput;
 import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.delivery.DeliveryResult;
@@ -68,8 +67,8 @@ public abstract class AbstractSMTPClientTest {
         return createFactory().createPlain();
     }
     
-    protected SMTPClientConfigImpl createConfig() {
-        SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
+    protected SMTPDeliveryAgentConfigImpl createConfig() {
+        SMTPDeliveryAgentConfigImpl conf = new SMTPDeliveryAgentConfigImpl();
         conf.setConnectionTimeout(4);
         conf.setResponseTimeout(5);
         return conf;
@@ -107,7 +106,7 @@ public abstract class AbstractSMTPClientTest {
         SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
 
         try {
-            SMTPClientConfigImpl conf = createConfig();
+            SMTPDeliveryAgentConfigImpl conf = createConfig();
             SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
             check.onSMTPClientFuture(future);
         } finally {
@@ -176,7 +175,7 @@ public abstract class AbstractSMTPClientTest {
 
 
         try {
-            SMTPClientConfigImpl conf = createConfig();
+            SMTPDeliveryAgentConfigImpl conf = createConfig();
             SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
             check.onSMTPClientFuture(future);
         } finally {
@@ -245,7 +244,7 @@ public abstract class AbstractSMTPClientTest {
         SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
 
         try {
-            SMTPClientConfigImpl conf = createConfig();
+            SMTPDeliveryAgentConfigImpl conf = createConfig();
 
             SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
             check.onSMTPClientFuture(future);
@@ -311,7 +310,7 @@ public abstract class AbstractSMTPClientTest {
         SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
 
         try {
-            SMTPClientConfigImpl conf = createConfig();
+            SMTPDeliveryAgentConfigImpl conf = createConfig();
 
             SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
             check.onSMTPClientFuture(future);
@@ -381,7 +380,7 @@ public abstract class AbstractSMTPClientTest {
         SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
 
         try {
-            SMTPClientConfigImpl conf = createConfig();
+            SMTPDeliveryAgentConfigImpl conf = createConfig();
 
             SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com", "to3@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
             check.onSMTPClientFuture(future);
@@ -450,7 +449,7 @@ public abstract class AbstractSMTPClientTest {
         SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
 
         try {
-            SMTPClientConfigImpl conf = createConfig();
+            SMTPDeliveryAgentConfigImpl conf = createConfig();
             SMTPDeliveryTransaction transaction = new SMTPDeliveryTransactionImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com", "to3@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes())));
             
             SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryTransaction[] {transaction, transaction});
@@ -533,7 +532,7 @@ public abstract class AbstractSMTPClientTest {
         SMTPClientTransport transport = createSMTPClient();
         SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
 
-        SMTPClientConfigImpl conf = createConfig();
+        SMTPDeliveryAgentConfigImpl conf = createConfig();
 
         SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(11111), conf, new SMTPDeliveryTransactionImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
         try {

@@ -20,6 +20,7 @@ import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 
@@ -48,7 +49,7 @@ public class WelcomeResponseCallback extends AbstractResponseCallback {
     public void onResponse(SMTPClientSession session, SMTPResponse response) {
         int code = response.getCode();
         if (code < 400) {          
-            session.send(SMTPRequestImpl.ehlo(session.getConfig().getHeloName()), EhloResponseCallback.INSTANCE);
+            session.send(SMTPRequestImpl.ehlo(((SMTPDeliveryAgentConfig)session.getConfig()).getHeloName()), EhloResponseCallback.INSTANCE);
         } else {
             setDeliveryStatusForAll(session, response);
 

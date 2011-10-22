@@ -19,8 +19,9 @@ package me.normanmaurer.niosmtp.delivery.callback;
 import me.normanmaurer.niosmtp.Authentication;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
-import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryTransaction;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
@@ -58,7 +59,7 @@ public class AuthPlainResponseCallback extends AbstractAuthResponseCallback{
                 // PIPELINING. This will allow the NETTY to get
                 // the MAX throughput as the encoder will write it out in one
                 // buffer if possible. This result in less system calls
-                if (supportsPipelining && session.getConfig().getPipeliningMode() != PipeliningMode.NO) {
+                if (supportsPipelining && ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() != PipeliningMode.NO) {
                     pipelining(session);
                 } else {
                     session.send(SMTPRequestImpl.mail(mail), MailResponseCallback.INSTANCE);
@@ -69,7 +70,7 @@ public class AuthPlainResponseCallback extends AbstractAuthResponseCallback{
         } else {
             if (response.getCode() == 334) {
                 session.getAttributes().put(PROCESS_AUTH, true);
-                Authentication auth = session.getConfig().getAuthentication();
+                Authentication auth = ((SMTPDeliveryAgentConfig)session.getConfig()).getAuthentication();
                 String userPass = auth.getUsername() + "\0" + auth.getPassword();
                 session.send(new SMTPRequestImpl(new String(Base64.encodeBase64(userPass.getBytes(CHARSET)), CHARSET), null), INSTANCE);
             } else {

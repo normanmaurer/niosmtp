@@ -18,7 +18,6 @@ package me.normanmaurer.niosmtp.core;
 
 import java.net.InetSocketAddress;
 
-import me.normanmaurer.niosmtp.Authentication;
 import me.normanmaurer.niosmtp.SMTPClientConfig;
 
 /**
@@ -33,34 +32,15 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
     public static final int DEFAULT_CONNECTION_TIMEOUT = 60;
     public static final String DEFAULT_HELO_NAME = "localhost";
     public static final int DEFAULT_RESPONSE_TIMEOUT = 60;
-    
-    private String heloName = DEFAULT_HELO_NAME;
+
     private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
     private InetSocketAddress localAddress = null;
-    private PipeliningMode pipeliningMode = PipeliningMode.TRY;;
     private int responseTimeout = DEFAULT_RESPONSE_TIMEOUT;
-    private Authentication auth;
     
     public SMTPClientConfigImpl() {
     }
     
-    /**
-     * Set the name which will be used for EHLO/HELO. Default is {@link #DEFAULT_HELO_NAME}
-     * 
-     * @param heloName
-     */
-    public void setHeloName(String heloName) {
-        this.heloName = heloName;
-    }
-    
-    
-    /*
-     * (non-Javadoc)
-     * @see me.normanmaurer.niosmtp.SMTPClientConfig#getHeloName()
-     */
-    public String getHeloName() {
-        return heloName;
-    }
+
 
     /**
      * Set the connection timeout in seconds to use. Default is {@link #DEFAULT_CONNECTION_TIMEOUT}
@@ -98,22 +78,6 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
         this.localAddress = localAddress;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see me.normanmaurer.niosmtp.SMTPClientConfig#usePipelining()
-     */
-    public PipeliningMode getPipeliningMode() {
-        return pipeliningMode;
-    }
-    
-    /**
-     * Specify if <code>PIPELINING</code> should get used if possible. Default is {@link PipeliningMode#TRY}
-     * 
-     * @param pipeliningMode
-     */
-    public void setPipeliningMode(PipeliningMode pipeliningMode) {
-        this.pipeliningMode = pipeliningMode;
-    }
 
 
     /*
@@ -131,21 +95,6 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
      */
     public void setResponseTimeout(int responseTimeout) {
         this.responseTimeout = responseTimeout;
-    }
-
-    @Override
-    public Authentication getAuthentication() {
-        return auth;
-    }
-    
-    /**
-     * Set the {@link Authentication} to use. If you don't want to use AUTH just use <code>null</code> as parameter.
-     * Default is <code>null</code>
-     * 
-     * @param auth
-     */
-    public void setAuthentication(Authentication auth) {
-        this.auth = auth;
     }
 
 }

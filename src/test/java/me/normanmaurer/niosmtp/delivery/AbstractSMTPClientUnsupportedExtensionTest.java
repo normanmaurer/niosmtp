@@ -42,11 +42,10 @@ import org.apache.james.protocols.smtp.core.esmtp.StartTlsCmdHandler;
 import org.junit.Test;
 
 import me.normanmaurer.niosmtp.SMTPUnsupportedExtensionException;
-import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
-import me.normanmaurer.niosmtp.core.SMTPClientConfigImpl;
 import me.normanmaurer.niosmtp.core.SimpleMessageInput;
 import me.normanmaurer.niosmtp.delivery.DeliveryResult;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgent;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryFuture;
 import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryTransactionImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
@@ -56,8 +55,8 @@ import me.normanmaurer.niosmtp.util.TestUtils;
 
 public abstract class AbstractSMTPClientUnsupportedExtensionTest {
 
-    protected SMTPClientConfigImpl createConfig() {
-        SMTPClientConfigImpl conf = new SMTPClientConfigImpl();
+    protected SMTPDeliveryAgentConfigImpl createConfig() {
+        SMTPDeliveryAgentConfigImpl conf = new SMTPDeliveryAgentConfigImpl();
         conf.setConnectionTimeout(4);
         conf.setResponseTimeout(5);
         return conf;
@@ -134,7 +133,7 @@ public abstract class AbstractSMTPClientUnsupportedExtensionTest {
         SMTPClientTransport transport = createFactory().createPlain();
         SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
 
-        SMTPClientConfigImpl conf = createConfig();
+        SMTPDeliveryAgentConfigImpl conf = createConfig();
         conf.setPipeliningMode(PipeliningMode.DEPEND);
 
         SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryTransactionImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
@@ -218,7 +217,7 @@ public abstract class AbstractSMTPClientUnsupportedExtensionTest {
         SMTPClientTransport transport = createFactory().createStartTLS(BogusSslContextFactory.getClientContext(), true);
         SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
 
-        SMTPClientConfigImpl conf = createConfig();
+        SMTPDeliveryAgentConfigImpl conf = createConfig();
 
         SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryTransactionImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
         try {

@@ -18,8 +18,9 @@ package me.normanmaurer.niosmtp.delivery.callback;
 
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
-import me.normanmaurer.niosmtp.SMTPClientConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryTransaction;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
@@ -57,7 +58,7 @@ public class AuthLoginResponseCallback extends AbstractAuthResponseCallback{
                 // PIPELINING. This will allow the NETTY to get
                 // the MAX throughput as the encoder will write it out in one
                 // buffer if possible. This result in less system calls
-                if (supportsPipelining && session.getConfig().getPipeliningMode() != PipeliningMode.NO) {
+                if (supportsPipelining && ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() != PipeliningMode.NO) {
                     pipelining(session);
                 } else {
                     session.send(SMTPRequestImpl.mail(mail), MailResponseCallback.INSTANCE);
@@ -70,7 +71,7 @@ public class AuthLoginResponseCallback extends AbstractAuthResponseCallback{
 
             if (response.getCode() == 334) {
                 session.getAttributes().put(PROCESS_PASSWORD, true);
-                session.send(new SMTPRequestImpl(new String(Base64.encodeBase64(session.getConfig().getAuthentication().getPassword().getBytes(CHARSET)), CHARSET), null), INSTANCE);
+                session.send(new SMTPRequestImpl(new String(Base64.encodeBase64(((SMTPDeliveryAgentConfig)session.getConfig()).getAuthentication().getPassword().getBytes(CHARSET)), CHARSET), null), INSTANCE);
             } else {
                 setDeliveryStatusForAll(session, response);
 
@@ -78,7 +79,7 @@ public class AuthLoginResponseCallback extends AbstractAuthResponseCallback{
         } else {
             if (response.getCode() == 334) {
                 session.getAttributes().put(PROCESS_USERNAME, true);
-                session.send(new SMTPRequestImpl(new String(Base64.encodeBase64(session.getConfig().getAuthentication().getUsername().getBytes(CHARSET)), CHARSET), null), INSTANCE);
+                session.send(new SMTPRequestImpl(new String(Base64.encodeBase64(((SMTPDeliveryAgentConfig)session.getConfig()).getAuthentication().getUsername().getBytes(CHARSET)), CHARSET), null), INSTANCE);
             } else {
                 setDeliveryStatusForAll(session, response);
             }

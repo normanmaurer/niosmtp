@@ -22,7 +22,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 
-import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
@@ -63,7 +62,7 @@ public class SMTPDeliveryAgent implements SMTPClientConstants, SMTPDeliverySessi
      * @param transation
      * @return future
      */
-    public SMTPDeliveryFuture deliver(InetSocketAddress host, final SMTPClientConfig config, final SMTPDeliveryTransaction... transactions) {
+    public SMTPDeliveryFuture deliver(InetSocketAddress host, final SMTPDeliveryAgentConfig config, final SMTPDeliveryTransaction... transactions) {
         if (transactions == null || transactions.length == 0) {
             throw new IllegalArgumentException("SMTPTransaction parameter must be not null and the length must be > 0");
         }
