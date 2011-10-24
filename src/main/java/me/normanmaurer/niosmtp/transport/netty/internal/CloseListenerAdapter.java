@@ -32,8 +32,8 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
  */
 public class CloseListenerAdapter extends SimpleChannelUpstreamHandler{
 
-    private CloseListener listener;
-    private SMTPClientSession session;
+    private final CloseListener listener;
+    private final SMTPClientSession session;
 
     public CloseListenerAdapter(SMTPClientSession session, CloseListener listener) {
         this.listener = listener;
@@ -47,5 +47,8 @@ public class CloseListenerAdapter extends SimpleChannelUpstreamHandler{
         super.channelClosed(ctx, e);
     }
 
+    public final CloseListener getListener(){
+        return listener;
+    }
     
 }

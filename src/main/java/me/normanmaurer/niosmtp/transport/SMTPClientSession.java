@@ -17,6 +17,7 @@
 package me.normanmaurer.niosmtp.transport;
 
 import java.net.InetSocketAddress;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -153,6 +154,21 @@ public interface SMTPClientSession {
      * @param listener
      */
     void addCloseListener(CloseListener listener);
+    
+    /**
+     * Remove the {@link CloseListener}
+     * 
+     * @param listener
+     */
+    void removeCloseListener(CloseListener listener);
+    
+    /**
+     * Return an {@link Iterator} which holds all {@link CloseListener} that were registered before for the {@link SMTPClientSession}
+     * 
+     * @return listeners
+     * 
+     */
+    Iterator<CloseListener> getCloseListeners();
     
     /**
      * Listener which will get notified once the {@link SMTPClientSession} was closed

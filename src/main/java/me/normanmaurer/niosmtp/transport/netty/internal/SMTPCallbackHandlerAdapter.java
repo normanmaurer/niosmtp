@@ -34,9 +34,6 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
  */
 class SMTPCallbackHandlerAdapter extends SimpleChannelUpstreamHandler {
     
-    // Attachment which will get set once we handled the response or exception
-    private final static Object HANDLED = new Object();
-    
     private final SMTPResponseCallback callback;
     private final SMTPClientSession session;
 
@@ -48,10 +45,8 @@ class SMTPCallbackHandlerAdapter extends SimpleChannelUpstreamHandler {
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
         Object msg = e.getMessage();
-        if (msg instanceof SMTPResponse && ctx.getAttachment() == null) {
-            
-            ctx.setAttachment(HANDLED);
-            
+        if (msg instanceof SMTPResponse) {
+                        
             callback.onResponse(session, (SMTPResponse) msg);
             // Remove this handler once we handed over the response to the callback
             ctx.getChannel().getPipeline().remove(this);
@@ -64,7 +59,6 @@ class SMTPCallbackHandlerAdapter extends SimpleChannelUpstreamHandler {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
         if (ctx.getAttachment() == null) {
-            ctx.setAttachment(HANDLED);
             callback.onException(session, e.getCause());
             // Remove this handler once we handed over the exception to the callback
             ctx.getChannel().getPipeline().remove(this);

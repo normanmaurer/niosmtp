@@ -17,6 +17,10 @@
 package me.normanmaurer.niosmtp.transport.impl;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -63,8 +67,21 @@ public class LimitingSMTPClientTransport implements SMTPClientTransport {
     private final ConcurrentLinkedQueue<QueuedConnectRequest> connectionQueue = new ConcurrentLinkedQueue<QueuedConnectRequest>();
     private final int maxQueuedConnectionLimit;
     
+    /**
+     * Create a new {@link LimitingSMTPClientTransport} which wraps another {@link SMTPClientTransport}
+     * 
+     * 
+     * @param transport the {@link SMTPClientTransport} which should be limited
+     * @param connectionLimit the connectionLimit to use. This value must be >= 1
+     * @param maxQueuedConnectionLimit the maximal number of queued connection requests. If the limit is reached and a new request is made via the {@link #connect(InetSocketAddress, SMTPClientConfig, SMTPResponseCallback)} method,
+     *                                 this implementation takes care of calling the {@link SMTPResponseCallback#onException(SMTPClientSession, Throwable)} method. 
+     *                                 Use -1 to make the queue unlimited
+     */
     public LimitingSMTPClientTransport(SMTPClientTransport transport, int connectionLimit, int maxQueuedConnectionLimit)  {
         this.transport = transport;
+        if (connectionLimit < 1) {
+            throw new IllegalArgumentException("connectionLimit must be >= 1");
+        }
         this.connectionLimit = connectionLimit;
         this.maxQueuedConnectionLimit = maxQueuedConnectionLimit;
     }
@@ -78,7 +95,7 @@ public class LimitingSMTPClientTransport implements SMTPClientTransport {
     public void connect(InetSocketAddress remote, SMTPClientConfig config, final SMTPResponseCallback callback) {
         if (connectionCount.incrementAndGet() > connectionLimit)  {
             connectionCount.decrementAndGet();
-            if (connectionQueue.size() > maxQueuedConnectionLimit) {
+            if (maxQueuedConnectionLimit > -1 && connectionQueue.size() +1 > maxQueuedConnectionLimit) {
                 callback.onException(new UnconnectedSMTPClientSession(logger, config, getDeliveryMode()), QUEUE_LIMIT_REACHED_EXCEPTION);
             } else {
                 connectionQueue.add(new QueuedConnectRequest(remote, config, callback));
@@ -141,15 +158,19 @@ public class LimitingSMTPClientTransport implements SMTPClientTransport {
 
         @Override
         public void onClose(SMTPClientSession session) {
-            while(connectionCount.incrementAndGet() <= connectionLimit) {
-                QueuedConnectRequest request = connectionQueue.poll();
-                if (request != null) {
-                    connectToServer(request.address, request.config, request.callback);
-                } else {
-                    break;
+            if(connectionCount.decrementAndGet() <= connectionLimit) {
+                
+                while(connectionCount.incrementAndGet() <= connectionLimit) {
+                    QueuedConnectRequest request = connectionQueue.poll();
+                    if (request != null) {
+                        connectToServer(request.address, request.config, request.callback);
+                    } else {
+                        connectionCount.decrementAndGet();
+                        break;
+                    }
                 }
-            } 
-            connectionCount.decrementAndGet();
+               
+            }
         }
         
     }
@@ -157,7 +178,7 @@ public class LimitingSMTPClientTransport implements SMTPClientTransport {
     private class UnconnectedSMTPClientSession extends AbstractSMTPClientSession {
 
         private final String id = UUID.randomUUID().toString();
-        
+        private final Collection<CloseListener> listeners = new ArrayList<CloseListener>();
         public UnconnectedSMTPClientSession(Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode) {
             super(logger, config, mode, null, null);
         }
@@ -199,7 +220,27 @@ public class LimitingSMTPClientTransport implements SMTPClientTransport {
 
         @Override
         public void addCloseListener(CloseListener listener) {
+            synchronized (listeners) {
+                listeners.add(closeListener);
+            }
             listener.onClose(UnconnectedSMTPClientSession.this);
+
+        }
+
+        @Override
+        public void removeCloseListener(CloseListener listener) {
+            synchronized (listeners) {
+                listeners.remove(listener);
+            }
+        }
+
+        @Override
+        public Iterator<CloseListener> getCloseListeners() {
+            List<CloseListener> cListeners;
+            synchronized (listeners) {
+                cListeners = new ArrayList<CloseListener>(listeners);
+            }
+            return cListeners.iterator();
         }
         
     }

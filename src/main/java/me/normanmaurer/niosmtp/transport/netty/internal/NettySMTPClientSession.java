@@ -18,6 +18,8 @@ package me.normanmaurer.niosmtp.transport.netty.internal;
 
 
 import java.net.InetSocketAddress;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import javax.net.ssl.SSLEngine;
 
@@ -33,6 +35,7 @@ import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFutureListener;
+import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.handler.ssl.SslHandler;
 import org.slf4j.Logger;
@@ -113,6 +116,82 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
     @Override
     public boolean isClosed() {
         return !channel.isConnected();
+    }
+
+    @Override
+    public void removeCloseListener(CloseListener listener) {
+        CloseListenerAdapterIterator it = new CloseListenerAdapterIterator(channel.getPipeline().toMap().values().iterator());
+
+        while(it.hasNext()) {
+            CloseListenerAdapter cl = it.next();
+            if (cl.getListener().equals(listener)) {
+                channel.getPipeline().remove(cl);
+            }
+        }
+       
+    }
+
+    @Override
+    public Iterator<CloseListener> getCloseListeners() {
+        return new Iterator<CloseListener>() {
+            private CloseListenerAdapterIterator it = new CloseListenerAdapterIterator(channel.getPipeline().toMap().values().iterator());
+            @Override
+            public boolean hasNext() {
+                return it.hasNext();
+            }
+
+            @Override
+            public CloseListener next() {
+                return it.next().getListener();
+            }
+
+            @Override
+            public void remove() {
+                it.remove();
+            }
+            
+        };
+    }
+    
+    private final class CloseListenerAdapterIterator implements Iterator<CloseListenerAdapter> {
+
+        private Iterator<ChannelHandler> handlers;
+        private CloseListenerAdapter adapter;
+        
+        public CloseListenerAdapterIterator(Iterator<ChannelHandler> handlers) {
+            this.handlers = handlers;
+        }
+        
+        @Override
+        public boolean hasNext() {
+            if (adapter == null) {
+                while(handlers.hasNext()) {
+                    ChannelHandler handler = handlers.next();
+                    if (handler instanceof CloseListenerAdapter) {
+                        adapter = (CloseListenerAdapter) handler;
+                    }
+                }
+                return false;
+            } else {
+                return true;
+            }
+
+        }
+
+        @Override
+        public CloseListenerAdapter next() {
+            if (hasNext()) {
+                return adapter;
+            } else {
+                throw new NoSuchElementException();
+            }
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+        
     }
     
 }
