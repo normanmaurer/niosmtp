@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import me.normanmaurer.niosmtp.SMTPClientConfig;
 
 import org.slf4j.Logger;
 

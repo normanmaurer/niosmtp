@@ -16,9 +16,9 @@
 */
 package me.normanmaurer.niosmtp.delivery.impl;
 
-import me.normanmaurer.niosmtp.Authentication;
-import me.normanmaurer.niosmtp.core.SMTPClientConfigImpl;
+import me.normanmaurer.niosmtp.delivery.Authentication;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig;
+import me.normanmaurer.niosmtp.transport.impl.SMTPClientConfigImpl;
 
 /**
  * 

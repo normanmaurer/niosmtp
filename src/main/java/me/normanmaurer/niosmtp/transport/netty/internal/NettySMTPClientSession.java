@@ -22,11 +22,11 @@ import java.net.InetSocketAddress;
 import javax.net.ssl.SSLEngine;
 
 import me.normanmaurer.niosmtp.MessageInput;
-import me.normanmaurer.niosmtp.SMTPClientConfig;
-import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.transport.AbstractSMTPClientSession;
+import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
+import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 

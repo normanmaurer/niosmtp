@@ -18,9 +18,9 @@ package me.normanmaurer.niosmtp.transport.netty.internal;
 
 import javax.net.ssl.SSLEngine;
 
-import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
+import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 
 import org.jboss.netty.channel.ChannelHandlerContext;

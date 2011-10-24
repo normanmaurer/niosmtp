@@ -16,8 +16,7 @@
 */
 package me.normanmaurer.niosmtp.delivery;
 
-import me.normanmaurer.niosmtp.Authentication;
-import me.normanmaurer.niosmtp.SMTPClientConfig;
+import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 
 /**
  * Configuration which is used to deliver email via SMTP

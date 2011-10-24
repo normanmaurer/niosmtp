@@ -14,40 +14,39 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp;
+package me.normanmaurer.niosmtp.transport;
 
-import java.nio.charset.Charset;
-
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 
 /**
- * Constants which are used within the SMTP context
- * 
- * @author Norman Mauurer
+ * Configuration which is used to deliver email via SMTP
+ *
+ * @author Norman Maurer
  *
  */
-public interface SMTPClientConstants {
-    
-    /**
-     * The {@link Charset} used for the SMTP protocol. This is <code>US-ASCII</code> (per rfc)
-     */
-    public final static Charset CHARSET = Charset.forName("US-ASCII");
-    
-    
-    /**
-     * Identifier used to detect if the SMTP Server supports <code>PIPELINING</code>
-     */
-    public final static String PIPELINING_EXTENSION = "PIPELINING";
-    
-    /**
-     * Identifier used to detect if the SMTP Server supports <code>STARTTLS</code>
-     */
-    public final static String STARTTLS_EXTENSION = "STARTTLS";
-    
-    /**
-     * Identifier used to detect if the SMTP Server supports <code>8BITMIME</code>
-     */
-    public final static String _8BITMIME_EXTENSION = "8BITMIME";
-    
-    
+public interface SMTPClientConfig {
 
+    
+    /**
+     * Return the connection timeout (in seconds) for the client
+     * 
+     * @return connectionTimeout
+     */
+    int getConnectionTimeout();
+    
+    /**
+     * Return the response timeout (in seconds) for the SMTP Server to send the response
+     * 
+     * @return responseTimeout
+     */
+    int getResponseTimeout();
+
+    
+    /**
+     * Return the {@link InetAddress} which should get used to bind to or null if no specific should get used
+     * 
+     * @return local
+     */
+    InetSocketAddress getLocalAddress();
 }

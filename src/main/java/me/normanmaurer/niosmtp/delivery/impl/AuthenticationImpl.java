@@ -14,9 +14,9 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.core;
+package me.normanmaurer.niosmtp.delivery.impl;
 
-import me.normanmaurer.niosmtp.Authentication;
+import me.normanmaurer.niosmtp.delivery.Authentication;
 
 /**
  * {@link Authentication} implementation for simple usage

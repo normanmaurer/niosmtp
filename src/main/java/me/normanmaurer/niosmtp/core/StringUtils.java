@@ -18,9 +18,9 @@ package me.normanmaurer.niosmtp.core;
 
 import java.util.Iterator;
 
-import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
+import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 
 /**
  * Utility class which helps to convert objects to <code>String</code>'s

@@ -14,39 +14,40 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp;
-
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
+package me.normanmaurer.niosmtp.delivery;
 
 /**
- * Configuration which is used to deliver email via SMTP
- *
+ * 
  * @author Norman Maurer
  *
  */
-public interface SMTPClientConfig {
+public interface Authentication {
 
-    
-    /**
-     * Return the connection timeout (in seconds) for the client
-     * 
-     * @return connectionTimeout
-     */
-    int getConnectionTimeout();
-    
-    /**
-     * Return the response timeout (in seconds) for the SMTP Server to send the response
-     * 
-     * @return responseTimeout
-     */
-    int getResponseTimeout();
 
+    public static enum AuthMode {
+        Plain,
+        Login
+    }
+    
     
     /**
-     * Return the {@link InetAddress} which should get used to bind to or null if no specific should get used
+     * Return the {@link AuthMode}
      * 
-     * @return local
+     * @return mode
      */
-    InetSocketAddress getLocalAddress();
+    AuthMode getMode();
+    
+    /**
+     * Return the username
+     * 
+     * @return username
+     */
+    String getUsername();
+    
+    /**
+     * Return password
+     * 
+     * @return password
+     */
+    String getPassword();
 }

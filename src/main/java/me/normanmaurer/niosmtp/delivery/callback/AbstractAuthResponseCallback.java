@@ -21,8 +21,8 @@ import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
 
-import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.SMTPResponse;
+import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**

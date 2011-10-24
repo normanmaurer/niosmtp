@@ -16,8 +16,7 @@
 */
 package me.normanmaurer.niosmtp.delivery;
 
-import me.normanmaurer.niosmtp.Authentication;
-import me.normanmaurer.niosmtp.core.AuthenticationImpl;
+import me.normanmaurer.niosmtp.delivery.impl.AuthenticationImpl;
 
 public abstract class AbstractSMTPClientAuthPlainTest extends AbstractSMTPClientAuthLoginTest{
 

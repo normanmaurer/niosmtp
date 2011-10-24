@@ -14,11 +14,11 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.core;
+package me.normanmaurer.niosmtp.transport.impl;
 
 import java.net.InetSocketAddress;
 
-import me.normanmaurer.niosmtp.SMTPClientConfig;
+import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 
 /**
  * Simple {@link SMTPClientConfig} implementation which allows

@@ -22,12 +22,12 @@ import java.util.Iterator;
 import java.util.Map;
 
 
-import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.core.ArrayIterator;
 import me.normanmaurer.niosmtp.delivery.callback.WelcomeResponseCallback;
 import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryFutureImpl;
+import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 

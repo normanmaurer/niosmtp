@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Set;
 
 import me.normanmaurer.niosmtp.MessageInput;
-import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;

@@ -21,8 +21,8 @@ import java.util.Set;
 
 import me.normanmaurer.niosmtp.ByteArrayMessageInput;
 import me.normanmaurer.niosmtp.MessageInput;
-import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.core.DataTerminatingInputStream;
+import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 import org.jboss.netty.buffer.ChannelBuffer;

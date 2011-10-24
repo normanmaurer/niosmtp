@@ -16,10 +16,10 @@
 */
 package me.normanmaurer.niosmtp.transport.netty.internal;
 
-import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.core.SMTPResponseImpl;
 import me.normanmaurer.niosmtp.core.StringUtils;
+import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;

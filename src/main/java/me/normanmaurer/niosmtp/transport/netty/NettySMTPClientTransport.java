@@ -20,8 +20,8 @@ import java.net.InetSocketAddress;
 
 import javax.net.ssl.SSLContext;
 
-import me.normanmaurer.niosmtp.SMTPClientConfig;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
+import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 import me.normanmaurer.niosmtp.transport.netty.internal.SMTPClientPipelineFactory;

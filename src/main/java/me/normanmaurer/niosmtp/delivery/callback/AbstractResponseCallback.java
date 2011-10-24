@@ -21,7 +21,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import me.normanmaurer.niosmtp.SMTPClientConstants;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
@@ -35,6 +34,7 @@ import me.normanmaurer.niosmtp.delivery.SMTPDeliveryTransaction;
 import me.normanmaurer.niosmtp.delivery.impl.DeliveryRecipientStatusImpl;
 import me.normanmaurer.niosmtp.delivery.impl.DeliveryResultImpl;
 import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryFutureImpl;
+import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
