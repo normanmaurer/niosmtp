@@ -351,7 +351,7 @@
     <dependency>
       <groupId>org.jboss.netty</groupId>
       <artifactId>netty</artifactId>
-      <version>3.2.5.Final</version>
+      <version>3.2.6.Final</version>
     </dependency>
     <dependency>
         <groupId>org.slf4j</groupId>

@@ -69,15 +69,7 @@ class ConnectHandler extends SimpleChannelUpstreamHandler {
     
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
-        // Don't trigger callback which was caused by the ChunkedWriteHandler
-        //
-        // See:
-        //
-        // https://issues.jboss.org/browse/NETTY-430
-        if ((e.getCause() instanceof NullPointerException) == false) {
-            callback.onException(new NettySMTPClientSession(ctx.getChannel(), logger, config, mode, engine), e.getCause());
-            ctx.getChannel().getPipeline().remove(this);
-        }
-
+        callback.onException(new NettySMTPClientSession(ctx.getChannel(), logger, config, mode, engine), e.getCause());
+        ctx.getChannel().getPipeline().remove(this);
     }
 }
