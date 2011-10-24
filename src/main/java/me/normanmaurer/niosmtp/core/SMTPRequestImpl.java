@@ -25,6 +25,8 @@ public class SMTPRequestImpl implements SMTPRequest{
     private final static SMTPRequest DATA_REQUEST = new SMTPRequestImpl("DATA", null);
     private final static SMTPRequest AUTH_LOGIN_REQUEST = new SMTPRequestImpl("AUTH", "LOGIN");
     private final static SMTPRequest AUTH_PLAIN_REQUEST = new SMTPRequestImpl("AUTH", "PLAIN");
+    private final static SMTPRequest NOOP_REQUEST = new SMTPRequestImpl("NOOP", null);
+    private final static SMTPRequest RSET_REQUEST = new SMTPRequestImpl("RSET", null);
 
     private String command;
     private String argument;
@@ -140,5 +142,22 @@ public class SMTPRequestImpl implements SMTPRequest{
      */
     public static SMTPRequest authLogin() {
         return AUTH_LOGIN_REQUEST;
+    }
+    
+    /**
+     * Create a <code>NOOP</code> {@link SMTPRequest}
+     * 
+     * @return noop
+     */
+    public static SMTPRequest noop() {
+        return NOOP_REQUEST;
+    }
+    /**
+     * Create a <code>RSET</code> {@link SMTPRequest}
+     * 
+     * @return rset
+     */
+    public static SMTPRequest rset() {
+        return RSET_REQUEST;
     }
 }

@@ -16,115 +16,27 @@
 */
 package me.normanmaurer.niosmtp.transport.impl;
 
-import static org.junit.Assert.*;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Test;
-import org.slf4j.LoggerFactory;
-
-import me.normanmaurer.niosmtp.MessageInput;
-import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
-import me.normanmaurer.niosmtp.core.SMTPResponseImpl;
-import me.normanmaurer.niosmtp.transport.AbstractSMTPClientSession;
-import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
-import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
-import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
+
+
+import org.junit.Test;
 
 public class LimitingSMTPClientTransportTest {
-
-    private final class MockSMTPClientSession extends AbstractSMTPClientSession {
-        
-        public MockSMTPClientSession() {
-            super(LoggerFactory.getLogger(MockSMTPClientSession.class), new SMTPClientConfigImpl(), SMTPDeliveryMode.PLAIN, null, null);
-        }
-
-        private final List<CloseListener> cListeners = new ArrayList<CloseListener>();
-        private boolean closed = false;
-        @Override
-        public void startTLS() {
-            // do nothing
-        }
-        
-        @Override
-        public void send(MessageInput request, SMTPResponseCallback callback) {
-            callback.onResponse(this, new SMTPResponseImpl(250));
-            
-        }
-        
-        @Override
-        public void send(SMTPRequest request, SMTPResponseCallback callback) {
-            callback.onResponse(this, new SMTPResponseImpl(250));
-        }
-        
-        @Override
-        public boolean isEncrypted() {
-            return false;
-        }
-        
-        @Override
-        public synchronized boolean isClosed() {
-            return closed;
-        }
-        
-        @Override
-        public String getId() {
-            return "";
-        }
-        
-        @Override
-        public synchronized void close() {
-            closed = true;
-            for (CloseListener l: cListeners) {
-                l.onClose(this);
-            }
-        }
-        
-        @Override
-        public synchronized void addCloseListener(CloseListener listener) {
-            cListeners.add(listener);
-        }
-
-        @Override
-        public synchronized void removeCloseListener(CloseListener listener) {
-            cListeners.remove(listener);
-        }
-
-        @Override
-        public synchronized Iterator<CloseListener> getCloseListeners() {
-            return new ArrayList<CloseListener>(cListeners).iterator();
-        }
-    }
     
-    private final class MockSMTPClientTransport implements SMTPClientTransport {
-        
-        @Override
-        public SMTPDeliveryMode getDeliveryMode() {
-            return SMTPDeliveryMode.PLAIN;
-        }
-        
-        @Override
-        public void destroy() {
-            // Do nothing
-            
-        }
-        
-        @Override
-        public void connect(InetSocketAddress remote, SMTPClientConfig config, SMTPResponseCallback callback) {
-            callback.onResponse(new MockSMTPClientSession(), new SMTPResponseImpl(220));
-        }
-    }
+
     
     @Test
     public void testLimitWithNoQueue() throws InterruptedException {
