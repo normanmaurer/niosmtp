@@ -16,6 +16,7 @@
 */
 package me.normanmaurer.niosmtp.transport;
 
+import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.Set;
 
@@ -129,6 +130,22 @@ public interface SMTPClientSession {
      * @return config
      */
     SMTPClientConfig getConfig();
+    
+    /**
+     * Return the remote {@link InetSocketAddress} which the {@link SMTPClientSession} is bound to. If the {@link SMTPClientSession} is not yet bound this may return <code>null</code>
+     * 
+     * @return remoteAddress
+     */
+    InetSocketAddress getRemoteAddress();
+    
+    
+    
+    /**
+     * Return the local {@link InetSocketAddress} which the {@link SMTPClientSession} is bound to. If the {@link SMTPClientSession} is not yet bound this may return <code>null</code>
+     * 
+     * @return localAddress
+     */
+    InetSocketAddress getLocalAddress();
     
     /**
      * Add an {@link CloseListener} which will get notified once the {@link SMTPClientSession} was closed. This may be because the client or the server

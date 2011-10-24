@@ -16,6 +16,7 @@
 */
 package me.normanmaurer.niosmtp.transport;
 
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -39,15 +40,27 @@ public abstract class AbstractSMTPClientSession implements SMTPClientSession {
     private final SMTPClientConfig config;
     private Set<String> extensions = new HashSet<String>();
     private final Map<String, Object> attrs = new HashMap<String, Object>();
+    private final InetSocketAddress remote;
+    private final InetSocketAddress local;
     
-    public AbstractSMTPClientSession(Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode) {
+    public AbstractSMTPClientSession(Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode, InetSocketAddress local, InetSocketAddress remote) {
         this.logger = logger;
         this.mode = mode;
         this.config = config;
+        this.remote = remote;
+        this.local = local;
     }
-    
-    
-    
+
+    @Override
+    public InetSocketAddress getRemoteAddress() {
+        return remote;
+    }
+
+    @Override
+    public InetSocketAddress getLocalAddress() {
+        return local;
+    }
+
     @Override
     public SMTPDeliveryMode getDeliveryMode() {
         return mode;

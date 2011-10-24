@@ -199,6 +199,18 @@ public class PooledSMTPClientTransport implements SMTPClientTransport{
         public void addCloseListener(CloseListener listener) {
             cListeners.add(listener);
         }
+
+
+        @Override
+        public InetSocketAddress getRemoteAddress() {
+            return session.getRemoteAddress();
+        }
+
+
+        @Override
+        public InetSocketAddress getLocalAddress() {
+            return session.getLocalAddress();
+        }
     }
 
 }

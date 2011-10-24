@@ -17,6 +17,8 @@
 package me.normanmaurer.niosmtp.transport.netty.internal;
 
 
+import java.net.InetSocketAddress;
+
 import javax.net.ssl.SSLEngine;
 
 import me.normanmaurer.niosmtp.MessageInput;
@@ -50,7 +52,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
     private final SSLEngine engine;
 
     public NettySMTPClientSession(Channel channel, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode,  SSLEngine engine) {
-        super(logger, config, mode);      
+        super(logger, config, mode, (InetSocketAddress) channel.getLocalAddress(), (InetSocketAddress) channel.getRemoteAddress());      
         this.channel = channel;
         this.engine = engine;
     }

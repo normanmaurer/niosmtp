@@ -159,7 +159,7 @@ public class LimitingSMTPClientTransport implements SMTPClientTransport {
         private final String id = UUID.randomUUID().toString();
         
         public UnconnectedSMTPClientSession(Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode) {
-            super(logger, config, mode);
+            super(logger, config, mode, null, null);
         }
 
         @Override
