@@ -17,6 +17,7 @@
 package me.normanmaurer.niosmtp.delivery;
 
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig.PipeliningMode;
+import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryAgentConfigImpl;
 
 public abstract class AbstractSMTPClientNoPipeliningTest extends AbstractSMTPClientTest{
 

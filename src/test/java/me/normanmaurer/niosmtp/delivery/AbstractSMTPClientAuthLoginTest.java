@@ -33,6 +33,7 @@ import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.delivery.DeliveryResult;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgent;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryFuture;
+import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryAgentConfigImpl;
 import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryTransactionImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 import me.normanmaurer.niosmtp.util.TestUtils;
