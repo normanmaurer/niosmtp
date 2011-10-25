@@ -17,12 +17,11 @@
 package me.normanmaurer.niosmtp.transport.impl;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -86,11 +85,42 @@ public class LimitingSMTPClientTransport implements SMTPClientTransport {
         this.maxQueuedConnectionLimit = maxQueuedConnectionLimit;
     }
     
+    /**
+     * Return the maximal queued connection limit. After this is hit every new {@link #connect(InetSocketAddress, SMTPClientConfig, SMTPResponseCallback)} attempt will trigger an {@link SMTPResponseCallback#onException(SMTPClientSession, Throwable)} call.
+     * 
+     * For unlimited -1 is used
+     * 
+     * @return maxQueuedLimit
+     */
+    public int getMaxQueuedConnectionLimit() {
+        return maxQueuedConnectionLimit;
+    }
+    
+    /**
+     * Return the current active connection count
+     * 
+     * @return count
+     */
+    public int getConnectionCount() {
+        return connectionCount.get();
+    }
+    
+    /**
+     * Return the configured connection limit. If the limit is hit the request is queued for later execution (as soon as possible).
+     * 
+     * @return connLimit
+     */
+    public int getConnectionLimit() {
+        return connectionLimit;
+    }
+    
+    
     @Override
     public SMTPDeliveryMode getDeliveryMode() {
         return transport.getDeliveryMode();
     }
 
+    
     @Override
     public void connect(InetSocketAddress remote, SMTPClientConfig config, final SMTPResponseCallback callback) {
         if (connectionCount.incrementAndGet() > connectionLimit)  {
@@ -135,7 +165,7 @@ public class LimitingSMTPClientTransport implements SMTPClientTransport {
 
     }
     
-    private final class QueuedConnectRequest {
+    private final static class QueuedConnectRequest {
         private final InetSocketAddress address;
         private final SMTPClientConfig config;
         private final SMTPResponseCallback callback;
@@ -178,7 +208,7 @@ public class LimitingSMTPClientTransport implements SMTPClientTransport {
     private class UnconnectedSMTPClientSession extends AbstractSMTPClientSession {
 
         private final String id = UUID.randomUUID().toString();
-        private final Collection<CloseListener> listeners = new ArrayList<CloseListener>();
+        private final Collection<CloseListener> listeners = new CopyOnWriteArrayList<CloseListener>();
         public UnconnectedSMTPClientSession(Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode) {
             super(logger, config, mode, null, null);
         }
@@ -220,27 +250,20 @@ public class LimitingSMTPClientTransport implements SMTPClientTransport {
 
         @Override
         public void addCloseListener(CloseListener listener) {
-            synchronized (listeners) {
-                listeners.add(closeListener);
-            }
+            listeners.add(closeListener);
             listener.onClose(UnconnectedSMTPClientSession.this);
 
         }
 
         @Override
         public void removeCloseListener(CloseListener listener) {
-            synchronized (listeners) {
-                listeners.remove(listener);
-            }
+            listeners.remove(listener);
+            
         }
 
         @Override
         public Iterator<CloseListener> getCloseListeners() {
-            List<CloseListener> cListeners;
-            synchronized (listeners) {
-                cListeners = new ArrayList<CloseListener>(listeners);
-            }
-            return cListeners.iterator();
+            return listeners.iterator();
         }
         
     }

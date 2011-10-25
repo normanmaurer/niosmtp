@@ -37,7 +37,7 @@ public class PooledSMTPClientTransportTest {
         int port = TestUtils.getFreePort();
 
         TestResponseCallback callback = new TestResponseCallback(3);
-        PooledSMTPClientTransport transport = new PooledSMTPClientTransport(new MockSMTPClientTransport(), 30, 30);
+        PooledSMTPClientTransport transport = new PooledSMTPClientTransport(new MockSMTPClientTransport(), 20, 30, 30);
         transport.connect(new InetSocketAddress("127.0.0.1", port), new SMTPClientConfigImpl(), callback);
         transport.connect(new InetSocketAddress("127.0.0.1", port), new SMTPClientConfigImpl(), new ClosingResponseCallback(callback));
         transport.connect(new InetSocketAddress("127.0.0.1", port), new SMTPClientConfigImpl(), callback);
@@ -78,7 +78,8 @@ public class PooledSMTPClientTransportTest {
         }
     }
 
-    private final class ClosingResponseCallback implements SMTPResponseCallback {
+
+    private static final class ClosingResponseCallback implements SMTPResponseCallback {
 
         private SMTPResponseCallback wrapped;
 
