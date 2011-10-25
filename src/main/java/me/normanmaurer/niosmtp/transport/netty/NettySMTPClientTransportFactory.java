@@ -27,6 +27,8 @@ import me.normanmaurer.niosmtp.transport.SMTPClientTransportFactory;
 import org.jboss.netty.channel.socket.ClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.oio.OioClientSocketChannelFactory;
+import org.jboss.netty.logging.InternalLoggerFactory;
+import org.jboss.netty.logging.Slf4JLoggerFactory;
 
 /**
  * {@link SMTPClientTransportFactory} which uses NETTY for the transport implementation
@@ -35,7 +37,10 @@ import org.jboss.netty.channel.socket.oio.OioClientSocketChannelFactory;
  *
  */
 public class NettySMTPClientTransportFactory implements SMTPClientTransportFactory{
-
+    // niosmtp uses slf4j so also configure it for netty
+    static {
+        InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory());
+    }
     private final ClientSocketChannelFactory factory;
 
 
