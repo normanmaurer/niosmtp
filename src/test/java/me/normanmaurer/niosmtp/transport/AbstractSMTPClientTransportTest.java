@@ -170,7 +170,7 @@ public abstract class AbstractSMTPClientTransportTest {
         }
         
         @Override
-        public void onResponse(SMTPClientSession session, SMTPResponse response) {
+        public void onResponse(SMTPClientSession session, SMTPResponse response) throws Exception {
             try {
                 callback.onResponse(session, response);
             } finally {
@@ -222,7 +222,7 @@ public abstract class AbstractSMTPClientTransportTest {
         }
 
         @Override
-        public void onResponse(SMTPClientSession session, SMTPResponse response) {
+        public void onResponse(SMTPClientSession session, SMTPResponse response) throws Exception {
             try {
                 callback.onResponse(session, response);
             } finally {

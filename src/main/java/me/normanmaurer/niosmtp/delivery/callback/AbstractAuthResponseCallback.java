@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
 
+import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
@@ -33,7 +34,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  */
 public abstract class AbstractAuthResponseCallback extends AbstractResponseCallback implements SMTPClientConstants{
     @Override
-    protected void setDeliveryStatusForAll(SMTPClientSession session, SMTPResponse response) {
+    protected void setDeliveryStatusForAll(SMTPClientSession session, SMTPResponse response) throws SMTPException {
         // check if the SMTPResponse needs to get decoded 
         if ((response instanceof SMTPAuthResponse) == false) {
             response = new SMTPAuthResponse(response);

@@ -61,7 +61,7 @@ public class EhloResponseCallback extends AbstractResponseCallback implements SM
     }
     
     @Override
-    public void onResponse(SMTPClientSession session, SMTPResponse response) {
+    public void onResponse(SMTPClientSession session, SMTPResponse response) throws SMTPException {
         boolean supportsPipelining = false;
         boolean supportsStartTLS = false;
         // Check if the SMTPServer supports PIPELINING 
@@ -82,19 +82,17 @@ public class EhloResponseCallback extends AbstractResponseCallback implements SM
 
             // Check if we depend on pipelining 
             if (!supportsPipelining && ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() == PipeliningMode.DEPEND) {
-                onException(session, PIPELINING_NOT_SUPPORTED_EXECTION);
-                return;
+                throw  PIPELINING_NOT_SUPPORTED_EXECTION;
             }
 
             if (!supportsStartTLS && session.getDeliveryMode() == SMTPDeliveryMode.STARTTLS_DEPEND) {
-                onException(session, STARTTLS_NOT_SUPPORTED_EXECTION);
-                return;
+                throw STARTTLS_NOT_SUPPORTED_EXECTION;
             }
             
             
             
             if (supportsStartTLS && (session.getDeliveryMode() == SMTPDeliveryMode.STARTTLS_DEPEND || session.getDeliveryMode() == SMTPDeliveryMode.STARTTLS_TRY)) {
-                session.send(SMTPRequestImpl.startTls(), StartTlsResponseCallback.INSTANCE);
+                next(session, SMTPRequestImpl.startTls());
             } else {
                 Authentication auth = ((SMTPDeliveryAgentConfig)session.getConfig()).getAuthentication();
                 if (auth == null) {
@@ -105,17 +103,16 @@ public class EhloResponseCallback extends AbstractResponseCallback implements SM
                     if (supportsPipelining && ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() != PipeliningMode.NO) {
                         pipelining(session);
                     } else {
-                        session.send(SMTPRequestImpl.mail(mail), MailResponseCallback.INSTANCE);
+                        next(session, SMTPRequestImpl.mail(mail));
                     }
                 } else {
                     switch (auth.getMode()) {
                     case Plain:
-                        session.send(SMTPRequestImpl.authPlain(), AuthPlainResponseCallback.INSTANCE);
+                        next(session, SMTPRequestImpl.authPlain());
 
                         break;
                     case Login:
-                        session.send(SMTPRequestImpl.authLogin(), AuthLoginResponseCallback.INSTANCE);
-
+                        next(session, SMTPRequestImpl.authLogin());
                     default:
                         break;
                     }

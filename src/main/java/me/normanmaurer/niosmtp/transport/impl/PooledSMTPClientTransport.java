@@ -147,7 +147,11 @@ public class PooledSMTPClientTransport extends LimitingSMTPClientTransport{
             if (!session.isInUse() && session.acquire()) {
                 
                 // just write the cached welcome response back to the client.
-                callback.onResponse(session, (SMTPResponse) session.getAttributes().get(WELCOME_RESPONSE_KEY));
+                try {
+                    callback.onResponse(session, (SMTPResponse) session.getAttributes().get(WELCOME_RESPONSE_KEY));
+                } catch (Exception e) {
+                    callback.onException(session, e);
+                }
                 break;
             } else {
                 if (!pooledIt.hasNext()) {
@@ -163,7 +167,7 @@ public class PooledSMTPClientTransport extends LimitingSMTPClientTransport{
             super.connect(remote, config, new SMTPResponseCallback() {
 
                 @Override
-                public void onResponse(SMTPClientSession session, SMTPResponse response) {
+                public void onResponse(SMTPClientSession session, SMTPResponse response) throws Exception {
                     PooledSMTPClientSession pooledSession = new PooledSMTPClientSession(session);
                     pooledSession.addCloseListener(new CloseListener() {
 

@@ -231,7 +231,7 @@ public final class PooledSMTPClientSession implements SMTPClientSession {
         }
         
         @Override
-        public void onResponse(SMTPClientSession session, SMTPResponse response) {
+        public void onResponse(SMTPClientSession session, SMTPResponse response) throws Exception {
             callback.onResponse(pooledSession, response);
         }
         

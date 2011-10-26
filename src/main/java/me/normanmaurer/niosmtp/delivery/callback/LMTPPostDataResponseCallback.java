@@ -16,10 +16,11 @@
 */
 package me.normanmaurer.niosmtp.delivery.callback;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import me.normanmaurer.niosmtp.MessageInput;
+import me.normanmaurer.niosmtp.MultiResponseCallback;
 import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
@@ -28,56 +29,57 @@ import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus.DeliveryStatus;
 import me.normanmaurer.niosmtp.delivery.impl.DeliveryRecipientStatusImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
-
 /**
- * {@link AbstractResponseCallback} implementation which will handle the <code>POST DATA</code> {@link SMTPResponse} which will
- * get send after the {@link MessageInput} get submitted via the CRLF.CRLF sequence
- * 
+ * {@link AbstractResponseCallback} which handles the {@link SMTPResponse} for the DATA finish sequence in the LMTP protocol
  * 
  * @author Norman Maurer
  *
  */
-public class PostDataResponseCallback extends AbstractResponseCallback {
-
+public class LMTPPostDataResponseCallback extends AbstractResponseCallback implements MultiResponseCallback{
+    
     
     /**
-     * Get instance of this {@link SMTPResponseCallback} implemenation
+     * {@link LMTPPostDataResponseCallback} instance to use
      */
-    public final static SMTPResponseCallback INSTANCE = new PostDataResponseCallback();
+    public final static SMTPResponseCallback INSTANCE = new LMTPPostDataResponseCallback();
+
+    private final static String DATA_PROCESSING = "DATA_PROCESSING";
+    private final static String SUCCESSFUL_RECPIENTS = "SUCCESSFUL_RECIPIENTS";
     
-    
-    private PostDataResponseCallback() {
+    private LMTPPostDataResponseCallback() {
         
     }
     
     @SuppressWarnings("unchecked")
     @Override
     public void onResponse(SMTPClientSession session, SMTPResponse response) throws SMTPException {
-
-        List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
         
-        int code = response.getCode();
-
-        if (code < 400) {
-            
-            // Set the final status for successful recipients
+        List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
+        if (!session.getAttributes().containsKey(DATA_PROCESSING)) {
+            session.getAttributes().put(DATA_PROCESSING, true);
+            List<DeliveryRecipientStatusImpl> successful = new ArrayList<DeliveryRecipientStatusImpl>();
             Iterator<DeliveryRecipientStatus> status = statusList.iterator();
             while(status.hasNext()) {
                 DeliveryRecipientStatus s = status.next();
                 if (s.getStatus() == DeliveryStatus.Ok) {
-                    ((DeliveryRecipientStatusImpl)s).setResponse(response);
+                    successful.add((DeliveryRecipientStatusImpl)s);
                 }
             }
-        } else {
-            Iterator<DeliveryRecipientStatus> status = statusList.iterator();
-            while(status.hasNext()) {
-                ((DeliveryRecipientStatusImpl)status.next()).setResponse(response);
-            }
-
-        }    
-        setDeliveryStatus(session);
-
+            session.getAttributes().put(SUCCESSFUL_RECPIENTS, successful.iterator());
+            
+        }
+        DeliveryRecipientStatusImpl status = ((Iterator<DeliveryRecipientStatusImpl>)session.getAttributes().get(SUCCESSFUL_RECPIENTS)).next();
+        status.setResponse(response);
+        
+        if (isDone(session)) {
+            setDeliveryStatus(session);
+        }
     }
 
-    
+    @SuppressWarnings("unchecked")
+    @Override
+    public boolean isDone(SMTPClientSession session) {
+        return !((Iterator<DeliveryRecipientStatusImpl>)session.getAttributes().get(SUCCESSFUL_RECPIENTS)).hasNext();
+    }
+
 }

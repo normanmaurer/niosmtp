@@ -21,6 +21,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import me.normanmaurer.niosmtp.MessageInput;
+import me.normanmaurer.niosmtp.SMTPException;
+import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
@@ -61,12 +64,17 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
         }
         
         future.setDeliveryStatus(resultList);
-        session.send(SMTPRequestImpl.quit(), SMTPResponseCallback.EMPTY);
+        try {
+            next(session, SMTPRequestImpl.quit());
+        } catch (SMTPException e) {
+            // ignore on close
+        }
+
         session.close();
     }
     
     @SuppressWarnings("unchecked")
-    protected void setDeliveryStatusForAll(SMTPClientSession session, SMTPResponse response) {
+    protected void setDeliveryStatusForAll(SMTPClientSession session, SMTPResponse response) throws SMTPException {
         Iterator<String> recipients = (Iterator<String>) session.getAttributes().get(RECIPIENTS_KEY);
         List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
 
@@ -103,16 +111,17 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
      * Use the SMTP <code>PIPELINING</code> extension to send the commands to the remote SMTP Server
      * 
      * @param session
+     * @throws SMTPException 
      */
-    protected void pipelining(SMTPClientSession session) {
+    protected void pipelining(SMTPClientSession session) throws SMTPException {
         SMTPDeliveryTransaction transaction = (SMTPDeliveryTransaction) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY);
         
         session.getAttributes().put(PIPELINING_ACTIVE_KEY, true);
-        session.send(SMTPRequestImpl.mail(transaction.getSender()), MailResponseCallback.INSTANCE);
+        next(session, SMTPRequestImpl.mail(transaction.getSender()));
         for (String rcpt: transaction.getRecipients()) {
-            session.send(SMTPRequestImpl.rcpt(rcpt), RcptResponseCallback.INSTANCE);
+            next(session, SMTPRequestImpl.rcpt(rcpt));
         }
-        session.send(SMTPRequestImpl.data(), DataResponseCallback.INSTANCE);
+        next(session, SMTPRequestImpl.data());
     }
     
     
@@ -120,9 +129,10 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
      * Set the DeliveryStatus and notify the {@link SMTPDeliveryFuture} if needed
      * 
      * @param session
+     * @throws SMTPException 
      */
     @SuppressWarnings("unchecked")
-    protected void setDeliveryStatus(SMTPClientSession session) {
+    protected void setDeliveryStatus(SMTPClientSession session) throws SMTPException {
         SMTPDeliveryFutureImpl future = (SMTPDeliveryFutureImpl) session.getAttributes().get(FUTURE_KEY);
         List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
         List<DeliveryResult> resultList = ((List<DeliveryResult>) session.getAttributes().get(DELIVERY_RESULT_LIST_KEY));       
@@ -133,8 +143,9 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
         if (!transactions.hasNext()) {
             future.setDeliveryStatus(resultList);
 
-            session.send(SMTPRequestImpl.quit(), SMTPResponseCallback.EMPTY);
+            next(session, SMTPRequestImpl.quit());
             session.close();
+
 
         } else {
             initSession(session);
@@ -143,9 +154,19 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
             } else {
                 String sender = ((SMTPDeliveryTransaction) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
 
-                session.send(SMTPRequestImpl.mail(sender), MailResponseCallback.INSTANCE);
+                next(session, SMTPRequestImpl.mail(sender));
             }
         }
 
+    }
+    
+    protected final void next(SMTPClientSession session, SMTPRequest request) throws SMTPException {
+        SMTPResponseCallback callback = ((SMTPResponseCallbackFactory) session.getAttributes().get(SMTP_RESPONSE_CALLBACK_FACTORY)).getCallback(session, request);
+        session.send(request, callback);
+    }
+    
+    protected final void next(SMTPClientSession session, MessageInput request) throws SMTPException {
+        SMTPResponseCallback callback = ((SMTPResponseCallbackFactory) session.getAttributes().get(SMTP_RESPONSE_CALLBACK_FACTORY)).getCallback(session, request);
+        session.send(request, callback);
     }
 }

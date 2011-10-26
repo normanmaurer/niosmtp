@@ -16,6 +16,7 @@
 */
 package me.normanmaurer.niosmtp.delivery.callback;
 
+import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
@@ -48,7 +49,7 @@ public class AuthPlainResponseCallback extends AbstractAuthResponseCallback{
     }
     
     @Override
-    public void onResponse(SMTPClientSession session, SMTPResponse response) {
+    public void onResponse(SMTPClientSession session, SMTPResponse response) throws SMTPException {
         if (session.getAttributes().remove(PROCESS_AUTH) != null) {
             if (response.getCode() == 235) {
                 String mail = ((SMTPDeliveryTransaction)session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
@@ -62,7 +63,7 @@ public class AuthPlainResponseCallback extends AbstractAuthResponseCallback{
                 if (supportsPipelining && ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() != PipeliningMode.NO) {
                     pipelining(session);
                 } else {
-                    session.send(SMTPRequestImpl.mail(mail), MailResponseCallback.INSTANCE);
+                    next(session, SMTPRequestImpl.mail(mail));
                 }
             } else {
                 setDeliveryStatusForAll(session, response);

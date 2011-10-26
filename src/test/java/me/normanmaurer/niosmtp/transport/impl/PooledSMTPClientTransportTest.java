@@ -88,7 +88,7 @@ public class PooledSMTPClientTransportTest {
         }
         
         @Override
-        public void onResponse(SMTPClientSession session, SMTPResponse response) {
+        public void onResponse(SMTPClientSession session, SMTPResponse response) throws Exception {
             wrapped.onResponse(session,response);
             session.close();
         }

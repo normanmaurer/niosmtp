@@ -19,6 +19,7 @@ package me.normanmaurer.niosmtp.delivery;
 import java.util.Iterator;
 import java.util.List;
 
+import me.normanmaurer.niosmtp.delivery.callback.SMTPResponseCallbackFactory;
 import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryFutureImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
@@ -75,4 +76,8 @@ public interface SMTPDeliverySessionConstants {
     public final static String CURRENT_SMTP_TRANSACTION_KEY = "cur_smtp_transaction";
 
 
+    /**
+     * Key under which the {@link SMTPResponseCallbackFactory} will be stored
+     */
+    public final static String SMTP_RESPONSE_CALLBACK_FACTORY ="smtp_response_callback_factory";
 }

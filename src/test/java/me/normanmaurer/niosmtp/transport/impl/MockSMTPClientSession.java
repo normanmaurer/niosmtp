@@ -47,13 +47,21 @@ public class MockSMTPClientSession extends AbstractSMTPClientSession {
     
     @Override
     public void send(MessageInput request, SMTPResponseCallback callback) {
-        callback.onResponse(this, new SMTPResponseImpl(250));
+        try {
+            callback.onResponse(this, new SMTPResponseImpl(250));
+        } catch (Exception e) {
+            callback.onException(this, e);
+        }
         
     }
     
     @Override
     public void send(SMTPRequest request, SMTPResponseCallback callback) {
-        callback.onResponse(this, new SMTPResponseImpl(250));
+        try {
+            callback.onResponse(this, new SMTPResponseImpl(250));
+        } catch (Exception e) {
+            callback.onException(this, e);
+        }
     }
     
     @Override

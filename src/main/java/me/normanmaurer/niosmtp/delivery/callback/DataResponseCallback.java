@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import me.normanmaurer.niosmtp.MessageInput;
+import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
@@ -45,12 +46,12 @@ public class DataResponseCallback extends AbstractPipelineResponseCallback {
      */
     public final static SMTPResponseCallback INSTANCE = new DataResponseCallback();
     
-    private DataResponseCallback() {
+    protected DataResponseCallback() {
     }
     
     @SuppressWarnings("unchecked")
     @Override
-    public void onResponseInternal(SMTPClientSession session, SMTPResponse response) {
+    public void onResponseInternal(SMTPClientSession session, SMTPResponse response) throws SMTPException {
 
         SMTPDeliveryFutureImpl future = (SMTPDeliveryFutureImpl) session.getAttributes().get(FUTURE_KEY);
         List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
@@ -60,7 +61,7 @@ public class DataResponseCallback extends AbstractPipelineResponseCallback {
         int code = response.getCode();
 
         if (code < 400) {
-            session.send(msg, PostDataResponseCallback.INSTANCE);
+            next(session, msg);
         } else {
             if (!pipeliningActive || !future.isDone()) {
                 Iterator<DeliveryRecipientStatus> status = statusList.iterator();

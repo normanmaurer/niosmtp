@@ -18,6 +18,7 @@ package me.normanmaurer.niosmtp.delivery.callback;
 
 import java.util.Iterator;
 
+import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
@@ -49,7 +50,7 @@ public class MailResponseCallback extends AbstractPipelineResponseCallback {
 
     @SuppressWarnings("unchecked")
     @Override
-    protected void onResponseInternal(SMTPClientSession session, SMTPResponse response) {
+    protected void onResponseInternal(SMTPClientSession session, SMTPResponse response) throws SMTPException {
         Iterator<String> recipients = (Iterator<String>) session.getAttributes().get(RECIPIENTS_KEY);
 
         int code = response.getCode();
@@ -64,7 +65,7 @@ public class MailResponseCallback extends AbstractPipelineResponseCallback {
             // only write the request if the SMTPServer does not support PIPELINING and we don't want to use it
             // as otherwise we already sent this 
             if (!session.getAttributes().containsKey(PIPELINING_ACTIVE_KEY) || ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() == PipeliningMode.NO) {
-                session.send(SMTPRequestImpl.rcpt(rcpt), RcptResponseCallback.INSTANCE);
+                next(session, SMTPRequestImpl.rcpt(rcpt));
 
             }
         }

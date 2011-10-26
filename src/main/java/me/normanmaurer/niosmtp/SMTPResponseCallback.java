@@ -49,8 +49,9 @@ public interface SMTPResponseCallback {
      * 
      * @param session
      * @param response
+     * @throws exception {@link SMTPException}
      */
-    void onResponse(SMTPClientSession session, SMTPResponse response);
+    void onResponse(SMTPClientSession session, SMTPResponse response) throws Exception;
     
     /**
      * Method which will get executed if an {@link Exception} was thrown. Be Aware that the {@link SMTPClientSession} can be null if 

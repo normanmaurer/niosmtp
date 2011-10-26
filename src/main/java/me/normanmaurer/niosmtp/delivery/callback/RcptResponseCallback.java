@@ -19,6 +19,7 @@ package me.normanmaurer.niosmtp.delivery.callback;
 import java.util.Iterator;
 import java.util.List;
 
+import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
@@ -55,7 +56,7 @@ public class RcptResponseCallback extends AbstractPipelineResponseCallback {
     
     @SuppressWarnings("unchecked")
     @Override
-    protected void onResponseInternal(SMTPClientSession session, SMTPResponse response) {
+    protected void onResponseInternal(SMTPClientSession session, SMTPResponse response) throws SMTPException {
 
         Iterator<String> recipients = (Iterator<String>) session.getAttributes().get(RECIPIENTS_KEY);
         List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
@@ -74,7 +75,7 @@ public class RcptResponseCallback extends AbstractPipelineResponseCallback {
             // PIPELINING and we don't want to use it
             // as otherwise we already sent this
             if (!pipeliningActive || ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() == PipeliningMode.NO) {
-                session.send(SMTPRequestImpl.rcpt(rcpt), RcptResponseCallback.INSTANCE);
+                next(session, SMTPRequestImpl.rcpt(rcpt));
             }
         } else {
 
@@ -90,7 +91,7 @@ public class RcptResponseCallback extends AbstractPipelineResponseCallback {
                 // PIPELINING and we don't want to use it
                 // as otherwise we already sent this
                 if (!pipeliningActive || ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() == PipeliningMode.NO) {
-                    session.send(SMTPRequestImpl.data(), DataResponseCallback.INSTANCE);
+                    next(session, SMTPRequestImpl.data());
                 }
 
             } else {

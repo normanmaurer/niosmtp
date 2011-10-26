@@ -16,6 +16,7 @@
 */
 package me.normanmaurer.niosmtp.delivery.callback;
 
+import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
@@ -48,7 +49,7 @@ public class StartTlsResponseCallback extends AbstractResponseCallback implement
     }
     
     @Override
-    public void onResponse(SMTPClientSession session, SMTPResponse response) {
+    public void onResponse(SMTPClientSession session, SMTPResponse response) throws SMTPException {
         String mail = ((SMTPDeliveryTransaction) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
 
         
@@ -63,7 +64,7 @@ public class StartTlsResponseCallback extends AbstractResponseCallback implement
             if (session.getSupportedExtensions().contains(PIPELINING_EXTENSION) && ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() != PipeliningMode.NO) {
                 pipelining(session);
             } else {
-                session.send(SMTPRequestImpl.mail(mail), MailResponseCallback.INSTANCE);
+                next(session, SMTPRequestImpl.mail(mail));
             }
 
         } else {

@@ -24,6 +24,16 @@ package me.normanmaurer.niosmtp;
  */
 public interface SMTPRequest {
     
+    public final static String STARTTLS_COMMAND = "STARTTLS";
+    public final static String EHLO_COMMAND = "EHLO";
+    public final static String MAIL_COMMAND = "MAIL FROM:";
+    public final static String RCPT_COMMAND = "RCPT TO:";
+    public final static String AUTH_COMMAND = "AUTH";
+    public final static String AUTH_PLAIN_ARGUMENT = "PLAIN";
+    public final static String AUTH_LOGIN_ARGUMENT = "LOGIN";
+    public final static String DATA_COMMAND = "DATA";
+    public final static String QUIT_COMMAND = "QUIT";
+
     public final static char SEPERATOR = ' ';
     
     /**

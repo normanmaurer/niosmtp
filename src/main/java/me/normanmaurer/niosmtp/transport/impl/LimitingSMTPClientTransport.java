@@ -140,7 +140,7 @@ public class LimitingSMTPClientTransport implements SMTPClientTransport {
         transport.connect(remote, config, new SMTPResponseCallback() {
             
             @Override
-            public void onResponse(SMTPClientSession session, SMTPResponse response) {
+            public void onResponse(SMTPClientSession session, SMTPResponse response) throws Exception {
                 session.addCloseListener(closeListener);
                 callback.onResponse(session, response);
             }

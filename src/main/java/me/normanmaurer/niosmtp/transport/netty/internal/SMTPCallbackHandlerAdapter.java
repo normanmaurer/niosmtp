@@ -16,6 +16,7 @@
 */
 package me.normanmaurer.niosmtp.transport.netty.internal;
 
+import me.normanmaurer.niosmtp.MultiResponseCallback;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
@@ -47,9 +48,18 @@ class SMTPCallbackHandlerAdapter extends SimpleChannelUpstreamHandler {
         Object msg = e.getMessage();
         if (msg instanceof SMTPResponse) {
                         
+
             callback.onResponse(session, (SMTPResponse) msg);
-            // Remove this handler once we handed over the response to the callback
-            ctx.getChannel().getPipeline().remove(this);
+            
+            boolean remove = true;
+            if (callback instanceof MultiResponseCallback && !((MultiResponseCallback) callback).isDone(session)) {
+                remove = false;
+            }
+            if (remove) {
+
+                // Remove this handler once we handed over the response to the callback
+                ctx.getChannel().getPipeline().remove(this);
+            }
             
         } else {
             super.messageReceived(ctx, e);
@@ -58,12 +68,9 @@ class SMTPCallbackHandlerAdapter extends SimpleChannelUpstreamHandler {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
-        if (ctx.getAttachment() == null) {
-            callback.onException(session, e.getCause());
-            // Remove this handler once we handed over the exception to the callback
-            ctx.getChannel().getPipeline().remove(this);
-        } else {
-            super.exceptionCaught(ctx, e);
-        }
+        callback.onException(session, e.getCause());
+        // Remove this handler once we handed over the exception to the callback
+        ctx.getChannel().getPipeline().remove(this);
+
     }
 }

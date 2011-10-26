@@ -16,6 +16,7 @@
 */
 package me.normanmaurer.niosmtp.delivery.callback;
 
+import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryFutureImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
@@ -29,7 +30,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 public abstract class AbstractPipelineResponseCallback extends AbstractResponseCallback{
 
     @Override
-    public final void onResponse(SMTPClientSession session, SMTPResponse response) {
+    public final void onResponse(SMTPClientSession session, SMTPResponse response) throws SMTPException {
         if (session.getAttributes().containsKey(PIPELINING_ACTIVE_KEY)) {
             SMTPDeliveryFutureImpl future = (SMTPDeliveryFutureImpl) session.getAttributes().get(FUTURE_KEY);
 
@@ -42,5 +43,5 @@ public abstract class AbstractPipelineResponseCallback extends AbstractResponseC
         }
     }
 
-    protected abstract void onResponseInternal(SMTPClientSession session, SMTPResponse response);
+    protected abstract void onResponseInternal(SMTPClientSession session, SMTPResponse response) throws SMTPException;
 }

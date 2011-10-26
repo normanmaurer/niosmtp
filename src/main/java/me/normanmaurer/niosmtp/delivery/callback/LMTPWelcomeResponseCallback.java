@@ -17,43 +17,38 @@
 package me.normanmaurer.niosmtp.delivery.callback;
 
 import me.normanmaurer.niosmtp.SMTPException;
-import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
-import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
+import me.normanmaurer.niosmtp.core.LMTPRequest;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
-
 /**
- * {@link AbstractResponseCallback} implementation which will handle the <code>WELCOME</code> {@link SMTPResponse} which is triggered
- * after the connection is established to the SMTP Server
- * 
- * It will write the next {@link SMTPRequest} to the {@link SMTPClientSession} with the right {@link SMTPResponseCallback} added.
- * 
+ * {@link AbstractResponseCallback} which will be used after the welcome {@link SMTPResponse} was sent from the LMTP Server
  * 
  * @author Norman Maurer
  *
  */
-public class WelcomeResponseCallback extends AbstractResponseCallback {
+public class LMTPWelcomeResponseCallback extends AbstractResponseCallback {
 
     /**
-     * Get instance of this {@link SMTPResponseCallback} implemenation
+     * Get instance of this {@link SMTPResponseCallback} implementation
      */
-    public final static WelcomeResponseCallback INSTANCE = new WelcomeResponseCallback();
+    public final static LMTPWelcomeResponseCallback INSTANCE = new LMTPWelcomeResponseCallback();
     
-    private WelcomeResponseCallback() {
+    private LMTPWelcomeResponseCallback() {
         
     }
     
     @Override
     public void onResponse(SMTPClientSession session, SMTPResponse response) throws SMTPException {
         int code = response.getCode();
-        if (code < 400) {   
-            next(session, SMTPRequestImpl.ehlo(((SMTPDeliveryAgentConfig)session.getConfig()).getHeloName()));
+        if (code < 400) {          
+            next(session, LMTPRequest.lhlo(((SMTPDeliveryAgentConfig) session.getConfig()).getHeloName()));
         } else {
             setDeliveryStatusForAll(session, response);
-        }
+        }            
     }
     
+
 }

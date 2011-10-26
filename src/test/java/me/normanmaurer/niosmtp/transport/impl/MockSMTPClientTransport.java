@@ -21,6 +21,7 @@ import java.net.InetSocketAddress;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.core.SMTPResponseImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
+import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 
@@ -39,6 +40,11 @@ public class MockSMTPClientTransport implements SMTPClientTransport {
     
     @Override
     public void connect(InetSocketAddress remote, SMTPClientConfig config, SMTPResponseCallback callback) {
-        callback.onResponse(new MockSMTPClientSession(config), new SMTPResponseImpl(220));
+        SMTPClientSession session = new MockSMTPClientSession(config);
+        try {
+            callback.onResponse(session, new SMTPResponseImpl(220));
+        } catch (Exception e) {
+            callback.onException(session, e);
+        }
     }
 }
