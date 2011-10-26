@@ -17,8 +17,6 @@
 package me.normanmaurer.niosmtp.delivery.callback;
 
 
-import org.apache.james.protocols.smtp.SMTPSession;
-
 import me.normanmaurer.niosmtp.MessageInput;
 import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPRequest;
