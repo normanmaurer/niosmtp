@@ -33,7 +33,7 @@ import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryFuture;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliverySessionConstants;
-import me.normanmaurer.niosmtp.delivery.SMTPDeliveryTransaction;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliveryEnvelope;
 import me.normanmaurer.niosmtp.delivery.impl.DeliveryRecipientStatusImpl;
 import me.normanmaurer.niosmtp.delivery.impl.DeliveryResultImpl;
 import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryFutureImpl;
@@ -54,7 +54,7 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
         SMTPDeliveryFutureImpl future = (SMTPDeliveryFutureImpl) session.getAttributes().get(FUTURE_KEY);
         
         List<DeliveryResult> resultList = ((List<DeliveryResult>) session.getAttributes().get(DELIVERY_RESULT_LIST_KEY));
-        Iterator<SMTPDeliveryTransaction> transactions = ((Iterator<SMTPDeliveryTransaction>) session.getAttributes().get(SMTP_TRANSACTIONS_KEY));
+        Iterator<SMTPDeliveryEnvelope> transactions = ((Iterator<SMTPDeliveryEnvelope>) session.getAttributes().get(SMTP_TRANSACTIONS_KEY));
         
         resultList.add(DeliveryResultImpl.create(t));
         while(transactions.hasNext()) {
@@ -93,8 +93,8 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
     @SuppressWarnings("unchecked")
     private void initSession(SMTPClientSession session) {
         Map<String, Object> attrs = session.getAttributes();
-        Iterator<SMTPDeliveryTransaction> transactionList = ((Iterator<SMTPDeliveryTransaction>) session.getAttributes().get(SMTP_TRANSACTIONS_KEY));
-        SMTPDeliveryTransaction transaction =  transactionList.next();
+        Iterator<SMTPDeliveryEnvelope> transactionList = ((Iterator<SMTPDeliveryEnvelope>) session.getAttributes().get(SMTP_TRANSACTIONS_KEY));
+        SMTPDeliveryEnvelope transaction =  transactionList.next();
         
         attrs.put(CURRENT_SMTP_TRANSACTION_KEY,transaction);
         attrs.put(RECIPIENTS_KEY, transaction.getRecipients().iterator());
@@ -114,7 +114,7 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
      * @throws SMTPException 
      */
     protected void pipelining(SMTPClientSession session) throws SMTPException {
-        SMTPDeliveryTransaction transaction = (SMTPDeliveryTransaction) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY);
+        SMTPDeliveryEnvelope transaction = (SMTPDeliveryEnvelope) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY);
         
         session.getAttributes().put(PIPELINING_ACTIVE_KEY, true);
         next(session, SMTPRequestImpl.mail(transaction.getSender()));
@@ -136,7 +136,7 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
         SMTPDeliveryFutureImpl future = (SMTPDeliveryFutureImpl) session.getAttributes().get(FUTURE_KEY);
         List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
         List<DeliveryResult> resultList = ((List<DeliveryResult>) session.getAttributes().get(DELIVERY_RESULT_LIST_KEY));       
-        Iterator<SMTPDeliveryTransaction> transactions = ((Iterator<SMTPDeliveryTransaction>) session.getAttributes().get(SMTP_TRANSACTIONS_KEY));
+        Iterator<SMTPDeliveryEnvelope> transactions = ((Iterator<SMTPDeliveryEnvelope>) session.getAttributes().get(SMTP_TRANSACTIONS_KEY));
 
         resultList.add(new DeliveryResultImpl(statusList));
         
@@ -152,7 +152,7 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
             if (session.getSupportedExtensions().contains(PIPELINING_EXTENSION) && ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() != PipeliningMode.NO) {
                 pipelining(session);
             } else {
-                String sender = ((SMTPDeliveryTransaction) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
+                String sender = ((SMTPDeliveryEnvelope) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
 
                 next(session, SMTPRequestImpl.mail(sender));
             }

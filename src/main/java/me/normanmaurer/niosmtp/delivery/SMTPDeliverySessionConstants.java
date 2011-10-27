@@ -66,12 +66,12 @@ public interface SMTPDeliverySessionConstants {
     
     
     /**
-     * Key under which the {@link SMTPDeliveryTransaction}'s are stored as a {@link Iterator}
+     * Key under which the {@link SMTPDeliveryEnvelope}'s are stored as a {@link Iterator}
      */
     public final static String SMTP_TRANSACTIONS_KEY = "smtp_transactions";
     
     /**
-     * Key under which the current {@link SMTPDeliveryTransaction} is stored
+     * Key under which the current {@link SMTPDeliveryEnvelope} is stored
      */
     public final static String CURRENT_SMTP_TRANSACTION_KEY = "cur_smtp_transaction";
 

@@ -20,25 +20,25 @@ import java.util.Collection;
 import java.util.Collections;
 
 import me.normanmaurer.niosmtp.MessageInput;
-import me.normanmaurer.niosmtp.delivery.SMTPDeliveryTransaction;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliveryEnvelope;
 
 /**
- * Simple pojo implementation of a {@link SMTPDeliveryTransaction}
+ * Simple pojo implementation of a {@link SMTPDeliveryEnvelope}
  * 
  * @author Norman Maurer
  *
  */
-public class SMTPDeliveryTransactionImpl implements SMTPDeliveryTransaction{
+public class SMTPDeliveryEnvelopeImpl implements SMTPDeliveryEnvelope{
 
     private final Collection<String> recipients;
     private final String sender;
     private final MessageInput message;
 
-    public SMTPDeliveryTransactionImpl(final String sender, final Collection<String> recipients, final MessageInput message) {
+    public SMTPDeliveryEnvelopeImpl(final String sender, final Collection<String> recipients, final MessageInput message) {
         this(sender, recipients, message, true);
     }
     
-    private SMTPDeliveryTransactionImpl(final String sender, final Collection<String> recipients, final MessageInput message, boolean wrapRecipients) {
+    private SMTPDeliveryEnvelopeImpl(final String sender, final Collection<String> recipients, final MessageInput message, boolean wrapRecipients) {
         this.sender = sender;
         if (wrapRecipients) {
             this.recipients = Collections.unmodifiableCollection(recipients);
@@ -54,12 +54,12 @@ public class SMTPDeliveryTransactionImpl implements SMTPDeliveryTransaction{
     
     
     /**
-     * Construct a {@link SMTPDeliveryTransaction} which will use a null-sender
+     * Construct a {@link SMTPDeliveryEnvelope} which will use a null-sender
      * 
      * @param recipients
      * @param message
      */
-    public SMTPDeliveryTransactionImpl( final Collection<String> recipients, final MessageInput message) {
+    public SMTPDeliveryEnvelopeImpl( final Collection<String> recipients, final MessageInput message) {
         this(null, recipients, message);
     }
     
@@ -82,22 +82,22 @@ public class SMTPDeliveryTransactionImpl implements SMTPDeliveryTransaction{
   
     
     /**
-     * Create an array of {@link SMTPDeliveryTransaction}'s which use the same sender and recipients but different {@link MessageInput}'s
+     * Create an array of {@link SMTPDeliveryEnvelope}'s which use the same sender and recipients but different {@link MessageInput}'s
      * 
      * @param sender
      * @param recipients
      * @param messages
      * @return transactions
      */
-    public static SMTPDeliveryTransaction[] create(final String sender, final Collection<String> recipients, final MessageInput... messages) {
+    public static SMTPDeliveryEnvelope[] create(final String sender, final Collection<String> recipients, final MessageInput... messages) {
         if (messages == null || messages.length <1 ){
             throw new IllegalArgumentException("At least one MessageInput must be given");
         }
         
         Collection<String> rcpts = Collections.unmodifiableCollection(recipients);
-        SMTPDeliveryTransaction[] transactions = new SMTPDeliveryTransaction[messages.length];
+        SMTPDeliveryEnvelope[] transactions = new SMTPDeliveryEnvelope[messages.length];
         for (int i = 0; i < transactions.length; i++) {
-            transactions[i] = new SMTPDeliveryTransactionImpl(sender, rcpts , messages[i], false);
+            transactions[i] = new SMTPDeliveryEnvelopeImpl(sender, rcpts , messages[i], false);
         }
         return transactions;
     }

@@ -21,12 +21,12 @@ import java.util.Collection;
 import me.normanmaurer.niosmtp.MessageInput;
 
 /**
- * A {@link SMTPDeliveryTransaction} is a complete transaction which is used to deliver an email per SMTP. 
+ * A {@link SMTPDeliveryEnvelope} is a complete transaction which is used to deliver an email per SMTP. 
  * 
  * @author Norman Maurer
  *
  */
-public interface SMTPDeliveryTransaction {
+public interface SMTPDeliveryEnvelope {
 
     /**
      * Return the sender which should be used for the <code>MAIL FROM</code>. This may return <code>null</code> if a null-sender should be used

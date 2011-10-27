@@ -55,7 +55,7 @@ public class SMTPDeliveryAgent implements SMTPClientConstants, SMTPDeliverySessi
 
 
     /**
-     * Deliver the given {@link SMTPDeliveryTransaction}'s 
+     * Deliver the given {@link SMTPDeliveryEnvelope}'s 
      * 
      * The implementation may choose to do the deliver in an async fashion. 
      * 
@@ -64,7 +64,7 @@ public class SMTPDeliveryAgent implements SMTPClientConstants, SMTPDeliverySessi
      * @param transation
      * @return future
      */
-    public SMTPDeliveryFuture deliver(InetSocketAddress host, final SMTPDeliveryAgentConfig config, final SMTPDeliveryTransaction... transactions) {
+    public SMTPDeliveryFuture deliver(InetSocketAddress host, final SMTPDeliveryAgentConfig config, final SMTPDeliveryEnvelope... transactions) {
         if (transactions == null || transactions.length == 0) {
             throw new IllegalArgumentException("SMTPTransaction parameter must be not null and the length must be > 0");
         }
@@ -94,9 +94,9 @@ public class SMTPDeliveryAgent implements SMTPClientConstants, SMTPDeliverySessi
             private void initSession(SMTPClientSession session) {
                 Map<String, Object> attrs = session.getAttributes();
                 
-                Iterator<SMTPDeliveryTransaction> transactionIt = new ArrayIterator<SMTPDeliveryTransaction>(transactions);
+                Iterator<SMTPDeliveryEnvelope> transactionIt = new ArrayIterator<SMTPDeliveryEnvelope>(transactions);
                 attrs.put(SMTP_TRANSACTIONS_KEY, transactionIt);
-                SMTPDeliveryTransaction transaction = transactionIt.next();
+                SMTPDeliveryEnvelope transaction = transactionIt.next();
                 attrs.put(CURRENT_SMTP_TRANSACTION_KEY, transaction);
                 attrs.put(RECIPIENTS_KEY, transaction.getRecipients().iterator());
 
