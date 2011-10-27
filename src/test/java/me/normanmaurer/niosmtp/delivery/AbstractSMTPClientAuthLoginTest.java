@@ -86,7 +86,7 @@ public abstract class AbstractSMTPClientAuthLoginTest extends AbstractSMTPClient
 
        
         SMTPClientTransport transport = createSMTPClient();
-        SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
+        SMTPDeliveryAgent c = createAgent(transport);
 
         try {
             SMTPDeliveryAgentConfigImpl conf = createConfig();
@@ -114,7 +114,7 @@ public abstract class AbstractSMTPClientAuthLoginTest extends AbstractSMTPClient
     }
     
     
-    protected class TestAuthHook implements AuthHook {
+    public class TestAuthHook implements AuthHook {
         
         @Override
         public HookResult doAuth(SMTPSession session, String username, String password) {

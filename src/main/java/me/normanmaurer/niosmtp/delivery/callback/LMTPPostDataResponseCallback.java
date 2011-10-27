@@ -72,6 +72,8 @@ public class LMTPPostDataResponseCallback extends AbstractResponseCallback imple
         status.setResponse(response);
         
         if (isDone(session)) {
+            session.getAttributes().remove(SUCCESSFUL_RECPIENTS);
+            session.getAttributes().remove(DATA_PROCESSING);
             setDeliveryStatus(session);
         }
     }
@@ -79,7 +81,8 @@ public class LMTPPostDataResponseCallback extends AbstractResponseCallback imple
     @SuppressWarnings("unchecked")
     @Override
     public boolean isDone(SMTPClientSession session) {
-        return !((Iterator<DeliveryRecipientStatusImpl>)session.getAttributes().get(SUCCESSFUL_RECPIENTS)).hasNext();
+        Iterator<DeliveryRecipientStatusImpl> statusIt = (Iterator<DeliveryRecipientStatusImpl>)session.getAttributes().get(SUCCESSFUL_RECPIENTS);
+        return (statusIt == null || !statusIt.hasNext());
     }
 
 }

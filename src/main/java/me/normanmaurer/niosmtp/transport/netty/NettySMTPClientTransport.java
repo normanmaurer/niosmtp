@@ -33,6 +33,8 @@ import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.ClientSocketChannelFactory;
+import org.jboss.netty.logging.InternalLoggerFactory;
+import org.jboss.netty.logging.Slf4JLoggerFactory;
 import org.jboss.netty.util.HashedWheelTimer;
 import org.jboss.netty.util.Timer;
 
@@ -43,7 +45,10 @@ import org.jboss.netty.util.Timer;
  *
  */
 class NettySMTPClientTransport implements SMTPClientTransport{
-
+    // niosmtp uses slf4j so also configure it for netty
+    static {
+        InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory());
+    }
     private final SSLContext context;
     private final SMTPDeliveryMode mode;
     private final Timer timer = new HashedWheelTimer();

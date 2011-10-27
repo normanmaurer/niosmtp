@@ -60,7 +60,6 @@ public abstract class AbstractSMTPClientTest {
         SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain();
         chain.addHook(hook);
         return new NettyServer(new SMTPProtocol(chain, config));
-        
     }
     protected abstract SMTPClientTransportFactory createFactory();
     
@@ -68,10 +67,14 @@ public abstract class AbstractSMTPClientTest {
         return createFactory().createPlain();
     }
     
+    protected SMTPDeliveryAgent createAgent(SMTPClientTransport transport) {
+        return new SMTPDeliveryAgent(transport);
+    }
+    
     protected SMTPDeliveryAgentConfigImpl createConfig() {
         SMTPDeliveryAgentConfigImpl conf = new SMTPDeliveryAgentConfigImpl();
-        conf.setConnectionTimeout(4);
-        conf.setResponseTimeout(5);
+        conf.setConnectionTimeout(2);
+        conf.setResponseTimeout(2);
         return conf;
     }
     
@@ -104,7 +107,7 @@ public abstract class AbstractSMTPClientTest {
 
        
         SMTPClientTransport transport = createSMTPClient();
-        SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
+        SMTPDeliveryAgent c = createAgent(transport);
 
         try {
             SMTPDeliveryAgentConfigImpl conf = createConfig();
@@ -172,7 +175,7 @@ public abstract class AbstractSMTPClientTest {
        
         
         SMTPClientTransport transport = createSMTPClient();
-        SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
+        SMTPDeliveryAgent c = createAgent(transport);
 
 
         try {
@@ -242,7 +245,7 @@ public abstract class AbstractSMTPClientTest {
        
         
         SMTPClientTransport transport = createSMTPClient();
-        SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
+        SMTPDeliveryAgent c = createAgent(transport);
 
         try {
             SMTPDeliveryAgentConfigImpl conf = createConfig();
@@ -308,7 +311,7 @@ public abstract class AbstractSMTPClientTest {
        
         
         SMTPClientTransport transport = createSMTPClient();
-        SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
+        SMTPDeliveryAgent c = createAgent(transport);
 
         try {
             SMTPDeliveryAgentConfigImpl conf = createConfig();
@@ -378,7 +381,7 @@ public abstract class AbstractSMTPClientTest {
        
         
         SMTPClientTransport transport = createSMTPClient();
-        SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
+        SMTPDeliveryAgent c = createAgent(transport);
 
         try {
             SMTPDeliveryAgentConfigImpl conf = createConfig();
@@ -447,7 +450,7 @@ public abstract class AbstractSMTPClientTest {
        
         
         SMTPClientTransport transport = createSMTPClient();
-        SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
+        SMTPDeliveryAgent c = createAgent(transport);
 
         try {
             SMTPDeliveryAgentConfigImpl conf = createConfig();
@@ -531,7 +534,7 @@ public abstract class AbstractSMTPClientTest {
     private void checkConnectionRefused(AssertCheck check) throws Exception {
         
         SMTPClientTransport transport = createSMTPClient();
-        SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
+        SMTPDeliveryAgent c = createAgent(transport);
 
         SMTPDeliveryAgentConfigImpl conf = createConfig();
 

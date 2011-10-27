@@ -16,6 +16,7 @@
 */
 package me.normanmaurer.niosmtp.transport.netty.internal;
 
+import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.core.SMTPResponseImpl;
 import me.normanmaurer.niosmtp.core.StringUtils;
@@ -90,6 +91,9 @@ class SMTPResponseDecoder extends OneToOneDecoder implements SMTPClientConstants
                 if (line.readable()) {
                     response.addLine(line.toString(CHARSET));
                 }
+            } else {
+                // throw exception if the response does not have a valid format
+                throw new SMTPException("Unable to parse SMTPResponse: " + line.toString(CHARSET));
             }
 
             return null;

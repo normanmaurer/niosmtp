@@ -31,7 +31,10 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.net.ssl.SSLContext;
 
+
+import org.apache.james.protocols.api.handler.WiringException;
 import org.apache.james.protocols.impl.NettyServer;
 import org.apache.james.protocols.smtp.SMTPConfigurationImpl;
 import org.apache.james.protocols.smtp.SMTPProtocol;
@@ -66,6 +69,68 @@ public abstract class AbstractSMTPClientUnsupportedExtensionTest {
 
     protected abstract SMTPClientTransportFactory createFactory();
     
+    protected NettyServer create() throws WiringException {
+        SMTPConfigurationImpl config = new SMTPConfigurationImpl();
+        SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain() {
+
+            @Override
+            protected List<Object> initDefaultHandlers() {
+                List<Object> defaultHandlers =  super.initDefaultHandlers();
+                for (int i = 0 ; i < defaultHandlers.size(); i++) {
+                    Object h = defaultHandlers.get(i);
+                    if (h instanceof EhloCmdHandler) {
+                        defaultHandlers.remove(h);
+                        defaultHandlers.add(new EhloCmdHandler() {
+
+                            @SuppressWarnings("unchecked")
+                            @Override
+                            public List<String> getImplementedEsmtpFeatures(SMTPSession session) {
+                                return Collections.EMPTY_LIST;
+                            }
+                            
+                        });
+                    }
+                }
+                return defaultHandlers;
+            }
+        };
+        return new NettyServer(new SMTPProtocol(chain, config));
+    }
+    
+    protected NettyServer create(SSLContext context) throws WiringException {
+        SMTPConfigurationImpl config = new SMTPConfigurationImpl() {
+
+            @Override
+            public boolean isStartTLSSupported() {
+                return true;
+            }
+            
+        };
+        
+        SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain() {
+
+            @Override
+            protected List<Object> initDefaultHandlers() {
+                List<Object> defaultHandlers =  super.initDefaultHandlers();
+                for (int i = 0 ; i < defaultHandlers.size(); i++) {
+                    Object h = defaultHandlers.get(i);
+                    if (h instanceof StartTlsCmdHandler) {
+                        defaultHandlers.remove(h);
+                        return defaultHandlers;
+                    }
+                }
+                return defaultHandlers;
+            }
+
+
+            
+        };
+        return new NettyServer(new SMTPProtocol(chain, config), context);
+    }
+    
+    protected SMTPDeliveryAgent createAgent(SMTPClientTransport transport) {
+        return new SMTPDeliveryAgent(transport);
+    }
     
     @Test
     public void testDependOnPipelining() throws Exception {
@@ -98,41 +163,13 @@ public abstract class AbstractSMTPClientUnsupportedExtensionTest {
     
     private void checkDependOnPipelining(AssertCheck check) throws Exception {
         int port = TestUtils.getFreePort();
-
-        SMTPConfigurationImpl config = new SMTPConfigurationImpl();
-        SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain() {
-
-            @Override
-            protected List<Object> initDefaultHandlers() {
-                List<Object> defaultHandlers =  super.initDefaultHandlers();
-                for (int i = 0 ; i < defaultHandlers.size(); i++) {
-                    Object h = defaultHandlers.get(i);
-                    if (h instanceof EhloCmdHandler) {
-                        defaultHandlers.remove(h);
-                        defaultHandlers.add(new EhloCmdHandler() {
-
-                            @SuppressWarnings("unchecked")
-                            @Override
-                            public List<String> getImplementedEsmtpFeatures(SMTPSession session) {
-                                return Collections.EMPTY_LIST;
-                            }
-                            
-                        });
-                    }
-                }
-                return defaultHandlers;
-            }
-
-
-            
-        };
-        NettyServer smtpServer = new NettyServer(new SMTPProtocol(chain, config));
+        NettyServer smtpServer = create();
         smtpServer.setListenAddresses(Arrays.asList(new InetSocketAddress(port)));
         smtpServer.bind();
 
         
         SMTPClientTransport transport = createFactory().createPlain();
-        SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
+        SMTPDeliveryAgent c = createAgent(transport);
 
         SMTPDeliveryAgentConfigImpl conf = createConfig();
         conf.setPipeliningMode(PipeliningMode.DEPEND);
@@ -181,42 +218,15 @@ public abstract class AbstractSMTPClientUnsupportedExtensionTest {
 
     private void checkDependOnStartTLS(AssertCheck check) throws Exception {
         int port = TestUtils.getFreePort();
-
-        SMTPConfigurationImpl config = new SMTPConfigurationImpl() {
-
-            @Override
-            public boolean isStartTLSSupported() {
-                return true;
-            }
-            
-        };
-       
-        SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain() {
-
-            @Override
-            protected List<Object> initDefaultHandlers() {
-                List<Object> defaultHandlers =  super.initDefaultHandlers();
-                for (int i = 0 ; i < defaultHandlers.size(); i++) {
-                    Object h = defaultHandlers.get(i);
-                    if (h instanceof StartTlsCmdHandler) {
-                        defaultHandlers.remove(h);
-                        return defaultHandlers;
-                    }
-                }
-                return defaultHandlers;
-            }
-
-
-            
-        };
-        NettyServer smtpServer = new NettyServer(new SMTPProtocol(chain, config), BogusSslContextFactory.getServerContext());
+        
+        NettyServer smtpServer = create(BogusSslContextFactory.getServerContext());
         smtpServer.setListenAddresses(Arrays.asList(new InetSocketAddress(port)));
         
         smtpServer.bind();
 
         
         SMTPClientTransport transport = createFactory().createStartTLS(BogusSslContextFactory.getClientContext(), true);
-        SMTPDeliveryAgent c = new SMTPDeliveryAgent(transport);
+        SMTPDeliveryAgent c = createAgent(transport);
 
         SMTPDeliveryAgentConfigImpl conf = createConfig();
 
