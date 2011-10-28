@@ -18,7 +18,7 @@ package me.normanmaurer.niosmtp.delivery;
 
 import java.util.Collection;
 
-import me.normanmaurer.niosmtp.MessageInput;
+import me.normanmaurer.niosmtp.SMTPMessage;
 
 /**
  * A {@link SMTPDeliveryEnvelope} is a complete transaction which is used to deliver an email per SMTP. 
@@ -46,9 +46,9 @@ public interface SMTPDeliveryEnvelope {
     Collection<String> getRecipients();
     
     /**
-     * Return the {@link MessageInput} which should be used to submit the message after the <code>DATA</code> command was issued
+     * Return the {@link SMTPMessage} which should be used to submit the message after the <code>DATA</code> command was issued
      * 
      * @return messageInput not null
      */
-    MessageInput getMessage();
+    SMTPMessage getMessage();
 }

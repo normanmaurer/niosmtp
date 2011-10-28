@@ -17,7 +17,7 @@
 package me.normanmaurer.niosmtp.delivery.callback;
 
 
-import me.normanmaurer.niosmtp.MessageInput;
+import me.normanmaurer.niosmtp.SMTPMessage;
 import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
@@ -26,7 +26,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
  * A Factory which is responsible for return the right {@link SMTPResponseCallback} depending on the state of the {@link SMTPSession} and the {@link SMTPRequest} or 
- * {@link MessageInput}
+ * {@link SMTPMessage}
  * 
  * @author Norman Maurer
  *
@@ -53,12 +53,12 @@ public interface SMTPResponseCallbackFactory {
     public SMTPResponseCallback getCallback(SMTPClientSession session, SMTPRequest request) throws SMTPException;
     
     /**
-     * Return the {@link SMTPResponseCallback} for the given {@link SMTPSession} and {@link MessageInput}
+     * Return the {@link SMTPResponseCallback} for the given {@link SMTPSession} and {@link SMTPMessage}
      * 
      * @param session
      * @param input
      * @return callback
      * @throws SMTPException
      */
-    public SMTPResponseCallback getCallback(SMTPClientSession session, MessageInput input) throws SMTPException;
+    public SMTPResponseCallback getCallback(SMTPClientSession session, SMTPMessage input) throws SMTPException;
 }

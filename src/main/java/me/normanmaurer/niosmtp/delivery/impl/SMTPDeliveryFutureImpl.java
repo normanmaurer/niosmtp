@@ -16,13 +16,12 @@
 */
 package me.normanmaurer.niosmtp.delivery.impl;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
 
 import me.normanmaurer.niosmtp.delivery.DeliveryResult;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryFuture;
@@ -36,41 +35,55 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  */
 public class SMTPDeliveryFutureImpl implements SMTPDeliveryFuture{
     
-    private boolean isReady = false;
-    private boolean isCancelled = false;
-    private final List<SMTPDeliveryFutureListener> listeners = new ArrayList<SMTPDeliveryFutureListener>();
-    private Iterable<DeliveryResult> result;
-    private SMTPClientSession session;
-    
+    private volatile boolean isReady = false;
+    private volatile boolean isCancelled = false;
+    private final List<SMTPDeliveryFutureListener> listeners = new CopyOnWriteArrayList<SMTPDeliveryFutureListener>();
+    private volatile Iterable<DeliveryResult> result;
+    private volatile SMTPClientSession session;
+        
     /**
      * Set the {@link DeliveryResult} for the future and notify all waiting threads + the listeners. This should get called only on time, 
      * otherwise it will throw an {@link IllegalStateException}
      * 
      * @param result
-     * @throws illegalStateException
      */
-    public synchronized void setDeliveryStatus(Iterable<DeliveryResult> result) {
+    public void setDeliveryStatus(Iterable<DeliveryResult> result) {
+        boolean fireListeners = false;
         if (!isDone()) {
             this.result = result;
             isReady = true;
-            notify();
-
-            
+            fireListeners = true;
+           
+            synchronized (this) {
+                notify();
+            }
+                
+        }
+        if (fireListeners) {
             // notify the listeners
-            for (int i = 0; i < listeners.size(); i++) {
-                listeners.get(i).operationComplete(this);
+            Iterator<SMTPDeliveryFutureListener> it = listeners.iterator();
+            while(it.hasNext()) {
+                it.next().operationComplete(this);
             }
         }
+        
+    	
     }
 
     
     @Override
-    public synchronized boolean cancel(boolean mayInterruptIfRunning) {
-        if (isCancelled() || isDone()) {
+    public boolean cancel(boolean mayInterruptIfRunning) {
+        if (isDone()) {
             return false;
         } else {
-           session.close();
-           isCancelled = true;
+            isCancelled = true;
+            if (session != null) {
+                session.close();
+            }
+            Iterator<SMTPDeliveryFutureListener> it = listeners.iterator();
+            while(it.hasNext()) {
+                it.next().operationComplete(this);
+            }
            return true;
         }
     }
@@ -89,17 +102,17 @@ public class SMTPDeliveryFutureImpl implements SMTPDeliveryFuture{
     }
     
     @Override
-    public synchronized boolean isCancelled() {
+    public boolean isCancelled() {
         return isCancelled;
     }
 
     @Override
-    public synchronized boolean isDone() {
+    public  boolean isDone() {
         return isReady || isCancelled;
     }
 
     @Override
-    public synchronized void addListener(SMTPDeliveryFutureListener listener) {
+    public  void addListener(SMTPDeliveryFutureListener listener) {
         listeners.add(listener);
         if (isDone()) {
             listener.operationComplete(this);
@@ -107,7 +120,7 @@ public class SMTPDeliveryFutureImpl implements SMTPDeliveryFuture{
     }
 
     @Override
-    public synchronized void removeListener(SMTPDeliveryFutureListener listener) {
+    public void removeListener(SMTPDeliveryFutureListener listener) {
         listeners.remove(listener);
     }
 
@@ -126,13 +139,13 @@ public class SMTPDeliveryFutureImpl implements SMTPDeliveryFuture{
         return getNoWait();
     }
 
-    public synchronized void setSMTPClientSession(SMTPClientSession session) {
+    public void setSMTPClientSession(SMTPClientSession session) {
         this.session = session;
     }
 
 
     @Override
-    public synchronized Iterator<DeliveryResult> getNoWait() {
+    public Iterator<DeliveryResult> getNoWait() {
         if (result == null) {
             return null;
         } else {
@@ -142,15 +155,14 @@ public class SMTPDeliveryFutureImpl implements SMTPDeliveryFuture{
 
 
     @Override
-    public synchronized SMTPClientSession getSession() {
+    public SMTPClientSession getSession() {
         return session;
     }
 
 
     @Override
-    public synchronized Iterator<SMTPDeliveryFutureListener> getListeners() {
-        // make a copy of the listeners to be sure we don't it a ConcurrentModificationException later
-        return new ArrayList<SMTPDeliveryFutureListener>(listeners).iterator();
+    public Iterator<SMTPDeliveryFutureListener> getListeners() {
+        return listeners.iterator();
     }
 
 }

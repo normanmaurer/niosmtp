@@ -21,7 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
-import me.normanmaurer.niosmtp.MessageInput;
+import me.normanmaurer.niosmtp.SMTPMessage;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.core.SMTPResponseImpl;
@@ -46,7 +46,7 @@ public class MockSMTPClientSession extends AbstractSMTPClientSession {
     }
     
     @Override
-    public void send(MessageInput request, SMTPResponseCallback callback) {
+    public void send(SMTPMessage request, SMTPResponseCallback callback) {
         try {
             callback.onResponse(this, new SMTPResponseImpl(250));
         } catch (Exception e) {

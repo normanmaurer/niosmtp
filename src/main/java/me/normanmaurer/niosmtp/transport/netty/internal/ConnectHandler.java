@@ -21,6 +21,7 @@ import javax.net.ssl.SSLEngine;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
+import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -41,11 +42,11 @@ import org.slf4j.Logger;
  */
 class ConnectHandler extends SimpleChannelUpstreamHandler {
 
-    private SSLEngine engine;
-    private SMTPDeliveryMode mode;
-    private SMTPResponseCallback callback;
-    private Logger logger;
-    private SMTPClientConfig config;
+    private final SSLEngine engine;
+    private final SMTPDeliveryMode mode;
+    private final SMTPResponseCallback callback;
+    private final Logger logger;
+    private final SMTPClientConfig config;
 
     public ConnectHandler(SMTPResponseCallback callback, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode, SSLEngine engine){
         this.callback = callback;
@@ -55,12 +56,20 @@ class ConnectHandler extends SimpleChannelUpstreamHandler {
         this.config = config;
     }
     
+    private SMTPClientSession createSession(ChannelHandlerContext ctx) {
+        Object attachment = ctx.getAttachment();
+        if (attachment == null) {
+            attachment =  NettySMTPClientSession.create(ctx.getChannel(), logger, config, mode, engine);
+            ctx.setAttachment(attachment);
+        }
+        return (SMTPClientSession) attachment;
+    }
     
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
         Object msg = e.getMessage();
         if (msg instanceof SMTPResponse) {
-            callback.onResponse(new NettySMTPClientSession(ctx.getChannel(), logger, config, mode, engine), (SMTPResponse) msg);
+            callback.onResponse(createSession(ctx), (SMTPResponse) msg);
             ctx.getChannel().getPipeline().remove(this);
         } else {
             super.messageReceived(ctx, e);
@@ -69,7 +78,7 @@ class ConnectHandler extends SimpleChannelUpstreamHandler {
     
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
-        callback.onException(new NettySMTPClientSession(ctx.getChannel(), logger, config, mode, engine), e.getCause());
+        callback.onException(createSession(ctx), e.getCause());
         ctx.getChannel().getPipeline().remove(this);
     }
 }

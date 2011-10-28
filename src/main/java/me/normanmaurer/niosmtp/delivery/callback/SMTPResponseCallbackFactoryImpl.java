@@ -18,7 +18,7 @@ package me.normanmaurer.niosmtp.delivery.callback;
 
 import java.util.Locale;
 
-import me.normanmaurer.niosmtp.MessageInput;
+import me.normanmaurer.niosmtp.SMTPMessage;
 import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
@@ -63,7 +63,7 @@ public class SMTPResponseCallbackFactoryImpl implements SMTPResponseCallbackFact
     }
 
     @Override
-    public SMTPResponseCallback getCallback(SMTPClientSession session, MessageInput input) throws SMTPException {
+    public SMTPResponseCallback getCallback(SMTPClientSession session, SMTPMessage input) throws SMTPException {
         return PostDataResponseCallback.INSTANCE;
     }
 

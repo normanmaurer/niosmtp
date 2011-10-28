@@ -37,7 +37,7 @@ import org.apache.james.protocols.smtp.hook.SimpleHook;
 import org.apache.mailet.MailAddress;
 import org.junit.Test;
 
-import me.normanmaurer.niosmtp.core.SimpleMessageInput;
+import me.normanmaurer.niosmtp.core.SMTPMessageImpl;
 import me.normanmaurer.niosmtp.delivery.AbstractSMTPStartTLSClientTest;
 import me.normanmaurer.niosmtp.delivery.AssertCheck;
 import me.normanmaurer.niosmtp.delivery.AsyncAssertCheck;
@@ -124,7 +124,7 @@ public abstract class AbstractLMTPStartTLSClientTest extends AbstractSMTPStartTL
 
         try {
             SMTPDeliveryAgentConfigImpl conf = createConfig();
-            SMTPDeliveryEnvelope transaction = new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com", "to3@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes())));
+            SMTPDeliveryEnvelope transaction = new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com", "to3@example.com"}), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes())));
             
             SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf,transaction);
             check.onSMTPClientFuture(future);

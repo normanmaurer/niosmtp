@@ -71,6 +71,7 @@ class NettySMTPClientTransport implements SMTPClientTransport{
         bootstrap.setOption("connectTimeoutMillis", config.getConnectionTimeout() * 1000);
         bootstrap.setOption("tcpNoDelay", true);
         bootstrap.setOption("keepAlive", true);
+        bootstrap.setOption("reuseAddress", true);
 
         ChannelPipelineFactory cp;
         switch (mode) {

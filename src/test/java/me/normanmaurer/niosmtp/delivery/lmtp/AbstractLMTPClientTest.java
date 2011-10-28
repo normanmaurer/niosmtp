@@ -26,7 +26,7 @@ import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import me.normanmaurer.niosmtp.core.SimpleMessageInput;
+import me.normanmaurer.niosmtp.core.SMTPMessageImpl;
 import me.normanmaurer.niosmtp.delivery.AbstractSMTPClientTest;
 import me.normanmaurer.niosmtp.delivery.AssertCheck;
 import me.normanmaurer.niosmtp.delivery.AsyncAssertCheck;
@@ -112,7 +112,7 @@ public abstract class AbstractLMTPClientTest extends AbstractSMTPClientTest{
 
         try {
             SMTPDeliveryAgentConfigImpl conf = createConfig();
-            SMTPDeliveryEnvelope transaction = new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com", "to3@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes())));
+            SMTPDeliveryEnvelope transaction = new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com", "to3@example.com"}), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes())));
             
             SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf,transaction);
             check.onSMTPClientFuture(future);

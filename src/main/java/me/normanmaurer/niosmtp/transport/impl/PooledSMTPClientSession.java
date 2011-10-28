@@ -25,7 +25,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import me.normanmaurer.niosmtp.MessageInput;
+import me.normanmaurer.niosmtp.SMTPMessage;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
@@ -138,7 +138,7 @@ public final class PooledSMTPClientSession implements SMTPClientSession {
     }
 
     @Override
-    public void send(MessageInput request, final SMTPResponseCallback callback) {
+    public void send(SMTPMessage request, final SMTPResponseCallback callback) {
         setLastSent();
         
         session.send(request, new PooledCallback(this, callback));
