@@ -16,38 +16,38 @@
 */
 package me.normanmaurer.niosmtp.core;
 
-import me.normanmaurer.niosmtp.ByteArrayMessageInput;
+import me.normanmaurer.niosmtp.SMTPByteArrayMessage;
 
 /**
- * {@link ByteArrayMessageInput} implementation which just use given <code>byte</code> arrays
+ * {@link SMTPByteArrayMessage} implementation which just use given <code>byte</code> arrays
  * 
  * @author Norman Maurer
  *
  */
-public class SimpleByteArrayMessageInput extends ByteArrayMessageInput{
+public class SMTPByteArrayMessageImpl extends SMTPByteArrayMessage{
 
     private final byte[] _7BitMessage;
 
     private final byte[] _8BitMessage;
 
     /**
-     * Create a {@link SimpleByteArrayMessageInput} instance which use the same <code>byte</code> array for {@link #get7BitAsByteArray()} and {@link #get7BitAsByteArray()}
+     * Create a {@link SMTPByteArrayMessageImpl} instance which use the same <code>byte</code> array for {@link #get7BitAsByteArray()} and {@link #get7BitAsByteArray()}
      * 
      * @param message
      */
-    public SimpleByteArrayMessageInput(final byte[] message) {
+    public SMTPByteArrayMessageImpl(final byte[] message) {
         this._7BitMessage = message;
         this._8BitMessage = message;
 
     }
     
     /**
-     * Create a {@link SimpleByteArrayMessageInput} instance which uses the given <code>byte</code> arrays for {@link #get7BitAsByteArray()} and {@link #get8BitAsByteArray()}
+     * Create a {@link SMTPByteArrayMessageImpl} instance which uses the given <code>byte</code> arrays for {@link #get7BitAsByteArray()} and {@link #get8BitAsByteArray()}
      * 
      * @param _7BitMessage
      * @param _8BitMessage
      */
-    public SimpleByteArrayMessageInput(final byte[] _7BitMessage, final byte[] _8BitMessage) {
+    public SMTPByteArrayMessageImpl(final byte[] _7BitMessage, final byte[] _8BitMessage) {
         this._7BitMessage = _7BitMessage;
         this._8BitMessage = _8BitMessage;
 

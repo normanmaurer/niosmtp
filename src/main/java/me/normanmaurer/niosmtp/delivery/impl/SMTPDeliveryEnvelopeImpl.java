@@ -19,7 +19,7 @@ package me.normanmaurer.niosmtp.delivery.impl;
 import java.util.Collection;
 import java.util.Collections;
 
-import me.normanmaurer.niosmtp.MessageInput;
+import me.normanmaurer.niosmtp.SMTPMessage;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryEnvelope;
 
 /**
@@ -32,13 +32,13 @@ public class SMTPDeliveryEnvelopeImpl implements SMTPDeliveryEnvelope{
 
     private final Collection<String> recipients;
     private final String sender;
-    private final MessageInput message;
+    private final SMTPMessage message;
 
-    public SMTPDeliveryEnvelopeImpl(final String sender, final Collection<String> recipients, final MessageInput message) {
+    public SMTPDeliveryEnvelopeImpl(final String sender, final Collection<String> recipients, final SMTPMessage message) {
         this(sender, recipients, message, true);
     }
     
-    private SMTPDeliveryEnvelopeImpl(final String sender, final Collection<String> recipients, final MessageInput message, boolean wrapRecipients) {
+    private SMTPDeliveryEnvelopeImpl(final String sender, final Collection<String> recipients, final SMTPMessage message, boolean wrapRecipients) {
         this.sender = sender;
         if (wrapRecipients) {
             this.recipients = Collections.unmodifiableCollection(recipients);
@@ -59,7 +59,7 @@ public class SMTPDeliveryEnvelopeImpl implements SMTPDeliveryEnvelope{
      * @param recipients
      * @param message
      */
-    public SMTPDeliveryEnvelopeImpl( final Collection<String> recipients, final MessageInput message) {
+    public SMTPDeliveryEnvelopeImpl( final Collection<String> recipients, final SMTPMessage message) {
         this(null, recipients, message);
     }
     
@@ -75,21 +75,21 @@ public class SMTPDeliveryEnvelopeImpl implements SMTPDeliveryEnvelope{
     }
 
     @Override
-    public MessageInput getMessage() {
+    public SMTPMessage getMessage() {
         return message;
     }
     
   
     
     /**
-     * Create an array of {@link SMTPDeliveryEnvelope}'s which use the same sender and recipients but different {@link MessageInput}'s
+     * Create an array of {@link SMTPDeliveryEnvelope}'s which use the same sender and recipients but different {@link SMTPMessage}'s
      * 
      * @param sender
      * @param recipients
      * @param messages
      * @return transactions
      */
-    public static SMTPDeliveryEnvelope[] create(final String sender, final Collection<String> recipients, final MessageInput... messages) {
+    public static SMTPDeliveryEnvelope[] create(final String sender, final Collection<String> recipients, final SMTPMessage... messages) {
         if (messages == null || messages.length <1 ){
             throw new IllegalArgumentException("At least one MessageInput must be given");
         }

@@ -19,7 +19,7 @@ package me.normanmaurer.niosmtp.delivery.callback;
 import java.util.Iterator;
 import java.util.List;
 
-import me.normanmaurer.niosmtp.MessageInput;
+import me.normanmaurer.niosmtp.SMTPMessage;
 import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
@@ -31,7 +31,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
  * {@link AbstractResponseCallback} implementation which will handle the <code>POST DATA</code> {@link SMTPResponse} which will
- * get send after the {@link MessageInput} get submitted via the CRLF.CRLF sequence
+ * get send after the {@link SMTPMessage} get submitted via the CRLF.CRLF sequence
  * 
  * 
  * @author Norman Maurer

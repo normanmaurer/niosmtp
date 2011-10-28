@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import me.normanmaurer.niosmtp.MessageInput;
+import me.normanmaurer.niosmtp.SMTPMessage;
 import me.normanmaurer.niosmtp.SMTPConnectionException;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
@@ -199,7 +199,7 @@ public class LimitingSMTPClientTransport implements SMTPClientTransport {
                         break;
                     }
                 }
-               
+                connectionCount.decrementAndGet();
             }
         }
         
@@ -234,7 +234,7 @@ public class LimitingSMTPClientTransport implements SMTPClientTransport {
         }
 
         @Override
-        public void send(MessageInput request, SMTPResponseCallback callback) {
+        public void send(SMTPMessage request, SMTPResponseCallback callback) {
             callback.onException(UnconnectedSMTPClientSession.this, NOT_CONNECTED_EXCEPTION);
         }
 

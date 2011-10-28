@@ -21,7 +21,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import me.normanmaurer.niosmtp.MessageInput;
+import me.normanmaurer.niosmtp.SMTPMessage;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
@@ -52,7 +52,7 @@ public interface SMTPClientSession {
     Map<String, Object> getAttributes();
     
     /**
-     * Return a {@link Set} of all supported EXTENSIONS. This will be set in the EHLO Response so you will get an empty {@link Set} before the EHLO
+     * Return a "read-only" {@link Set} of all supported EXTENSIONS. This will be set in the EHLO Response so you will get an empty {@link Set} before the EHLO
      * Response was processed
      * 
      * @return extensions
@@ -60,12 +60,12 @@ public interface SMTPClientSession {
     Set<String> getSupportedExtensions();
     
     /**
-     * Set the supported EXTENSIONS for the {@link SMTPClientSession}. 
+     * Add the supported EXTENSIONS for the {@link SMTPClientSession}. 
      * 
      * @param extensions
      */
-    void setSupportedExtensions(Set<String> extensions);
-
+    void addSupportedExtensions(String extension);
+    
     /**
      * Return the id of the {@link SMTPClientSession}.
      * 
@@ -102,13 +102,13 @@ public interface SMTPClientSession {
     void send(SMTPRequest request, SMTPResponseCallback callback);
     
     /**
-     * Send the given {@link MessageInput} to the connected SMTP-Server. The given {@link SMTPResponseCallback} will get called
+     * Send the given {@link SMTPMessage} to the connected SMTP-Server. The given {@link SMTPResponseCallback} will get called
      * once the {@link SMTPResponse} was received or an {@link Exception} was thrown
      * 
      * @param request
      * @param callback
      */
-    void send(MessageInput request, SMTPResponseCallback callback);
+    void send(SMTPMessage request, SMTPResponseCallback callback);
 
     /**
      * Close the {@link SMTPClientSession}

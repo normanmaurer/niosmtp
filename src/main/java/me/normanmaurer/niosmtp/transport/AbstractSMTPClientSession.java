@@ -17,6 +17,7 @@
 package me.normanmaurer.niosmtp.transport;
 
 import java.net.InetSocketAddress;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -72,12 +73,12 @@ public abstract class AbstractSMTPClientSession implements SMTPClientSession {
 
     @Override
     public Set<String> getSupportedExtensions() {
-        return extensions;
+        return Collections.unmodifiableSet(extensions);
     }
 
     @Override
-    public void setSupportedExtensions(Set<String> extensions) {
-        this.extensions = extensions;
+    public void addSupportedExtensions(String extensions) {
+        this.extensions.add(extensions);
     }
 
 

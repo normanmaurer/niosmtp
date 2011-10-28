@@ -17,27 +17,41 @@
 package me.normanmaurer.niosmtp.transport.netty.internal;
 
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 import javax.net.ssl.SSLEngine;
 
-import me.normanmaurer.niosmtp.MessageInput;
+import me.normanmaurer.niosmtp.MultiResponseCallback;
+import me.normanmaurer.niosmtp.SMTPByteArrayMessage;
+import me.normanmaurer.niosmtp.SMTPMessage;
 import me.normanmaurer.niosmtp.SMTPRequest;
+import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
+import me.normanmaurer.niosmtp.core.DataTerminatingInputStream;
 import me.normanmaurer.niosmtp.transport.AbstractSMTPClientSession;
 import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 
+import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelHandler;
-import org.jboss.netty.channel.ChannelPipeline;
+import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ChannelStateEvent;
+import org.jboss.netty.channel.ExceptionEvent;
+import org.jboss.netty.channel.MessageEvent;
+import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.ssl.SslHandler;
+import org.jboss.netty.handler.stream.ChunkedStream;
 import org.slf4j.Logger;
 
 
@@ -49,16 +63,35 @@ import org.slf4j.Logger;
  */
 class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPClientSession, SMTPClientConstants, NettyConstants{
 
-    private int closeHandlerCount = 0;
-    private int callbackCount = 0;
+
+    private final static byte CR = '\r';
+    private final static byte LF = '\n';
+    private final static byte DOT = '.';
+    private final static byte[] DOT_CRLF = new byte[] {DOT, CR, LF};
+    private final static byte[] CRLF_DOT_CRLF = new byte[] {CR, LF, DOT, CR, LF};
+    private final static byte[] LF_DOT_CRLF = new byte[] {LF, DOT, CR, LF};
+    
     private final Channel channel;
     private final SSLEngine engine;
+    private final List<CloseListener> closeListeners = new ArrayList<CloseListener>();
+    private final LinkedList<SMTPResponseCallback> callbacks = new LinkedList<SMTPResponseCallback>();
+    
+    
 
-    public NettySMTPClientSession(Channel channel, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode,  SSLEngine engine) {
+    private NettySMTPClientSession(Channel channel, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode,  SSLEngine engine) {
         super(logger, config, mode, (InetSocketAddress) channel.getLocalAddress(), (InetSocketAddress) channel.getRemoteAddress());      
         this.channel = channel;
         this.engine = engine;
+
     }
+    
+    public static NettySMTPClientSession create(Channel channel, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode, SSLEngine engine) {
+        NettySMTPClientSession session = new NettySMTPClientSession(channel, logger, config, mode, engine);
+        session.channel.getPipeline().addBefore(IDLE_HANDLER_KEY, "callback", new CallbackAdapter(session));
+        return session;
+    }
+    
+    
     
     @Override
     public String getId() {
@@ -67,14 +100,16 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
 
     @Override
     public void startTLS() {
-        SslHandler sslHandler =  new SslHandler(engine, false);
-        channel.getPipeline().addFirst(SSL_HANDLER_KEY, sslHandler);
-        sslHandler.handshake();        
+        if (!isEncrypted()) {
+            SslHandler sslHandler =  new SslHandler(engine, false);
+            channel.getPipeline().addFirst(SSL_HANDLER_KEY, sslHandler);
+            sslHandler.handshake();
+        }
     }
     
     @Override
     public void send(SMTPRequest request, SMTPResponseCallback callback) {
-        channel.getPipeline().addBefore(IDLE_HANDLER_KEY, "callback" + callbackCount++, new SMTPCallbackHandlerAdapter(this, callback));
+        callbacks.add(callback);
         channel.write(request);
     }
     
@@ -82,16 +117,36 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
 
     
     @Override
-    public void send(MessageInput msg, SMTPResponseCallback callback) {
-        ChannelPipeline cp = channel.getPipeline();
-        
-        cp.addBefore(IDLE_HANDLER_KEY, "callback" + callbackCount++, new SMTPCallbackHandlerAdapter(this,callback));
-        
-        if (cp.get(MessageInputEncoder.class) == null) {
-            channel.getPipeline().addAfter(CHUNK_WRITE_HANDLER_KEY, "messageDataEncoder", new MessageInputEncoder(this));
-        }
-        channel.write(msg);
+    public void send(SMTPMessage msg, SMTPResponseCallback callback) {
+        callbacks.add(callback);
+
+        Set<String> extensions = getSupportedExtensions();
+        if (msg instanceof SMTPByteArrayMessage) {
+            byte[] data;
             
+            if (extensions.contains(_8BITMIME_EXTENSION)) {
+                data = ((SMTPByteArrayMessage)msg).get8BitAsByteArray();
+            } else {
+                data = ((SMTPByteArrayMessage)msg).get7BitAsByteArray();
+            }
+            channel.write(createDataTerminatingChannelBuffer(data));
+        } else {
+            InputStream msgIn;
+            try {
+
+                if (extensions.contains(_8BITMIME_EXTENSION)) {
+                    msgIn = msg.get8Bit();
+                } else {
+                    msgIn = msg.get7bit();
+                }
+            
+            } catch (IOException e) {
+                msgIn = IOExceptionInputStream.INSTANCE;
+            }
+                   
+            channel.write(new ChunkedStream(new DataTerminatingInputStream(msgIn)));
+        }
+                    
     }
     
 
@@ -109,7 +164,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
 
     @Override
     public void addCloseListener(CloseListener listener) {
-        channel.getPipeline().addLast("closeListener" + closeHandlerCount++, new CloseListenerAdapter(this, listener));
+        closeListeners.add(listener);
     }
 
 
@@ -120,78 +175,116 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
 
     @Override
     public void removeCloseListener(CloseListener listener) {
-        CloseListenerAdapterIterator it = new CloseListenerAdapterIterator(channel.getPipeline().toMap().values().iterator());
-
-        while(it.hasNext()) {
-            CloseListenerAdapter cl = it.next();
-            if (cl.getListener().equals(listener)) {
-                channel.getPipeline().remove(cl);
-            }
-        }
+        closeListeners.remove(listener);
        
     }
 
     @Override
     public Iterator<CloseListener> getCloseListeners() {
-        return new Iterator<CloseListener>() {
-            private CloseListenerAdapterIterator it = new CloseListenerAdapterIterator(channel.getPipeline().toMap().values().iterator());
-            @Override
-            public boolean hasNext() {
-                return it.hasNext();
-            }
+        return new ArrayList<CloseListener>(closeListeners).iterator();
+    }
+  
+    
+    /**
+     * Create a {@link ChannelBuffer} which is terminated with a CRLF.CRLF sequence
+     * 
+     * @param data
+     * @return buffer
+     */
+    private static ChannelBuffer createDataTerminatingChannelBuffer(byte[] data) {
+        int length = data.length;
+        if (length < 1) {
+            return ChannelBuffers.wrappedBuffer(CRLF_DOT_CRLF);
+        } else {
+            byte[] terminating;
 
-            @Override
-            public CloseListener next() {
-                return it.next().getListener();
-            }
+            byte last = data[length -1];
 
-            @Override
-            public void remove() {
-                it.remove();
+            if (length == 1) {
+                if (last == CR) {
+                    terminating = LF_DOT_CRLF;
+                } else {
+                    terminating = CRLF_DOT_CRLF;
+                }
+            } else {
+                byte prevLast = data[length - 2];
+                
+                if (last == LF) {
+                    if (prevLast == CR) {
+                        terminating = DOT_CRLF;
+                    } else {
+                        terminating = CRLF_DOT_CRLF;
+                    }
+                } else if (last == CR) {
+                    terminating = LF_DOT_CRLF;
+                } else {
+                    terminating = CRLF_DOT_CRLF;
+
+                }
             }
-            
-        };
+            return ChannelBuffers.wrappedBuffer(data, terminating);
+        }
+        
+      
     }
     
-    private final class CloseListenerAdapterIterator implements Iterator<CloseListenerAdapter> {
+    protected static final class CallbackAdapter extends SimpleChannelUpstreamHandler {
+        private final NettySMTPClientSession session;
 
-        private Iterator<ChannelHandler> handlers;
-        private CloseListenerAdapter adapter;
-        
-        public CloseListenerAdapterIterator(Iterator<ChannelHandler> handlers) {
-            this.handlers = handlers;
+
+        public CallbackAdapter(NettySMTPClientSession session) {
+            this.session = session;
         }
         
         @Override
-        public boolean hasNext() {
-            if (adapter == null) {
-                while(handlers.hasNext()) {
-                    ChannelHandler handler = handlers.next();
-                    if (handler instanceof CloseListenerAdapter) {
-                        adapter = (CloseListenerAdapter) handler;
+        public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
+            Object msg = e.getMessage();
+            if (msg instanceof SMTPResponse) {
+                SMTPResponseCallback callback = session.callbacks.peek();
+                if (callback != null) {
+                    callback.onResponse(session, (SMTPResponse) msg);
+                    
+                    boolean remove = true;
+                    if (callback instanceof MultiResponseCallback && !((MultiResponseCallback) callback).isDone(session)) {
+                        remove = false;
+                    }
+                    if (remove) {
+                        session.callbacks.remove(callback);
                     }
                 }
-                return false;
             } else {
-                return true;
-            }
-
-        }
-
-        @Override
-        public CloseListenerAdapter next() {
-            if (hasNext()) {
-                return adapter;
-            } else {
-                throw new NoSuchElementException();
+                super.messageReceived(ctx, e);
             }
         }
 
         @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
+        public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
+            SMTPResponseCallback callback = session.callbacks.poll();
+
+            if (callback != null) {
+                callback.onException(session, e.getCause());
+            }
+
+        }
+        
+        
+        @Override
+        public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+            for (CloseListener listener: session.closeListeners) {
+                listener.onClose(session);
+            }
+            super.channelClosed(ctx, e);
+        }
+    }
+    
+    
+    private final static class IOExceptionInputStream extends InputStream {
+        public final static IOExceptionInputStream INSTANCE= new IOExceptionInputStream();
+        
+        @Override
+        public int read() throws IOException {
+            throw new IOException("Unable to read content");
         }
         
     }
-    
 }

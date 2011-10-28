@@ -45,7 +45,7 @@ import org.apache.james.protocols.smtp.core.esmtp.StartTlsCmdHandler;
 import org.junit.Test;
 
 import me.normanmaurer.niosmtp.SMTPUnsupportedExtensionException;
-import me.normanmaurer.niosmtp.core.SimpleMessageInput;
+import me.normanmaurer.niosmtp.core.SMTPMessageImpl;
 import me.normanmaurer.niosmtp.delivery.DeliveryResult;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgent;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig.PipeliningMode;
@@ -174,7 +174,7 @@ public abstract class AbstractSMTPClientUnsupportedExtensionTest {
         SMTPDeliveryAgentConfigImpl conf = createConfig();
         conf.setPipeliningMode(PipeliningMode.DEPEND);
 
-        SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
+        SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes()))));
         try {
             
             check.onSMTPClientFuture(future);
@@ -230,7 +230,7 @@ public abstract class AbstractSMTPClientUnsupportedExtensionTest {
 
         SMTPDeliveryAgentConfigImpl conf = createConfig();
 
-        SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
+        SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes()))));
         try {
             check.onSMTPClientFuture(future);
         } finally {

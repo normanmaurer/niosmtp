@@ -22,8 +22,8 @@ import java.io.InputStream;
 
 
 /**
- * Abstract base implementation of {@link MessageInput} which allows to access the raw <code>byte</code> array of the {@link MessageInput}. This 
- * should only be used if you are sure that the whole {@link MessageInput} fit into memory. 
+ * Abstract base implementation of {@link SMTPMessage} which allows to access the raw <code>byte</code> array of the {@link SMTPMessage}. This 
+ * should only be used if you are sure that the whole {@link SMTPMessage} fit into memory. 
  * 
  * The {@link #get7BitAsByteArray()} and {@link #get8BitAsByteArray()} methods can be used by the Transport implementation for better performing
  * write operations.
@@ -32,7 +32,7 @@ import java.io.InputStream;
  * @author Norman Maurer
  *
  */
-public abstract class ByteArrayMessageInput implements MessageInput{
+public abstract class SMTPByteArrayMessage implements SMTPMessage{
 
     private InputStream _7bitIn;
     private InputStream _8bitIn;

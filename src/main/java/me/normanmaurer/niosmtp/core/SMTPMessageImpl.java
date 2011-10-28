@@ -19,16 +19,16 @@ package me.normanmaurer.niosmtp.core;
 import java.io.IOException;
 import java.io.InputStream;
 
-import me.normanmaurer.niosmtp.MessageInput;
+import me.normanmaurer.niosmtp.SMTPMessage;
 
 /**
- * {@link MessageInput} implementation which use the given {@link InputStream}'s 
+ * {@link SMTPMessage} implementation which use the given {@link InputStream}'s 
  * 
  * 
  * @author Norman Maurer
  *
  */
-public class SimpleMessageInput implements MessageInput{
+public class SMTPMessageImpl implements SMTPMessage{
 
 
     
@@ -36,25 +36,25 @@ public class SimpleMessageInput implements MessageInput{
     private final InputStream _8BitIn;
 
     /**
-     * Construct a {@link SimpleMessageInput} which use the  given {@link InputStream} for {@link #get7bit()} and {@link #get8Bit()}.
+     * Construct a {@link SMTPMessageImpl} which use the  given {@link InputStream} for {@link #get7bit()} and {@link #get8Bit()}.
      * </br>
      * </br>
      * The {@link InputStream} <strong>MUST</strong> contain a message in 7bit 
      * 
      * @param message
      */
-    public SimpleMessageInput(final InputStream message) {
+    public SMTPMessageImpl(final InputStream message) {
         this._7BitIn = message;
         this._8BitIn = message;
     }
 
     /**
-     * Construct a {@link SimpleMessageInput} which use the given {@link InputStream}'s 
+     * Construct a {@link SMTPMessageImpl} which use the given {@link InputStream}'s 
      * 
      * @param _7BitIn
      * @param _8BitIn
      */
-    public SimpleMessageInput(final InputStream _7BitIn, final InputStream _8BitIn) {
+    public SMTPMessageImpl(final InputStream _7BitIn, final InputStream _8BitIn) {
         this._7BitIn = _7BitIn;
         this._8BitIn = _8BitIn;
     }

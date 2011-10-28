@@ -26,7 +26,7 @@ import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import me.normanmaurer.niosmtp.core.SimpleMessageInput;
+import me.normanmaurer.niosmtp.core.SMTPMessageImpl;
 import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.delivery.DeliveryResult;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgent;
@@ -92,7 +92,7 @@ public abstract class AbstractSMTPClientAuthLoginTest extends AbstractSMTPClient
             SMTPDeliveryAgentConfigImpl conf = createConfig();
             conf.setAuthentication(createAuthentication("myuser", "mybadpassword"));
 
-            SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes()))));
+            SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes()))));
             DeliveryResult dr = future.get().next();
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());

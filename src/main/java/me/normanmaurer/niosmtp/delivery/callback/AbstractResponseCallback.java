@@ -21,7 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import me.normanmaurer.niosmtp.MessageInput;
+import me.normanmaurer.niosmtp.SMTPMessage;
 import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
@@ -165,7 +165,7 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
         session.send(request, callback);
     }
     
-    protected final void next(SMTPClientSession session, MessageInput request) throws SMTPException {
+    protected final void next(SMTPClientSession session, SMTPMessage request) throws SMTPException {
         SMTPResponseCallback callback = ((SMTPResponseCallbackFactory) session.getAttributes().get(SMTP_RESPONSE_CALLBACK_FACTORY)).getCallback(session, request);
         session.send(request, callback);
     }

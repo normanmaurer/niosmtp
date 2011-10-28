@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * The {@link MessageInput} implementations offer methods to get the message content. 
+ * The {@link SMTPMessage} implementations offer methods to get the message content. 
  * 
  * 
  * 
@@ -28,7 +28,7 @@ import java.io.InputStream;
  * @author Norman Maurer
  *
  */
-public interface MessageInput {
+public interface SMTPMessage {
 
     /**
      * This method is getting called if the SMTP-Server does not support the 8BITMIME extension. 
