@@ -16,19 +16,39 @@
 */
 package me.normanmaurer.niosmtp.delivery.lmtp;
 
+import java.io.ByteArrayInputStream;
+import java.net.InetSocketAddress;
+import java.util.Arrays;
+
+import me.normanmaurer.niosmtp.core.SimpleMessageInput;
 import me.normanmaurer.niosmtp.delivery.AbstractSMTPSClientTest;
+import me.normanmaurer.niosmtp.delivery.AssertCheck;
+import me.normanmaurer.niosmtp.delivery.AsyncAssertCheck;
 import me.normanmaurer.niosmtp.delivery.BogusSslContextFactory;
 import me.normanmaurer.niosmtp.delivery.LMTPDeliveryAgent;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgent;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliveryEnvelope;
+import me.normanmaurer.niosmtp.delivery.SMTPDeliveryFuture;
+import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryAgentConfigImpl;
+import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryEnvelopeImpl;
+import me.normanmaurer.niosmtp.delivery.lmtp.AbstractLMTPClientTest.RejectOneRecipientAfterDataAssertCheck;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
+import me.normanmaurer.niosmtp.util.TestUtils;
 
 import org.apache.james.protocols.api.handler.WiringException;
 import org.apache.james.protocols.impl.NettyServer;
 import org.apache.james.protocols.lmtp.LMTPConfigurationImpl;
 import org.apache.james.protocols.lmtp.LMTPProtocolHandlerChain;
+import org.apache.james.protocols.lmtp.hook.DeliverToRecipientHook;
+import org.apache.james.protocols.smtp.MailEnvelope;
 import org.apache.james.protocols.smtp.SMTPProtocol;
+import org.apache.james.protocols.smtp.SMTPSession;
 import org.apache.james.protocols.smtp.hook.Hook;
+import org.apache.james.protocols.smtp.hook.HookResult;
+import org.apache.james.protocols.smtp.hook.HookReturnCode;
 import org.apache.james.protocols.smtp.hook.SimpleHook;
+import org.apache.mailet.MailAddress;
+import org.junit.Test;
 
 public abstract class AbstractLMTPSClientTest extends AbstractSMTPSClientTest{
 
@@ -56,4 +76,54 @@ public abstract class AbstractLMTPSClientTest extends AbstractSMTPSClientTest{
         return new LMTPDeliveryAgent(transport);
     }
 
+    
+    @Test
+    public void testRejectOneRecipientAfterData() throws Exception {
+        checkRejectOneRecipientAfterData(new RejectOneRecipientAfterDataAssertCheck());
+    }
+    
+    @Test
+    public void testRejectOneRecipientAfterDataNonBlocking() throws Exception {
+        checkRejectOneRecipientAfterData(new AsyncAssertCheck(new RejectOneRecipientAfterDataAssertCheck()));
+    }
+    
+    
+    private void checkRejectOneRecipientAfterData(AssertCheck check) throws Exception {
+        int port = TestUtils.getFreePort();
+        
+
+        NettyServer smtpServer = create(new DeliverToRecipientHook() {
+            
+            @Override
+            public HookResult deliver(SMTPSession session, MailAddress address, MailEnvelope env) {
+                if (address.toString().equals("to@example.com")) {
+                    return new HookResult(HookReturnCode.DENY);
+                }
+                return new HookResult(HookReturnCode.OK);
+            }
+        });
+        
+        smtpServer.setListenAddresses(Arrays.asList(new InetSocketAddress(port)));
+
+        smtpServer.bind();
+
+
+       
+        
+        SMTPClientTransport transport = createSMTPClient();
+        SMTPDeliveryAgent c = createAgent(transport);
+
+        try {
+            SMTPDeliveryAgentConfigImpl conf = createConfig();
+            SMTPDeliveryEnvelope transaction = new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com", "to3@example.com"}), new SimpleMessageInput(new ByteArrayInputStream("msg".getBytes())));
+            
+            SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf,transaction);
+            check.onSMTPClientFuture(future);
+            
+        } finally {
+            smtpServer.unbind();
+            transport.destroy();
+        }
+        
+    }
 }
