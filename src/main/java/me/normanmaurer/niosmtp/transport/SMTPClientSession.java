@@ -52,7 +52,7 @@ public interface SMTPClientSession {
     Map<String, Object> getAttributes();
     
     /**
-     * Return a {@link Set} of all supported EXTENSIONS. This will be set in the EHLO Response so you will get an empty {@link Set} before the EHLO
+     * Return a "read-only" {@link Set} of all supported EXTENSIONS. This will be set in the EHLO Response so you will get an empty {@link Set} before the EHLO
      * Response was processed
      * 
      * @return extensions
@@ -60,12 +60,12 @@ public interface SMTPClientSession {
     Set<String> getSupportedExtensions();
     
     /**
-     * Set the supported EXTENSIONS for the {@link SMTPClientSession}. 
+     * Add the supported EXTENSIONS for the {@link SMTPClientSession}. 
      * 
      * @param extensions
      */
-    void setSupportedExtensions(Set<String> extensions);
-
+    void addSupportedExtensions(String extension);
+    
     /**
      * Return the id of the {@link SMTPClientSession}.
      * 

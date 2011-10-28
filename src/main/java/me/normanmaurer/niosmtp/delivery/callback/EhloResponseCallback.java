@@ -16,7 +16,6 @@
 */
 package me.normanmaurer.niosmtp.delivery.callback;
 
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -64,9 +63,10 @@ public class EhloResponseCallback extends AbstractResponseCallback implements SM
     public void onResponse(SMTPClientSession session, SMTPResponse response) throws SMTPException {
         boolean supportsPipelining = false;
         boolean supportsStartTLS = false;
+        initSupportedExtensions(session, response);
+        
         // Check if the SMTPServer supports PIPELINING 
-        Set<String> extensions = getSupportedExtensions(response);
-        session.setSupportedExtensions(extensions);
+        Set<String> extensions = session.getSupportedExtensions();
 
         if (extensions.contains(PIPELINING_EXTENSION)) {
             supportsPipelining = true;
@@ -134,18 +134,16 @@ public class EhloResponseCallback extends AbstractResponseCallback implements SM
      * @param response
      * @return extensions
      */
-    private Set<String> getSupportedExtensions(SMTPResponse response) {
-        Set<String> extensions = new HashSet<String>();
+    private void initSupportedExtensions(SMTPClientSession session, SMTPResponse response) {
         Iterator<String> lines = response.getLines().iterator();
         while(lines.hasNext()) {
             String line = lines.next();
             if (line.equalsIgnoreCase(PIPELINING_EXTENSION)) {
-                extensions.add(PIPELINING_EXTENSION);
+                session.addSupportedExtensions(PIPELINING_EXTENSION);
             } else if (line.equalsIgnoreCase(STARTTLS_EXTENSION)) {
-                extensions.add(STARTTLS_EXTENSION);
+                session.addSupportedExtensions(STARTTLS_EXTENSION);
             }
         }
-        return extensions;
     }
     
 }
