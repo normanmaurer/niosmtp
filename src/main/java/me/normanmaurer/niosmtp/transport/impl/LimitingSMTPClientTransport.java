@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
 
 import me.normanmaurer.niosmtp.SMTPMessage;
 import me.normanmaurer.niosmtp.SMTPConnectionException;
+import me.normanmaurer.niosmtp.SMTPMultiResponseCallback;
+import me.normanmaurer.niosmtp.SMTPPipeliningRequest;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
@@ -264,6 +266,11 @@ public class LimitingSMTPClientTransport implements SMTPClientTransport {
         @Override
         public Iterator<CloseListener> getCloseListeners() {
             return listeners.iterator();
+        }
+
+        @Override
+        public void send(SMTPPipeliningRequest request, SMTPMultiResponseCallback callback) {
+            callback.onException(UnconnectedSMTPClientSession.this, NOT_CONNECTED_EXCEPTION);
         }
         
     }

@@ -18,6 +18,7 @@ package me.normanmaurer.niosmtp.core;
 
 import java.util.Iterator;
 
+import me.normanmaurer.niosmtp.SMTPPipeliningRequest;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
@@ -75,5 +76,24 @@ public class StringUtils implements SMTPClientConstants{
         } else {
             return command + SMTPRequest.SEPERATOR + argument;
         }
+    }
+    
+    /**
+     * Converts the given {@link SMTPPipeliningRequest} to a <code>String</code>
+     * 
+     * @param request
+     * @return requestAsString
+     */
+    public static String toString(SMTPPipeliningRequest request) {
+        StringBuilder sb = new StringBuilder();
+        Iterator<SMTPRequest> reqs = request.getRequests().iterator();
+        while(reqs.hasNext()) {
+            sb.append(toString(reqs.next()));
+            if (reqs.hasNext()) {
+                sb.append(SMTPPipeliningRequest.REQUESTS_SEPERATOR);
+            }
+            
+        }
+        return sb.toString();
     }
 }

@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.UUID;
 
 import me.normanmaurer.niosmtp.SMTPMessage;
+import me.normanmaurer.niosmtp.SMTPMultiResponseCallback;
+import me.normanmaurer.niosmtp.SMTPPipeliningRequest;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.core.SMTPResponseImpl;
@@ -100,5 +102,14 @@ public class MockSMTPClientSession extends AbstractSMTPClientSession {
     @Override
     public synchronized Iterator<CloseListener> getCloseListeners() {
         return new ArrayList<CloseListener>(cListeners).iterator();
+    }
+
+    @Override
+    public void send(SMTPPipeliningRequest request, SMTPMultiResponseCallback callback) {
+        try {
+            callback.onResponse(this, new SMTPResponseImpl(250));
+        } catch (Exception e) {
+            callback.onException(this, e);
+        }        
     }
 }

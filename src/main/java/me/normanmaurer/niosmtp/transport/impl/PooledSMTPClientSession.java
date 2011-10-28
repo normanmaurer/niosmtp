@@ -26,6 +26,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import me.normanmaurer.niosmtp.SMTPMessage;
+import me.normanmaurer.niosmtp.SMTPMultiResponseCallback;
+import me.normanmaurer.niosmtp.SMTPPipeliningRequest;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
@@ -97,8 +99,8 @@ public final class PooledSMTPClientSession implements SMTPClientSession {
     }
 
     @Override
-    public void setSupportedExtensions(Set<String> extensions) {
-        session.setSupportedExtensions(extensions);
+    public void addSupportedExtensions(String extension) {
+        session.addSupportedExtensions(extension);
     }
 
     @Override
@@ -239,5 +241,16 @@ public final class PooledSMTPClientSession implements SMTPClientSession {
         public void onException(SMTPClientSession session, Throwable t) {
             callback.onException(pooledSession, t);
         }
+    }
+
+
+
+
+
+    @Override
+    public void send(SMTPPipeliningRequest request, SMTPMultiResponseCallback callback) {
+        setLastSent();
+
+        session.send(request, callback);
     }
 }

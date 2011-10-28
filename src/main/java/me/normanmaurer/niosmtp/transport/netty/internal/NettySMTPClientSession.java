@@ -28,9 +28,10 @@ import java.util.Set;
 
 import javax.net.ssl.SSLEngine;
 
-import me.normanmaurer.niosmtp.MultiResponseCallback;
+import me.normanmaurer.niosmtp.SMTPMultiResponseCallback;
 import me.normanmaurer.niosmtp.SMTPByteArrayMessage;
 import me.normanmaurer.niosmtp.SMTPMessage;
+import me.normanmaurer.niosmtp.SMTPPipeliningRequest;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
@@ -245,7 +246,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
                     callback.onResponse(session, (SMTPResponse) msg);
                     
                     boolean remove = true;
-                    if (callback instanceof MultiResponseCallback && !((MultiResponseCallback) callback).isDone(session)) {
+                    if (callback instanceof SMTPMultiResponseCallback && !((SMTPMultiResponseCallback) callback).isDone(session)) {
                         remove = false;
                     }
                     if (remove) {
@@ -286,5 +287,12 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
             throw new IOException("Unable to read content");
         }
         
+    }
+
+
+    @Override
+    public void send(SMTPPipeliningRequest request, SMTPMultiResponseCallback callback) {
+        callbacks.add(callback);
+        channel.write(request);        
     }
 }

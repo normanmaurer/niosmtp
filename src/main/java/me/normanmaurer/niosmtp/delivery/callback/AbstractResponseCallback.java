@@ -23,9 +23,12 @@ import java.util.Map;
 
 import me.normanmaurer.niosmtp.SMTPMessage;
 import me.normanmaurer.niosmtp.SMTPException;
+import me.normanmaurer.niosmtp.SMTPPipeliningRequest;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
+import me.normanmaurer.niosmtp.core.SMTPPipelingingResponseCallback;
+import me.normanmaurer.niosmtp.core.SMTPPipeliningRequestImpl;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.delivery.DeliveryResult;
@@ -117,11 +120,9 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
         SMTPDeliveryEnvelope transaction = (SMTPDeliveryEnvelope) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY);
         
         session.getAttributes().put(PIPELINING_ACTIVE_KEY, true);
-        next(session, SMTPRequestImpl.mail(transaction.getSender()));
-        for (String rcpt: transaction.getRecipients()) {
-            next(session, SMTPRequestImpl.rcpt(rcpt));
-        }
-        next(session, SMTPRequestImpl.data());
+        SMTPPipeliningRequest request = new SMTPPipeliningRequestImpl(transaction.getSender(), transaction.getRecipients().iterator());
+        next(session, request);
+        
     }
     
     
@@ -158,6 +159,16 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
             }
         }
 
+    }
+    
+    protected final void next(SMTPClientSession session, SMTPPipeliningRequest request) throws SMTPException {
+        SMTPResponseCallbackFactory factory = (SMTPResponseCallbackFactory) session.getAttributes().get(SMTP_RESPONSE_CALLBACK_FACTORY);
+        Iterator<SMTPRequest> reqs = request.getRequests().iterator();
+        List<SMTPResponseCallback> callbacks = new ArrayList<SMTPResponseCallback>();
+        while(reqs.hasNext()) {
+            callbacks.add(factory.getCallback(session, reqs.next()));
+        }
+        session.send(request, new SMTPPipelingingResponseCallback(callbacks.iterator()));
     }
     
     protected final void next(SMTPClientSession session, SMTPRequest request) throws SMTPException {

@@ -57,6 +57,9 @@ interface NettyConstants {
      */
     public static final String SMTP_REQUEST_ENCODER_KEY ="smtpRequestEncoder";
     
+    public static final String SMTP_PIPELINING_REQUEST_ENCODER_KEY ="smtpPipeliningRequestEncoder";
+
+    
     /**
      * The key to use when adding the {@link ChunkedWriteHandler} to the {@link ChannelPipeline}
      */

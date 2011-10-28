@@ -21,7 +21,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import me.normanmaurer.niosmtp.SMTPMultiResponseCallback;
 import me.normanmaurer.niosmtp.SMTPMessage;
+import me.normanmaurer.niosmtp.SMTPPipeliningRequest;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
@@ -100,6 +102,17 @@ public interface SMTPClientSession {
      * @param callback
      */
     void send(SMTPRequest request, SMTPResponseCallback callback);
+    
+    /**
+     * Send the given {@link SMTPPipeliningRequest} to the connected SMTP-Server. The given {@link SMTPMultiResponseCallback}
+     * will get executed for each response till {@link SMTPMultiResponseCallback#isDone(SMTPClientSession)}
+     * returns <code>false</code>
+     * 
+     * @param request
+     * @param callback
+     */
+    void send(SMTPPipeliningRequest request, SMTPMultiResponseCallback callback);
+
     
     /**
      * Send the given {@link SMTPMessage} to the connected SMTP-Server. The given {@link SMTPResponseCallback} will get called

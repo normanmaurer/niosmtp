@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import me.normanmaurer.niosmtp.MultiResponseCallback;
+import me.normanmaurer.niosmtp.SMTPMultiResponseCallback;
 import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
@@ -35,7 +35,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  * @author Norman Maurer
  *
  */
-public class LMTPPostDataResponseCallback extends AbstractResponseCallback implements MultiResponseCallback{
+public class LMTPPostDataResponseCallback extends AbstractResponseCallback implements SMTPMultiResponseCallback{
     
     
     /**

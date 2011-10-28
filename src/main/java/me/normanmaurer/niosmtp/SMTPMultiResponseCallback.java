@@ -25,11 +25,11 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  * @author Norman Maurer
  *
  */
-public interface MultiResponseCallback extends SMTPResponseCallback{
+public interface SMTPMultiResponseCallback extends SMTPResponseCallback{
 
     
     /**
-     * Return <code>true</code> if the {@link MultiResponseCallback} should not process {@link SMTPResponse}'s anymore
+     * Return <code>true</code> if the {@link SMTPMultiResponseCallback} should not process {@link SMTPResponse}'s anymore
      * 
      * @param session
      * @return done

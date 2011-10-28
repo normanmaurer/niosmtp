@@ -43,6 +43,7 @@ public class SMTPClientPipelineFactory implements ChannelPipelineFactory, NettyC
     private final static DelimiterBasedFrameDecoder FRAMER = new DelimiterBasedFrameDecoder(8192, true, Delimiters.lineDelimiter());
     private final static SMTPResponseDecoder SMTP_RESPONSE_DECODER = new SMTPResponseDecoder();
     private final static SMTPRequestEncoder SMTP_REQUEST_ENCODER = new SMTPRequestEncoder();
+    private final static SMTPPipeliningRequestEncoder SMTP_PIPELINING_REQUEST_ENCODER = new SMTPPipeliningRequestEncoder();
     private final static SMTPClientIdleHandler SMTP_CLIENT_IDLE_HANDLER = new SMTPClientIdleHandler();
     private Timer timer;
     protected SMTPResponseCallback callback;
@@ -62,6 +63,8 @@ public class SMTPClientPipelineFactory implements ChannelPipelineFactory, NettyC
         pipeline.addLast(FRAMER_KEY, FRAMER);
         pipeline.addLast(SMTP_RESPONSE_DECODER_KEY, SMTP_RESPONSE_DECODER);
         pipeline.addLast(SMTP_REQUEST_ENCODER_KEY, SMTP_REQUEST_ENCODER);
+        pipeline.addLast(SMTP_PIPELINING_REQUEST_ENCODER_KEY, SMTP_PIPELINING_REQUEST_ENCODER);
+
         pipeline.addLast(CHUNK_WRITE_HANDLER_KEY, new ChunkedWriteHandler());
         
         // Add the idle timeout handler
