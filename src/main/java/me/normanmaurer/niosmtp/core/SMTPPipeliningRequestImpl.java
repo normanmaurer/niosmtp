@@ -43,4 +43,11 @@ public class SMTPPipeliningRequestImpl implements SMTPPipeliningRequest{
         return requests;
     }
 
+    @Override
+    public String toString() {
+        return StringUtils.toString(this);
+    }
+    
+    
+
 }
