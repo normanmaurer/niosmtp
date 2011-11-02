@@ -18,9 +18,31 @@ package me.normanmaurer.niosmtp.transport;
 
 
 
+/**
+ * Different delivery modes which are valid for SMTP
+ * 
+ * @author Norman Maurer
+ *
+ */
 public enum SMTPDeliveryMode {
+    /**
+     * Plain delivery (not encrypted)
+     */
     PLAIN,
+    
+    /**
+     * SMTPS Delivery (encrypted via TLS/SSL)
+     */
     SMTPS,
+    
+    /**
+     * Try to use STARTTLS (encrypt after connection was established)
+     */
     STARTTLS_TRY,
+    
+    /**
+     * Use STARTTLS (encrypt after connect was established) and fail if STARTTLS is not supported by the 
+     * remote SMTP server
+     */
     STARTTLS_DEPEND
 }
