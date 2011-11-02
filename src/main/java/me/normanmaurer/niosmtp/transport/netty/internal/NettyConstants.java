@@ -57,6 +57,9 @@ interface NettyConstants {
      */
     public static final String SMTP_REQUEST_ENCODER_KEY ="smtpRequestEncoder";
     
+    /**
+     * The key to use when adding the {@link SMTPPipeliningRequestEncoder} to the {@link ChannelPipeline}
+     */
     public static final String SMTP_PIPELINING_REQUEST_ENCODER_KEY ="smtpPipeliningRequestEncoder";
 
     

@@ -24,6 +24,10 @@ import java.util.Map;
 import java.util.Set;
 
 
+import me.normanmaurer.niosmtp.SMTPMultiResponseCallback;
+import me.normanmaurer.niosmtp.SMTPPipeliningRequest;
+import me.normanmaurer.niosmtp.SMTPRequest;
+
 import org.slf4j.Logger;
 
 /**
@@ -92,4 +96,18 @@ public abstract class AbstractSMTPClientSession implements SMTPClientSession {
     public SMTPClientConfig getConfig() {
         return config;
     }
+
+    /**
+     * Implementation which just send each {@link SMTPRequest} which is hold in the {@link SMTPPipeliningRequest#getRequests()} method via
+     * {@link #send(SMTPRequest, me.normanmaurer.niosmtp.SMTPResponseCallback)} method. 
+     * 
+     */
+    @Override
+    public void send(SMTPPipeliningRequest request, SMTPMultiResponseCallback callback) {
+        for(SMTPRequest req: request.getRequests()) {
+            send(req, callback);
+        }
+    }
+    
+    
 }
