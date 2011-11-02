@@ -31,7 +31,7 @@ import me.normanmaurer.niosmtp.SMTPResponse;
  */
 public class SMTPResponseImpl implements SMTPResponse{
 
-    private int code;
+    private final int code;
     private final List<String> lines = new ArrayList<String>();
 
     public SMTPResponseImpl(int code) {

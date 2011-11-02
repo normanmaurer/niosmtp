@@ -44,9 +44,9 @@ public class SMTPClientPipelineFactory implements ChannelPipelineFactory, NettyC
     private final static SMTPRequestEncoder SMTP_REQUEST_ENCODER = new SMTPRequestEncoder();
     private final static SMTPPipeliningRequestEncoder SMTP_PIPELINING_REQUEST_ENCODER = new SMTPPipeliningRequestEncoder();
     private final static SMTPClientIdleHandler SMTP_CLIENT_IDLE_HANDLER = new SMTPClientIdleHandler();
-    private Timer timer;
-    protected SMTPResponseCallback callback;
-    protected SMTPClientConfig config;
+    private final Timer timer;
+    protected final SMTPResponseCallback callback;
+    protected final SMTPClientConfig config;
     
     public SMTPClientPipelineFactory(SMTPResponseCallback callback, SMTPClientConfig config, Timer timer) {
         this.timer = timer;

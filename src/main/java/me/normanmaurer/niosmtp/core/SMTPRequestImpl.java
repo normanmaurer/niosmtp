@@ -28,8 +28,8 @@ public class SMTPRequestImpl implements SMTPRequest{
     private final static SMTPRequest NOOP_REQUEST = new SMTPRequestImpl("NOOP", null);
     private final static SMTPRequest RSET_REQUEST = new SMTPRequestImpl("RSET", null);
 
-    private String command;
-    private String argument;
+    private final String command;
+    private final String argument;
 
     
     public SMTPRequestImpl(String command, String argument) {
