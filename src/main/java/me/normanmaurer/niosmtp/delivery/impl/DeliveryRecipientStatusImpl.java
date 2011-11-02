@@ -37,6 +37,11 @@ public class DeliveryRecipientStatusImpl implements DeliveryRecipientStatus{
         this.response = response;
     }
     
+    /**
+     * Set the {@link SMTPResponse} for the address
+     * 
+     * @param response
+     */
     public void setResponse(SMTPResponse response) {
         this.response = response;
     }

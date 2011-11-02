@@ -16,6 +16,11 @@
 */
 package me.normanmaurer.niosmtp.core;
 
+/**
+ * @author Norman Maurer
+ * 
+ *
+ */
 public class LMTPRequest extends SMTPRequestImpl{
 
     public final static String LHLO_COMMAND = "LHLO";

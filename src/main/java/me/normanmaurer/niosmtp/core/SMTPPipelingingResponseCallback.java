@@ -23,15 +23,22 @@ import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
+/**
+ * {@link SMTPMultiResponseCallback} implementation which can be used for PIPELINING 
+ * 
+ * @author Norman Maurer
+ *
+ */
 public class SMTPPipelingingResponseCallback implements SMTPMultiResponseCallback{
 
     private final static String CURRENT_CALLBACK_IN_USE = "CURRENT_CALLBACK_IN_USE";
     
-    private Iterator<SMTPResponseCallback> callbacks;
+    private final Iterator<SMTPResponseCallback> callbacks;
 
     public SMTPPipelingingResponseCallback(Iterator<SMTPResponseCallback> callbacks) {
         this.callbacks = callbacks;
     }
+    
     
     @Override
     public void onResponse(SMTPClientSession session, SMTPResponse response) throws Exception {
@@ -42,6 +49,7 @@ public class SMTPPipelingingResponseCallback implements SMTPMultiResponseCallbac
                 callback = callbacks.next();
                 callback.onResponse(session, response);
             } catch (Exception e) {
+                // set a marker so we know that we don't need to retrieve the next callback to handle the exception
                 session.getAttributes().put(CURRENT_CALLBACK_IN_USE, callback);
                 throw e;
             }

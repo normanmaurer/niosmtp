@@ -25,6 +25,12 @@ import java.util.List;
 import me.normanmaurer.niosmtp.SMTPPipeliningRequest;
 import me.normanmaurer.niosmtp.SMTPRequest;
 
+/**
+ * POJO implementation of {@link SMTPPipeliningRequest} 
+ * 
+ * @author Norman Maurer
+ *
+ */
 public class SMTPPipeliningRequestImpl implements SMTPPipeliningRequest{
     private final Collection<SMTPRequest> requests;
     
@@ -47,7 +53,4 @@ public class SMTPPipeliningRequestImpl implements SMTPPipeliningRequest{
     public String toString() {
         return StringUtils.toString(this);
     }
-    
-    
-
 }
