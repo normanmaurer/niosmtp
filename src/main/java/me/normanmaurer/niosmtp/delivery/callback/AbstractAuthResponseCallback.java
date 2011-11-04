@@ -23,7 +23,6 @@ import org.apache.commons.codec.binary.Base64;
 
 import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPResponse;
-import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
@@ -32,7 +31,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  * @author Norman Maurer
  *
  */
-public abstract class AbstractAuthResponseCallback extends AbstractResponseCallback implements SMTPClientConstants{
+public abstract class AbstractAuthResponseCallback extends AbstractResponseCallback {
     @Override
     protected void setDeliveryStatusForAll(SMTPClientSession session, SMTPResponse response) throws SMTPException {
         // check if the SMTPResponse needs to get decoded 

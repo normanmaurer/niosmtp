@@ -29,7 +29,6 @@ import me.normanmaurer.niosmtp.delivery.Authentication;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryEnvelope;
-import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
@@ -43,7 +42,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  * @author Norman Maurer
  *
  */
-public class EhloResponseCallback extends AbstractResponseCallback implements SMTPClientConstants{
+public class EhloResponseCallback extends AbstractResponseCallback {
 
     
     /**

@@ -21,6 +21,7 @@ import java.util.List;
 
 import me.normanmaurer.niosmtp.delivery.callback.SMTPResponseCallbackFactory;
 import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryFutureImpl;
+import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
@@ -29,7 +30,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  * @author Norman Maurer
  *
  */
-public interface SMTPDeliverySessionConstants {
+public interface SMTPDeliverySessionConstants extends SMTPClientConstants{
 
     /**
      * Key under which the {@link SMTPDeliveryFutureImpl} is stored

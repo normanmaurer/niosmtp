@@ -28,7 +28,6 @@ import me.normanmaurer.niosmtp.delivery.callback.AbstractResponseCallback;
 import me.normanmaurer.niosmtp.delivery.callback.SMTPResponseCallbackFactory;
 import me.normanmaurer.niosmtp.delivery.callback.SMTPResponseCallbackFactoryImpl;
 import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryFutureImpl;
-import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 
@@ -41,7 +40,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
  * @author Norman Maurer
  * 
  */
-public class SMTPDeliveryAgent implements SMTPClientConstants, SMTPDeliverySessionConstants {
+public class SMTPDeliveryAgent implements SMTPDeliverySessionConstants {
 
     private final SMTPClientTransport transport;
     private final static SMTPResponseCallbackFactory FACTORY = new SMTPResponseCallbackFactoryImpl();
@@ -49,10 +48,6 @@ public class SMTPDeliveryAgent implements SMTPClientConstants, SMTPDeliverySessi
     public SMTPDeliveryAgent(final SMTPClientTransport transport) {
         this.transport = transport;
     }
-
-    
-    
-
 
     /**
      * Deliver the given {@link SMTPDeliveryEnvelope}'s 

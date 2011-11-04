@@ -40,7 +40,6 @@ import me.normanmaurer.niosmtp.delivery.SMTPDeliveryEnvelope;
 import me.normanmaurer.niosmtp.delivery.impl.DeliveryRecipientStatusImpl;
 import me.normanmaurer.niosmtp.delivery.impl.DeliveryResultImpl;
 import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryFutureImpl;
-import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
@@ -49,7 +48,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  * @author Norman Maurer
  *
  */
-public abstract class AbstractResponseCallback implements SMTPResponseCallback, SMTPDeliverySessionConstants, SMTPClientConstants {
+public abstract class AbstractResponseCallback implements SMTPResponseCallback, SMTPDeliverySessionConstants {
     
     @SuppressWarnings("unchecked")
     @Override
