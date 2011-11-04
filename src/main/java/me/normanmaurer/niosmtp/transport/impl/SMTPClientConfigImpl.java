@@ -16,7 +16,9 @@
 */
 package me.normanmaurer.niosmtp.transport.impl;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 
 import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 
@@ -30,13 +32,21 @@ import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 public class SMTPClientConfigImpl implements SMTPClientConfig {
 
     public static final int DEFAULT_CONNECTION_TIMEOUT = 60;
-    public static final String DEFAULT_HELO_NAME = "localhost";
+    public static final String DEFAULT_HELO_NAME;
     public static final int DEFAULT_RESPONSE_TIMEOUT = 60;
 
     private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
     private InetSocketAddress localAddress = null;
     private int responseTimeout = DEFAULT_RESPONSE_TIMEOUT;
-    
+    static {
+        String hostname;
+        try {
+            hostname = InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            hostname = "localhost";
+        }
+        DEFAULT_HELO_NAME = hostname;
+    }
     public SMTPClientConfigImpl() {
     }
     
