@@ -37,7 +37,7 @@ public class DataTerminatingInputStream extends InputStream {
     private int pos = 0;
     boolean startLine = true;
     private boolean endOfStream = false;
-    private PushbackInputStream in;
+    private final PushbackInputStream in;
     private boolean empty = true;
     private final static byte CR = '\r';
     private final static byte LF = '\n';
@@ -55,22 +55,21 @@ public class DataTerminatingInputStream extends InputStream {
 
     @Override
     public int read() throws IOException {
-        PushbackInputStream pin = (PushbackInputStream) in;
-        int i = pin.read();
+        int i = in.read();
         if (empty && i != -1) {
             empty = false;
         }
         
         if (startLine && endOfStream == false) {
             startLine = false;
-            if (i == '.') {
-                pin.unread(i);
-                return '.';
+            if (i == DOT) {
+                in.unread(i);
+                return DOT;
             }
             
         }
        
-        if (last == '\r' && i == '\n') {
+        if (last == CR && i == LF) {
             startLine = true;
         }
         
@@ -92,9 +91,9 @@ public class DataTerminatingInputStream extends InputStream {
     }
 
     private void calculateExtraData() {
-        if (empty || last == '\n') {
+        if (empty || last == LF) {
             extraData = DOT_CRLF;     
-        } else if (last == '\r') {
+        } else if (last == CR) {
             extraData = LF_DOT_CRLF;
         } else {
             extraData = CRLF_DOT_CRLF;
