@@ -26,10 +26,20 @@ import java.util.List;
  */
 public interface SMTPResponse {
     
+    /**
+     * Separator which is used to separate the last line 
+     */
     public final static char LAST_SEPERATOR = ' ';
     
+    /**
+     * Separator which is used to separate the code from the rest of the line for multi-response {@link SMTPResponse}'s
+     * 
+     */
     public final static char SEPERATOR = '-';
     
+    /**
+     * Separator for multi-line {@link SMTPResponse}'s
+     */
     public final static String LINES_SEPERATOR = "\r\n";
     
 

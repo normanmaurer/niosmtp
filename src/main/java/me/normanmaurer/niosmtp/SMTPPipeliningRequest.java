@@ -18,8 +18,16 @@ package me.normanmaurer.niosmtp;
 
 import java.util.Collection;
 
+/**
+ * 
+ * @author Norman Maurer
+ *
+ */
 public interface SMTPPipeliningRequest {
 
+    /**
+     * The separator for PIPELINED {@link SMTPRequest}'S
+     */
     public final static String REQUESTS_SEPERATOR = "\r\n";
 
     /**
@@ -27,5 +35,5 @@ public interface SMTPPipeliningRequest {
      * 
      * @return requests
      */
-    public Collection<SMTPRequest> getRequests();
+    Collection<SMTPRequest> getRequests();
 }

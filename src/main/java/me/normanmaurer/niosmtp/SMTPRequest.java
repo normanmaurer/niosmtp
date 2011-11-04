@@ -34,6 +34,9 @@ public interface SMTPRequest {
     public final static String DATA_COMMAND = "DATA";
     public final static String QUIT_COMMAND = "QUIT";
 
+    /**
+     * Separator which is used to separate the command from the argument
+     */
     public final static char SEPERATOR = ' ';
     
     /**

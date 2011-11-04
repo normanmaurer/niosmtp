@@ -42,7 +42,7 @@ public abstract class AbstractSMTPClientSession implements SMTPClientSession {
     private final Logger logger;
     private final SMTPDeliveryMode mode;
     private final SMTPClientConfig config;
-    private Set<String> extensions = new HashSet<String>();
+    private final Set<String> extensions = new HashSet<String>();
     private final Map<String, Object> attrs = new HashMap<String, Object>();
     private final InetSocketAddress remote;
     private final InetSocketAddress local;
