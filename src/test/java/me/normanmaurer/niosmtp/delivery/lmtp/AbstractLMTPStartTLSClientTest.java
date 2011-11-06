@@ -37,6 +37,7 @@ import org.apache.james.protocols.smtp.hook.SimpleHook;
 import org.apache.mailet.MailAddress;
 import org.junit.Test;
 
+import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.core.SMTPMessageImpl;
 import me.normanmaurer.niosmtp.delivery.AbstractSMTPStartTLSClientTest;
 import me.normanmaurer.niosmtp.delivery.AssertCheck;
@@ -45,7 +46,6 @@ import me.normanmaurer.niosmtp.delivery.BogusSslContextFactory;
 import me.normanmaurer.niosmtp.delivery.LMTPDeliveryAgent;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgent;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryEnvelope;
-import me.normanmaurer.niosmtp.delivery.SMTPDeliveryFuture;
 import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryAgentConfigImpl;
 import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryEnvelopeImpl;
 import me.normanmaurer.niosmtp.delivery.lmtp.AbstractLMTPClientTest.RejectOneRecipientAfterDataAssertCheck;
@@ -126,7 +126,7 @@ public abstract class AbstractLMTPStartTLSClientTest extends AbstractSMTPStartTL
             SMTPDeliveryAgentConfigImpl conf = createConfig();
             SMTPDeliveryEnvelope transaction = new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com", "to3@example.com"}), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes())));
             
-            SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf,transaction);
+            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf,transaction);
             check.onSMTPClientFuture(future);
             
         } finally {

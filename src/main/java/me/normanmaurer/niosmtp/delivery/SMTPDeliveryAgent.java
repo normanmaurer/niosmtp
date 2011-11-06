@@ -18,16 +18,19 @@ package me.normanmaurer.niosmtp.delivery;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
 
+import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.core.ArrayIterator;
+import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.delivery.callback.AbstractResponseCallback;
 import me.normanmaurer.niosmtp.delivery.callback.SMTPResponseCallbackFactory;
 import me.normanmaurer.niosmtp.delivery.callback.SMTPResponseCallbackFactoryImpl;
-import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryFutureImpl;
+import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 
@@ -40,7 +43,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
  * @author Norman Maurer
  * 
  */
-public class SMTPDeliveryAgent implements SMTPDeliverySessionConstants {
+public class SMTPDeliveryAgent implements SMTPClientConstants, SMTPDeliverySessionConstants {
 
     private final SMTPClientTransport transport;
     private final static SMTPResponseCallbackFactory FACTORY = new SMTPResponseCallbackFactoryImpl();
@@ -48,6 +51,10 @@ public class SMTPDeliveryAgent implements SMTPDeliverySessionConstants {
     public SMTPDeliveryAgent(final SMTPClientTransport transport) {
         this.transport = transport;
     }
+
+    
+    
+
 
     /**
      * Deliver the given {@link SMTPDeliveryEnvelope}'s 
@@ -59,12 +66,12 @@ public class SMTPDeliveryAgent implements SMTPDeliverySessionConstants {
      * @param transation
      * @return future
      */
-    public SMTPDeliveryFuture deliver(InetSocketAddress host, final SMTPDeliveryAgentConfig config, final SMTPDeliveryEnvelope... transactions) {
+    public SMTPClientFuture<Collection<DeliveryResult>> deliver(InetSocketAddress host, final SMTPDeliveryAgentConfig config, final SMTPDeliveryEnvelope... transactions) {
         if (transactions == null || transactions.length == 0) {
             throw new IllegalArgumentException("SMTPTransaction parameter must be not null and the length must be > 0");
         }
 
-        final SMTPDeliveryFutureImpl future = new SMTPDeliveryFutureImpl();
+        final SMTPClientFutureImpl<Collection<DeliveryResult>> future = new SMTPClientFutureImpl<Collection<DeliveryResult>>();
         final SMTPResponseCallbackFactory callbackfactory = createFactory();
         
         transport.connect(host, config,new AbstractResponseCallback() {

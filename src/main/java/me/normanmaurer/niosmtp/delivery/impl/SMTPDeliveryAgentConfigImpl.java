@@ -16,8 +16,6 @@
 */
 package me.normanmaurer.niosmtp.delivery.impl;
 
-import java.net.InetSocketAddress;
-
 import me.normanmaurer.niosmtp.delivery.Authentication;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig;
 import me.normanmaurer.niosmtp.transport.impl.SMTPClientConfigImpl;
@@ -89,53 +87,6 @@ public class SMTPDeliveryAgentConfigImpl extends SMTPClientConfigImpl implements
      */
     public void setAuthentication(Authentication auth) {
         this.auth = auth;
-    }
-    
-    /**
-     * Return a immutable copy of this {@link SMTPDeliveryAgentConfigImpl}
-     * 
-     * @return immutable
-     */
-    public SMTPDeliveryAgentConfig immutable() {
-        return new ImmutableSMTPDeliveryAgentConfig(this);
-    }
-    
-    private final static class ImmutableSMTPDeliveryAgentConfig implements SMTPDeliveryAgentConfig {
-        private final SMTPDeliveryAgentConfig config;
-        
-        public ImmutableSMTPDeliveryAgentConfig(SMTPDeliveryAgentConfig config) {
-            this.config = config;
-        }
-        @Override
-        public int getConnectionTimeout() {
-            return config.getConnectionTimeout();
-        }
-
-        @Override
-        public int getResponseTimeout() {
-            return config.getResponseTimeout();
-        }
-
-        @Override
-        public InetSocketAddress getLocalAddress() {
-            return config.getLocalAddress();
-        }
-
-        @Override
-        public String getHeloName() {
-            return config.getHeloName();
-        }
-
-        @Override
-        public PipeliningMode getPipeliningMode() {
-            return config.getPipeliningMode();
-        }
-
-        @Override
-        public Authentication getAuthentication() {
-            return config.getAuthentication();
-        }
-        
     }
 
 }

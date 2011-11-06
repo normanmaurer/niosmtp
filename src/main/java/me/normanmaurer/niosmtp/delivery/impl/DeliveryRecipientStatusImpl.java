@@ -28,7 +28,7 @@ import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus;
  */
 public class DeliveryRecipientStatusImpl implements DeliveryRecipientStatus{
 
-    private final String address;
+    private String address;
     private SMTPResponse response;
 
     public DeliveryRecipientStatusImpl(String address, SMTPResponse response) {

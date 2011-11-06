@@ -18,13 +18,14 @@
  ****************************************************************/
 package me.normanmaurer.niosmtp.delivery;
 
+import java.util.Collection;
 import java.util.Iterator;
 
+import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.delivery.DeliveryResult;
-import me.normanmaurer.niosmtp.delivery.SMTPDeliveryFuture;
 
 /**
- * Callback which should be called when a {@link SMTPDeliveryFuture} was received. 
+ * Callback which should be called when a {@link SMTPClientFuture} was received. 
  * 
  * 
  * @author Norman Maurer
@@ -33,20 +34,20 @@ import me.normanmaurer.niosmtp.delivery.SMTPDeliveryFuture;
 public abstract class AssertCheck {
     
     /**
-     * Take the {@link SMTPDeliveryFuture} and bass the {@link DeliveryResult}' to the {@link #onDeliveryResult(Iterator)} method.
+     * Take the {@link SMTPClientFuture} and bass the {@link DeliveryResult}' to the {@link #onDeliveryResult(Iterator)} method.
      * 
-     * This implementation does this by called {@link SMTPDeliveryFuture#get()} and so blocks until its ready. 
+     * This implementation does this by called {@link SMTPClientFuture#get()} and so blocks until its ready. 
      * 
      * 
      * @param future
      * @throws Exception
      */
-    public void onSMTPClientFuture(SMTPDeliveryFuture future) throws Exception {
-        onDeliveryResult(future.get()); 
+    public void onSMTPClientFuture(SMTPClientFuture<Collection<DeliveryResult>> future) throws Exception {
+        onDeliveryResult(future.get().iterator()); 
     }
     
     /**
-     * Callback which will be called once the {@link SMTPDeliveryFuture#isDone()} is true
+     * Callback which will be called once the {@link SMTPClientFuture#isDone()} is true
      * 
      * Assert checks should be performed here
      * 

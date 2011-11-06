@@ -18,12 +18,12 @@ package me.normanmaurer.niosmtp.delivery.callback;
 
 import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPResponse;
-import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryFutureImpl;
+import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
  * {@link AbstractResponseCallback} implementation which should get sub-classed by implementations which may be used within the <code>PIPELINING</code>
- * context. It makes sure the callbacks will not get executed if {@link SMTPDeliveryFutureImpl}
+ * context. It makes sure the callbacks will not get executed if {@link SMTPClientFutureImpl}
  * @author Maurer
  *
  */
@@ -32,7 +32,7 @@ public abstract class AbstractPipelineResponseCallback extends AbstractResponseC
     @Override
     public final void onResponse(SMTPClientSession session, SMTPResponse response) throws SMTPException {
         if (session.getAttributes().containsKey(PIPELINING_ACTIVE_KEY)) {
-            SMTPDeliveryFutureImpl future = (SMTPDeliveryFutureImpl) session.getAttributes().get(FUTURE_KEY);
+            SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
 
             // Check if the future is complete if not execute the callback
             if (!future.isDone()) {

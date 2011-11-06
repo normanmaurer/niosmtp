@@ -24,6 +24,7 @@ import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryEnvelope;
+import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
@@ -36,7 +37,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  * @author Norman Maurer
  *
  */
-public class StartTlsResponseCallback extends AbstractResponseCallback {
+public class StartTlsResponseCallback extends AbstractResponseCallback implements SMTPClientConstants {
 
     /**
      * Get instance of this {@link SMTPResponseCallback} implemenation

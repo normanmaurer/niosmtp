@@ -19,9 +19,8 @@ package me.normanmaurer.niosmtp.delivery;
 import java.util.Iterator;
 import java.util.List;
 
+import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.delivery.callback.SMTPResponseCallbackFactory;
-import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryFutureImpl;
-import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
@@ -30,10 +29,10 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  * @author Norman Maurer
  *
  */
-public interface SMTPDeliverySessionConstants extends SMTPClientConstants{
+public interface SMTPDeliverySessionConstants {
 
     /**
-     * Key under which the {@link SMTPDeliveryFutureImpl} is stored
+     * Key under which the {@link SMTPClientFutureImpl} is stored
      */
     public static final String FUTURE_KEY = "future";
    

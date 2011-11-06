@@ -27,6 +27,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -44,12 +45,12 @@ import org.apache.james.protocols.smtp.core.esmtp.EhloCmdHandler;
 import org.apache.james.protocols.smtp.core.esmtp.StartTlsCmdHandler;
 import org.junit.Test;
 
+import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPUnsupportedExtensionException;
 import me.normanmaurer.niosmtp.core.SMTPMessageImpl;
 import me.normanmaurer.niosmtp.delivery.DeliveryResult;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgent;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig.PipeliningMode;
-import me.normanmaurer.niosmtp.delivery.SMTPDeliveryFuture;
 import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryAgentConfigImpl;
 import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryEnvelopeImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
@@ -174,7 +175,7 @@ public abstract class AbstractSMTPClientUnsupportedExtensionTest {
         SMTPDeliveryAgentConfigImpl conf = createConfig();
         conf.setPipeliningMode(PipeliningMode.DEPEND);
 
-        SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes()))));
+        SMTPClientFuture<Collection<DeliveryResult>> future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes()))));
         try {
             
             check.onSMTPClientFuture(future);
@@ -230,7 +231,7 @@ public abstract class AbstractSMTPClientUnsupportedExtensionTest {
 
         SMTPDeliveryAgentConfigImpl conf = createConfig();
 
-        SMTPDeliveryFuture future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes()))));
+        SMTPClientFuture<Collection<DeliveryResult>> future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes()))));
         try {
             check.onSMTPClientFuture(future);
         } finally {

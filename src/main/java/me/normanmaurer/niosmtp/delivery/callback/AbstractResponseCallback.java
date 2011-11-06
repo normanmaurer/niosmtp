@@ -21,12 +21,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPMessage;
 import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPPipeliningRequest;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.SMTPResponseCallback;
+import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.core.SMTPPipelingingResponseCallback;
 import me.normanmaurer.niosmtp.core.SMTPPipeliningRequestImpl;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
@@ -34,26 +36,25 @@ import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.delivery.DeliveryResult;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig.PipeliningMode;
-import me.normanmaurer.niosmtp.delivery.SMTPDeliveryFuture;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliverySessionConstants;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryEnvelope;
 import me.normanmaurer.niosmtp.delivery.impl.DeliveryRecipientStatusImpl;
 import me.normanmaurer.niosmtp.delivery.impl.DeliveryResultImpl;
-import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryFutureImpl;
+import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
- * Abstract base implementation of {@link SMTPResponseCallback} which comple the {@link SMTPDeliveryFuture} on an {@link Exception}
+ * Abstract base implementation of {@link SMTPResponseCallback} which comple the {@link SMTPClientFuture} on an {@link Exception}
  * 
  * @author Norman Maurer
  *
  */
-public abstract class AbstractResponseCallback implements SMTPResponseCallback, SMTPDeliverySessionConstants {
+public abstract class AbstractResponseCallback implements SMTPResponseCallback, SMTPDeliverySessionConstants, SMTPClientConstants {
     
     @SuppressWarnings("unchecked")
     @Override
     public void onException(SMTPClientSession session, Throwable t) {
-        SMTPDeliveryFutureImpl future = (SMTPDeliveryFutureImpl) session.getAttributes().get(FUTURE_KEY);
+        SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
         
         List<DeliveryResult> resultList = ((List<DeliveryResult>) session.getAttributes().get(DELIVERY_RESULT_LIST_KEY));
         Iterator<SMTPDeliveryEnvelope> transactions = ((Iterator<SMTPDeliveryEnvelope>) session.getAttributes().get(SMTP_TRANSACTIONS_KEY));
@@ -126,14 +127,14 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
     
     
     /**
-     * Set the DeliveryStatus and notify the {@link SMTPDeliveryFuture} if needed
+     * Set the DeliveryStatus and notify the {@link SMTPClientFuture} if needed
      * 
      * @param session
      * @throws SMTPException 
      */
     @SuppressWarnings("unchecked")
     protected void setDeliveryStatus(SMTPClientSession session) throws SMTPException {
-        SMTPDeliveryFutureImpl future = (SMTPDeliveryFutureImpl) session.getAttributes().get(FUTURE_KEY);
+        SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
         List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
         List<DeliveryResult> resultList = ((List<DeliveryResult>) session.getAttributes().get(DELIVERY_RESULT_LIST_KEY));       
         Iterator<SMTPDeliveryEnvelope> transactions = ((Iterator<SMTPDeliveryEnvelope>) session.getAttributes().get(SMTP_TRANSACTIONS_KEY));

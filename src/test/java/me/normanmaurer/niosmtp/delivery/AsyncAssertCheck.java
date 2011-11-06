@@ -18,15 +18,16 @@
  ****************************************************************/
 package me.normanmaurer.niosmtp.delivery;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 
+import me.normanmaurer.niosmtp.SMTPClientFuture;
+import me.normanmaurer.niosmtp.SMTPClientFutureListener;
 import me.normanmaurer.niosmtp.delivery.DeliveryResult;
-import me.normanmaurer.niosmtp.delivery.SMTPDeliveryFuture;
-import me.normanmaurer.niosmtp.delivery.SMTPDeliveryFutureListener;
 
 /**
- * Execute the wrapped {@link AssertCheck} in an asynchronous way by using a {@link SMTPDeliveryFutureListener}
+ * Execute the wrapped {@link AssertCheck} in an asynchronous way by using a {@link SMTPClientFutureListener}
  * 
  * @author Norman Maurer
  *
@@ -40,18 +41,18 @@ public class AsyncAssertCheck extends AssertCheck{
     }
     
     /**
-     * Register an {@link SMTPDeliveryFutureListener} to the given {@link SMTPDeliveryFuture} to call {@link #onDeliveryResult(Iterator)} once the {@link SMTPDeliveryFutureListener#operationComplete(Iterator)}
+     * Register an {@link SMTPClientFutureListener} to the given {@link SMTPClientFuture} to call {@link #onDeliveryResult(Iterator)} once the {@link SMTPClientFutureListener#operationComplete(Iterator)}
      * is called
      * 
      */
     @Override
-    public void onSMTPClientFuture(SMTPDeliveryFuture future) throws Exception {
+    public void onSMTPClientFuture(SMTPClientFuture<Collection<DeliveryResult>> future) throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
-        future.addListener(new SMTPDeliveryFutureListener() {
+        future.addListener(new SMTPClientFutureListener<Collection<DeliveryResult>>() {
             
             @Override
-            public void operationComplete(SMTPDeliveryFuture future) {
-                Iterator<DeliveryResult> result = future.getNoWait();
+            public void operationComplete(SMTPClientFuture<Collection<DeliveryResult>> future) {
+                Iterator<DeliveryResult> result = future.getNoWait().iterator();
 
                 onDeliveryResult(result);
                 latch.countDown();
