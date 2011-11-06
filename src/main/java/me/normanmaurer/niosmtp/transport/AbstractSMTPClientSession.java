@@ -18,10 +18,11 @@ package me.normanmaurer.niosmtp.transport;
 
 import java.net.InetSocketAddress;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 
 import me.normanmaurer.niosmtp.SMTPMultiResponseCallback;
@@ -42,8 +43,8 @@ public abstract class AbstractSMTPClientSession implements SMTPClientSession {
     private final Logger logger;
     private final SMTPDeliveryMode mode;
     private final SMTPClientConfig config;
-    private final Set<String> extensions = new HashSet<String>();
-    private final Map<String, Object> attrs = new HashMap<String, Object>();
+    private final CopyOnWriteArraySet<String> extensions = new CopyOnWriteArraySet<String>();
+    private final ConcurrentMap<String, Object> attrs = new ConcurrentHashMap<String, Object>();
     private final InetSocketAddress remote;
     private final InetSocketAddress local;
     
