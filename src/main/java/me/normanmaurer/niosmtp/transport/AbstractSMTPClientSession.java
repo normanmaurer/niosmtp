@@ -17,6 +17,7 @@
 package me.normanmaurer.niosmtp.transport;
 
 import java.net.InetSocketAddress;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -25,9 +26,11 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 
-import me.normanmaurer.niosmtp.SMTPMultiResponseCallback;
+import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPPipeliningRequest;
 import me.normanmaurer.niosmtp.SMTPRequest;
+import me.normanmaurer.niosmtp.SMTPResponse;
+import me.normanmaurer.niosmtp.delivery.FutureResult;
 
 import org.slf4j.Logger;
 
@@ -104,10 +107,11 @@ public abstract class AbstractSMTPClientSession implements SMTPClientSession {
      * 
      */
     @Override
-    public void send(SMTPPipeliningRequest request, SMTPMultiResponseCallback callback) {
+    public SMTPClientFuture<FutureResult<Collection<SMTPResponse>>> send(SMTPPipeliningRequest request) {
         for(SMTPRequest req: request.getRequests()) {
-            send(req, callback);
+            send(req);
         }
+        return null;
     }
     
     

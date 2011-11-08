@@ -20,7 +20,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
-import me.normanmaurer.niosmtp.delivery.callback.SMTPResponseCallbackFactory;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**

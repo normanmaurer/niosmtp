@@ -45,8 +45,8 @@ class SMTPRequestEncoder extends OneToOneEncoder implements SMTPClientConstants{
             SMTPRequest req = (SMTPRequest) msg;
             String request = StringUtils.toString((SMTPRequest) req);
             
-            if (logger.isDebugEnabled()) {
-                logger.debug("Channel " + ctx.getChannel().getId() + " sent: [" + request + "]");
+            if (logger.isInfoEnabled()) {
+                logger.info("Channel " + ctx.getChannel().getId() + " sent: [" + request + "]");
             }
             
           

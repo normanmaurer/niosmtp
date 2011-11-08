@@ -17,16 +17,16 @@
 package me.normanmaurer.niosmtp.transport;
 
 import java.net.InetSocketAddress;
-import java.util.Iterator;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import me.normanmaurer.niosmtp.SMTPMultiResponseCallback;
+import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPMessage;
 import me.normanmaurer.niosmtp.SMTPPipeliningRequest;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
-import me.normanmaurer.niosmtp.SMTPResponseCallback;
+import me.normanmaurer.niosmtp.delivery.FutureResult;
 
 import org.slf4j.Logger;
 
@@ -95,39 +95,43 @@ public interface SMTPClientSession {
     void startTLS();
         
     /**
-     * Send the given {@link SMTPRequest} to the connected SMTP-Server. The given {@link SMTPResponseCallback} will get called
-     * once the {@link SMTPResponse} was received or an {@link Exception} was thrown
+     * Send the given {@link SMTPRequest} to the connected SMTP-Server. 
      * 
      * @param request
-     * @param callback
+     * @return future
      */
-    void send(SMTPRequest request, SMTPResponseCallback callback);
+    SMTPClientFuture<FutureResult<SMTPResponse>> send(SMTPRequest request);
     
     /**
-     * Send the given {@link SMTPPipeliningRequest} to the connected SMTP-Server. The given {@link SMTPMultiResponseCallback}
-     * will get executed for each response till {@link SMTPMultiResponseCallback#isDone(SMTPClientSession)}
-     * returns <code>false</code>
+     * Send the given {@link SMTPPipeliningRequest} to the connected SMTP-Server.
      * 
      * @param request
-     * @param callback
+     * @return future
      */
-    void send(SMTPPipeliningRequest request, SMTPMultiResponseCallback callback);
+    SMTPClientFuture<FutureResult<Collection<SMTPResponse>>> send(SMTPPipeliningRequest request);
 
     
     /**
-     * Send the given {@link SMTPMessage} to the connected SMTP-Server. The given {@link SMTPResponseCallback} will get called
-     * once the {@link SMTPResponse} was received or an {@link Exception} was thrown
+     * Send the given {@link SMTPMessage} to the connected SMTP-Server.
      * 
      * @param request
-     * @param callback
+     * @return future
      */
-    void send(SMTPMessage request, SMTPResponseCallback callback);
+    SMTPClientFuture<FutureResult<SMTPResponse>> send(SMTPMessage request);
 
     /**
      * Close the {@link SMTPClientSession}
+     * 
+     * @return future
      */
-    void close();
+    SMTPClientFuture<FutureResult<Boolean>> close();
     
+    /**
+     * Return the {@link SMTPClientFuture} which will get notified once the {@link SMTPClientSession} was closed
+     * 
+     * @return future
+     */
+    SMTPClientFuture<FutureResult<Boolean>> getCloseFuture();
     
     /**
      * Return <code>true</code> if the {@link SMTPClientSession} is closed (disconnected)
@@ -160,43 +164,6 @@ public interface SMTPClientSession {
      */
     InetSocketAddress getLocalAddress();
     
-    /**
-     * Add an {@link CloseListener} which will get notified once the {@link SMTPClientSession} was closed. This may be because the client or the server
-     * has closed it
-     * 
-     * @param listener
-     */
-    void addCloseListener(CloseListener listener);
-    
-    /**
-     * Remove the {@link CloseListener}
-     * 
-     * @param listener
-     */
-    void removeCloseListener(CloseListener listener);
-    
-    /**
-     * Return an {@link Iterator} which holds all {@link CloseListener} that were registered before for the {@link SMTPClientSession}
-     * 
-     * @return listeners
-     * 
-     */
-    Iterator<CloseListener> getCloseListeners();
-    
-    /**
-     * Listener which will get notified once the {@link SMTPClientSession} was closed
-     * 
-     * @author Norman Maurer
-     *
-     */
-    public interface CloseListener {
         
-        /**
-         * Which will get called once the {@link SMTPClientSession} was closed
-         * 
-         * @param session
-         */
-        void onClose(SMTPClientSession session);
-    }
 
 }

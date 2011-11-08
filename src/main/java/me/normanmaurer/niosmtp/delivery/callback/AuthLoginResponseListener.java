@@ -16,10 +16,11 @@
 */
 package me.normanmaurer.niosmtp.delivery.callback;
 
+import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPResponse;
-import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
+import me.normanmaurer.niosmtp.delivery.FutureResult;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryEnvelope;
@@ -28,27 +29,27 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 import org.apache.commons.codec.binary.Base64;
 
 /**
- * {@link AbstractAuthResponseCallback} which handles <code>AUTH LOGIN</code>
+ * {@link AbstractAuthResponseListener} which handles <code>AUTH LOGIN</code>
  * 
  * @author Norman Maurer
  *
  */
-public class AuthLoginResponseCallback extends AbstractAuthResponseCallback{
+public class AuthLoginResponseListener extends AbstractAuthResponseListener{
 
 
     /**
-     * Get instance of this {@link SMTPResponseCallback} implementation
+     * Get instance of this {@link AuthLoginResponseListener} implementation
      */
-    public final static SMTPResponseCallback INSTANCE = new AuthLoginResponseCallback();
+    public final static AuthLoginResponseListener INSTANCE = new AuthLoginResponseListener();
     
     private final static String PROCESS_USERNAME = "PROCESS_USERNAME";
     private final static String PROCESS_PASSWORD = "PROCESS_PASSWORD";
 
-    private AuthLoginResponseCallback() {
+    private AuthLoginResponseListener() {
         
     }
     @Override
-    public void onResponse(SMTPClientSession session, SMTPResponse response) throws SMTPException {
+    public void onResult(SMTPClientSession session, SMTPResponse response) throws SMTPException {
         if (session.getAttributes().containsKey(PROCESS_PASSWORD)) {
             session.getAttributes().remove(PROCESS_PASSWORD);
             if (response.getCode() == 235) {
@@ -72,7 +73,8 @@ public class AuthLoginResponseCallback extends AbstractAuthResponseCallback{
 
             if (response.getCode() == 334) {
                 session.getAttributes().put(PROCESS_PASSWORD, true);
-                session.send(new SMTPRequestImpl(new String(Base64.encodeBase64(((SMTPDeliveryAgentConfig)session.getConfig()).getAuthentication().getPassword().getBytes(CHARSET)), CHARSET), null), INSTANCE);
+                SMTPClientFuture<FutureResult<SMTPResponse>> future = session.send(new SMTPRequestImpl(new String(Base64.encodeBase64(((SMTPDeliveryAgentConfig)session.getConfig()).getAuthentication().getPassword().getBytes(CHARSET)), CHARSET), null));
+                future.addListener(INSTANCE);
             } else {
                 setDeliveryStatusForAll(session, response);
 
@@ -80,7 +82,8 @@ public class AuthLoginResponseCallback extends AbstractAuthResponseCallback{
         } else {
             if (response.getCode() == 334) {
                 session.getAttributes().put(PROCESS_USERNAME, true);
-                session.send(new SMTPRequestImpl(new String(Base64.encodeBase64(((SMTPDeliveryAgentConfig)session.getConfig()).getAuthentication().getUsername().getBytes(CHARSET)), CHARSET), null), INSTANCE);
+                SMTPClientFuture<FutureResult<SMTPResponse>> future = session.send(new SMTPRequestImpl(new String(Base64.encodeBase64(((SMTPDeliveryAgentConfig)session.getConfig()).getAuthentication().getUsername().getBytes(CHARSET)), CHARSET), null));
+                future.addListener(INSTANCE);
             } else {
                 setDeliveryStatusForAll(session, response);
             }

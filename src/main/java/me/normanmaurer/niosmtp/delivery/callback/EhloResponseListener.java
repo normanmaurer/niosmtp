@@ -22,7 +22,6 @@ import java.util.Set;
 import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
-import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.SMTPUnsupportedExtensionException;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.delivery.Authentication;
@@ -34,7 +33,7 @@ import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
- * {@link AbstractResponseCallback} implementation which will handle the <code>EHLO</code> {@link SMTPResponse}
+ * {@link ChainedSMTPClientFutureListener} implementation which will handle the <code>EHLO</code> {@link SMTPResponse}
  * 
  * It will write the next {@link SMTPRequest} to the {@link SMTPClientSession} with the right {@link SMTPResponseCallback} added.
  * 
@@ -43,24 +42,24 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  * @author Norman Maurer
  *
  */
-public class EhloResponseCallback extends AbstractResponseCallback implements SMTPClientConstants{
+public class EhloResponseListener extends ChainedSMTPClientFutureListener<SMTPResponse> implements SMTPClientConstants{
 
     
     /**
      * Get instance of this {@link SMTPResponseCallback} implemenation
      */
-    public static final SMTPResponseCallback INSTANCE = new EhloResponseCallback();
+    public static final EhloResponseListener INSTANCE = new EhloResponseListener();
     
     private static final SMTPException PIPELINING_NOT_SUPPORTED_EXECTION = new SMTPUnsupportedExtensionException("Extension PIPELINING is not supported");
     
     private static final SMTPException STARTTLS_NOT_SUPPORTED_EXECTION = new SMTPUnsupportedExtensionException("Extension STARTTLS is not supported");
 
-    private EhloResponseCallback() {
+    private EhloResponseListener() {
         
     }
     
     @Override
-    public void onResponse(SMTPClientSession session, SMTPResponse response) throws SMTPException {
+    public void onResult(SMTPClientSession session, SMTPResponse response) throws SMTPException {
         boolean supportsPipelining = false;
         boolean supportsStartTLS = false;
         initSupportedExtensions(session, response);

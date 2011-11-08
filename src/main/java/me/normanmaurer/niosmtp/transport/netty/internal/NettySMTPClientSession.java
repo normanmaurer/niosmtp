@@ -21,22 +21,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Collection;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ssl.SSLEngine;
 
-import me.normanmaurer.niosmtp.SMTPMultiResponseCallback;
 import me.normanmaurer.niosmtp.SMTPByteArrayMessage;
+import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPMessage;
 import me.normanmaurer.niosmtp.SMTPPipeliningRequest;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
-import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.core.DataTerminatingInputStream;
+import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
+import me.normanmaurer.niosmtp.delivery.FutureResult;
 import me.normanmaurer.niosmtp.transport.AbstractSMTPClientSession;
+import me.normanmaurer.niosmtp.transport.FutureResultImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
@@ -47,6 +48,7 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
@@ -74,12 +76,10 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
     
     private final Channel channel;
     private final SSLEngine engine;
-    private final List<CloseListener> closeListeners = new ArrayList<CloseListener>();
-    private final LinkedList<SMTPResponseCallback> callbacks = new LinkedList<SMTPResponseCallback>();
-    
-    
+    private final SMTPClientFutureImpl<FutureResult<Boolean>> closeFuture = new SMTPClientFutureImpl<FutureResult<Boolean>>();
+    private final AtomicInteger futureCount = new AtomicInteger(0);
 
-    private NettySMTPClientSession(Channel channel, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode,  SSLEngine engine) {
+    protected NettySMTPClientSession(Channel channel, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode,  SSLEngine engine) {
         super(logger, config, mode, (InetSocketAddress) channel.getLocalAddress(), (InetSocketAddress) channel.getRemoteAddress());      
         this.channel = channel;
         this.engine = engine;
@@ -88,11 +88,40 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
     
     public static NettySMTPClientSession create(Channel channel, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode, SSLEngine engine) {
         NettySMTPClientSession session = new NettySMTPClientSession(channel, logger, config, mode, engine);
-        session.channel.getPipeline().addBefore(IDLE_HANDLER_KEY, "callback", new CallbackAdapter(session));
+        session.channel.getPipeline().addBefore(IDLE_HANDLER_KEY, "callback", new CallbackAdapter(session.closeFuture));
         return session;
     }
     
     
+    private void addFutureHandler(final SMTPClientFutureImpl<FutureResult<SMTPResponse>> future) {
+        SimpleChannelUpstreamHandler handler = new FutureHandler<SMTPResponse>(future) {
+
+            @Override
+            public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
+                if (e.getMessage() instanceof SMTPResponse) {
+                    ctx.getPipeline().remove(this);
+                    future.setDeliveryStatus(new FutureResultImpl<SMTPResponse>((SMTPResponse)e.getMessage()));
+                } else {
+                    super.messageReceived(ctx, e);
+                }
+            }
+
+            
+        };
+        addHandler(handler);
+
+    }
+
+    private void addHandler(SimpleChannelUpstreamHandler handler) {
+        ChannelPipeline cp = channel.getPipeline();
+        int count = futureCount.incrementAndGet();
+        String oldHandler = "futureHandler" + (count -1);
+        if (count == 1 || cp.get(oldHandler) == null) {
+            cp.addBefore("callback", "futureHandler" + count, handler);
+        } else {
+            cp.addBefore(oldHandler, "futureHandler" + count, handler);
+        }
+    }
     
     @Override
     public String getId() {
@@ -109,19 +138,24 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
     }
     
     @Override
-    public void send(SMTPRequest request, SMTPResponseCallback callback) {
-        callbacks.add(callback);
+    public SMTPClientFuture<FutureResult<SMTPResponse>> send(SMTPRequest request) {
+        SMTPClientFutureImpl<FutureResult<SMTPResponse>> future = new SMTPClientFutureImpl<FutureResult<SMTPResponse>>(false);
+        future.setSMTPClientSession(this);
+        addFutureHandler(future);
         channel.write(request);
+        return future;
     }
     
  
 
     
     @Override
-    public void send(SMTPMessage msg, SMTPResponseCallback callback) {
-        callbacks.add(callback);
+    public SMTPClientFuture<FutureResult<SMTPResponse>> send(SMTPMessage msg) {
+        SMTPClientFutureImpl<FutureResult<SMTPResponse>> future = new SMTPClientFutureImpl<FutureResult<SMTPResponse>>(false);
+        future.setSMTPClientSession(this);
 
         Set<String> extensions = getSupportedExtensions();
+        addFutureHandler(future);
         if (msg instanceof SMTPByteArrayMessage) {
             byte[] data;
             
@@ -147,13 +181,15 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
                    
             channel.write(new ChunkedStream(new DataTerminatingInputStream(msgIn)));
         }
+        return future;
                     
     }
     
 
     @Override
-    public void close() {
+    public SMTPClientFuture<FutureResult<Boolean>> close() {
         channel.write(ChannelBuffers.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+        return closeFuture;
     }
 
 
@@ -163,28 +199,12 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
     }
 
 
-    @Override
-    public void addCloseListener(CloseListener listener) {
-        closeListeners.add(listener);
-    }
-
 
     @Override
     public boolean isClosed() {
         return !channel.isConnected();
     }
 
-    @Override
-    public void removeCloseListener(CloseListener listener) {
-        closeListeners.remove(listener);
-       
-    }
-
-    @Override
-    public Iterator<CloseListener> getCloseListeners() {
-        return new ArrayList<CloseListener>(closeListeners).iterator();
-    }
-  
     
     /**
      * Create a {@link ChannelBuffer} which is terminated with a CRLF.CRLF sequence
@@ -230,50 +250,18 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
     }
     
     protected static final class CallbackAdapter extends SimpleChannelUpstreamHandler {
-        private final NettySMTPClientSession session;
+        private final SMTPClientFutureImpl<FutureResult<Boolean>> closeFuture;
 
 
-        public CallbackAdapter(NettySMTPClientSession session) {
-            this.session = session;
+        public CallbackAdapter(SMTPClientFutureImpl<FutureResult<Boolean>> closeFuture) {
+            this.closeFuture = closeFuture;
         }
-        
-        @Override
-        public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
-            Object msg = e.getMessage();
-            if (msg instanceof SMTPResponse) {
-                SMTPResponseCallback callback = session.callbacks.peek();
-                if (callback != null) {
-                    callback.onResponse(session, (SMTPResponse) msg);
-                    
-                    boolean remove = true;
-                    if (callback instanceof SMTPMultiResponseCallback && !((SMTPMultiResponseCallback) callback).isDone(session)) {
-                        remove = false;
-                    }
-                    if (remove) {
-                        session.callbacks.remove(callback);
-                    }
-                }
-            } else {
-                super.messageReceived(ctx, e);
-            }
-        }
-
-        @Override
-        public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
-            SMTPResponseCallback callback = session.callbacks.poll();
-
-            if (callback != null) {
-                callback.onException(session, e.getCause());
-            }
-
-        }
+     
         
         
         @Override
         public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-            for (CloseListener listener: session.closeListeners) {
-                listener.onClose(session);
-            }
+            closeFuture.setDeliveryStatus(new FutureResultImpl<Boolean>(true));
             super.channelClosed(ctx, e);
         }
     }
@@ -291,8 +279,57 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
 
 
     @Override
-    public void send(SMTPPipeliningRequest request, SMTPMultiResponseCallback callback) {
-        callbacks.add(callback);
-        channel.write(request);        
+    public SMTPClientFuture<FutureResult<Collection<SMTPResponse>>> send(SMTPPipeliningRequest request) {
+        
+        SMTPClientFutureImpl<FutureResult<Collection<SMTPResponse>>> future = new SMTPClientFutureImpl<FutureResult<Collection<SMTPResponse>>>(false);
+        future.setSMTPClientSession(this);
+
+        final int requests = request.getRequests().size();
+        FutureHandler<Collection<SMTPResponse>> handler = new FutureHandler<Collection<SMTPResponse>>(future) {
+            final Collection<SMTPResponse> responses = new ArrayList<SMTPResponse>();
+            @Override
+            public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
+                if (e.getMessage() instanceof SMTPResponse) {
+                    responses.add((SMTPResponse) e.getMessage());
+                    if (responses.size() == requests) {
+                        ctx.getPipeline().remove(this);
+                        future.setDeliveryStatus(new FutureResultImpl<Collection<SMTPResponse>>(responses));
+                    }
+                } else {
+                    super.messageReceived(ctx, e);
+                }
+            }
+
+            
+        };
+        addHandler(handler);
+        channel.write(request);      
+        return future;
     }
+
+    @Override
+    public SMTPClientFuture<FutureResult<Boolean>> getCloseFuture() {
+        return closeFuture;
+    }
+    
+    
+    protected abstract class FutureHandler<E> extends SimpleChannelUpstreamHandler {
+
+        protected SMTPClientFutureImpl<FutureResult<E>> future;
+
+
+        public FutureHandler(SMTPClientFutureImpl<FutureResult<E>> future) {
+            this.future = future;
+        }
+       
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
+            ctx.getPipeline().remove(this);
+            future.setDeliveryStatus(FutureResult.create(e.getCause()));
+            
+        }
+        
+    };
 }

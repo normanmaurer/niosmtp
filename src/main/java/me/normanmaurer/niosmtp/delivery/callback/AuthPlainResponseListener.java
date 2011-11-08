@@ -16,11 +16,12 @@
 */
 package me.normanmaurer.niosmtp.delivery.callback;
 
+import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPResponse;
-import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.delivery.Authentication;
+import me.normanmaurer.niosmtp.delivery.FutureResult;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryEnvelope;
@@ -29,27 +30,27 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 import org.apache.commons.codec.binary.Base64;
 
 /**
- * {@link AbstractAuthResponseCallback} which should be used to handle <code>AUTH PLAIN</code>
+ * {@link AbstractAuthResponseListener} which should be used to handle <code>AUTH PLAIN</code>
  * 
  * @author Norman Maurer
  *
  */
-public class AuthPlainResponseCallback extends AbstractAuthResponseCallback{
+public class AuthPlainResponseListener extends AbstractAuthResponseListener{
     
 
     /**
      * Get instance of this {@link SMTPResponseCallback} implementation
      */
-    public final static SMTPResponseCallback INSTANCE = new AuthPlainResponseCallback();
+    public final static AuthPlainResponseListener INSTANCE = new AuthPlainResponseListener();
     
     private final static String PROCESS_AUTH = "PROCESS_AUTH";
 
-    private AuthPlainResponseCallback() {
+    private AuthPlainResponseListener() {
         
     }
     
     @Override
-    public void onResponse(SMTPClientSession session, SMTPResponse response) throws SMTPException {
+    public void onResult(SMTPClientSession session, SMTPResponse response) throws SMTPException {
         if (session.getAttributes().remove(PROCESS_AUTH) != null) {
             if (response.getCode() == 235) {
                 String mail = ((SMTPDeliveryEnvelope)session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
@@ -73,7 +74,8 @@ public class AuthPlainResponseCallback extends AbstractAuthResponseCallback{
                 session.getAttributes().put(PROCESS_AUTH, true);
                 Authentication auth = ((SMTPDeliveryAgentConfig)session.getConfig()).getAuthentication();
                 String userPass = auth.getUsername() + "\0" + auth.getPassword();
-                session.send(new SMTPRequestImpl(new String(Base64.encodeBase64(userPass.getBytes(CHARSET)), CHARSET), null), INSTANCE);
+                SMTPClientFuture<FutureResult<SMTPResponse>> future = session.send(new SMTPRequestImpl(new String(Base64.encodeBase64(userPass.getBytes(CHARSET)), CHARSET), null));
+                future.addListener(INSTANCE);
             } else {
                 setDeliveryStatusForAll(session, response);
             }

@@ -20,7 +20,10 @@ import java.net.InetSocketAddress;
 
 import javax.net.ssl.SSLContext;
 
-import me.normanmaurer.niosmtp.SMTPResponseCallback;
+import me.normanmaurer.niosmtp.SMTPClientFuture;
+import me.normanmaurer.niosmtp.SMTPResponse;
+import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
+import me.normanmaurer.niosmtp.delivery.FutureResult;
 import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
@@ -66,7 +69,8 @@ class NettySMTPClientTransport implements SMTPClientTransport{
     
     
     @Override
-    public void connect(InetSocketAddress remote, SMTPClientConfig config, final SMTPResponseCallback callback) {
+    public SMTPClientFuture<FutureResult<SMTPResponse>> connect(InetSocketAddress remote, SMTPClientConfig config) {
+        SMTPClientFutureImpl<FutureResult<SMTPResponse>> future = new SMTPClientFutureImpl<FutureResult<SMTPResponse>>();
         ClientBootstrap bootstrap = new ClientBootstrap(factory);
         bootstrap.setOption("connectTimeoutMillis", config.getConnectionTimeout() * 1000);
         bootstrap.setOption("tcpNoDelay", true);
@@ -76,14 +80,14 @@ class NettySMTPClientTransport implements SMTPClientTransport{
         ChannelPipelineFactory cp;
         switch (mode) {
         case PLAIN:
-            cp = new SMTPClientPipelineFactory(callback, config, timer);
+            cp = new SMTPClientPipelineFactory(future, config, timer);
             break;
         case SMTPS:
             // just move on to STARTTLS_DEPEND
         case STARTTLS_TRY:
             // just move on to STARTTLS_DEPEND
         case STARTTLS_DEPEND:
-            cp = new SecureSMTPClientPipelineFactory(callback, config, timer,context, mode);
+            cp = new SecureSMTPClientPipelineFactory(future, config, timer,context, mode);
             break;
         default:
             throw new IllegalArgumentException("Unknown DeliveryMode " + mode);
@@ -100,6 +104,7 @@ class NettySMTPClientTransport implements SMTPClientTransport{
                 }
             }
         });
+        return future;
     }
     
 

@@ -18,8 +18,9 @@ package me.normanmaurer.niosmtp.transport.impl;
 
 import java.net.InetSocketAddress;
 
-import me.normanmaurer.niosmtp.SMTPResponseCallback;
-import me.normanmaurer.niosmtp.core.SMTPResponseImpl;
+import me.normanmaurer.niosmtp.SMTPClientFuture;
+import me.normanmaurer.niosmtp.SMTPResponse;
+import me.normanmaurer.niosmtp.delivery.FutureResult;
 import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
@@ -39,12 +40,9 @@ public class MockSMTPClientTransport implements SMTPClientTransport {
     }
     
     @Override
-    public void connect(InetSocketAddress remote, SMTPClientConfig config, SMTPResponseCallback callback) {
+    public SMTPClientFuture<FutureResult<SMTPResponse>> connect(InetSocketAddress remote, SMTPClientConfig config) {
         SMTPClientSession session = new MockSMTPClientSession(config);
-        try {
-            callback.onResponse(session, new SMTPResponseImpl(220));
-        } catch (Exception e) {
-            callback.onException(session, e);
-        }
+
+        return null;
     }
 }

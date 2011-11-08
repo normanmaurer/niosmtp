@@ -19,6 +19,8 @@ package me.normanmaurer.niosmtp.delivery.lmtp;
 import java.io.ByteArrayInputStream;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 
 import org.apache.james.protocols.api.handler.WiringException;
 import org.apache.james.protocols.impl.NettyServer;
@@ -40,6 +42,8 @@ import me.normanmaurer.niosmtp.core.SMTPMessageImpl;
 import me.normanmaurer.niosmtp.delivery.AbstractSMTPClientNoPipeliningTest;
 import me.normanmaurer.niosmtp.delivery.AssertCheck;
 import me.normanmaurer.niosmtp.delivery.AsyncAssertCheck;
+import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus;
+import me.normanmaurer.niosmtp.delivery.FutureResult;
 import me.normanmaurer.niosmtp.delivery.LMTPDeliveryAgent;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgent;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryEnvelope;
@@ -108,7 +112,7 @@ public abstract class AbstractLMTPClientNoPipeliningTest extends AbstractSMTPCli
             SMTPDeliveryAgentConfigImpl conf = createConfig();
             SMTPDeliveryEnvelope transaction = new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com", "to3@example.com"}), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes())));
             
-            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf,transaction);
+            SMTPClientFuture<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>> future = c.deliver(new InetSocketAddress(port), conf,transaction);
             check.onSMTPClientFuture(future);
             
         } finally {

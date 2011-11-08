@@ -18,45 +18,50 @@ package me.normanmaurer.niosmtp.delivery.callback;
 
 import java.util.Locale;
 
+import me.normanmaurer.niosmtp.SMTPClientFutureListener;
 import me.normanmaurer.niosmtp.SMTPMessage;
 import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPRequest;
-import me.normanmaurer.niosmtp.SMTPResponseCallback;
+import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.core.LMTPRequest;
+import me.normanmaurer.niosmtp.delivery.FutureResult;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 
 /**
- * {@link SMTPResponseCallbackFactory} implementation which returns the {@link SMTPResponseCallback}'s while processing
+ * {@link SMTPClientFutureListenerFactoryImpl} implementation which returns the {@link SMTPClientFutureListener}'s while processing
  * the LMTP Transaction
  * 
  * @author Norman Maurer
  *
  */
-public class LMTPResponseCallbackFactory extends SMTPResponseCallbackFactoryImpl {
+public class LMTPClientFutureListenerFactory extends SMTPClientFutureListenerFactoryImpl {
 
     @Override
-    public SMTPResponseCallback getCallback(SMTPClientSession session, SMTPRequest request) throws SMTPException {
+    public SMTPClientFutureListener<FutureResult<SMTPResponse>> getListener(SMTPClientSession session, SMTPRequest request) throws SMTPException {
         if (request == null) {
-            return LMTPWelcomeResponseCallback.INSTANCE;
+            return LMTPWelcomeResponseListener.INSTANCE;
         } else {
             String cmd = request.getCommand().toUpperCase(Locale.UK);
             if (LMTPRequest.LHLO_COMMAND.equals(cmd)) {
-                return EhloResponseCallback.INSTANCE;
+                return EhloResponseListener.INSTANCE;
             } else {
-                return super.getCallback(session, request);
+                return super.getListener(session, request);
             }
         }
     }
 
     @Override
-    public SMTPResponseCallback getCallback(SMTPClientSession session) throws SMTPException {
-        return LMTPWelcomeResponseCallback.INSTANCE;
+    public SMTPClientFutureListener<FutureResult<SMTPResponse>> getListener(SMTPClientSession session) throws SMTPException {
+        return LMTPWelcomeResponseListener.INSTANCE;
+
     }
 
     @Override
-    public SMTPResponseCallback getCallback(SMTPClientSession session, SMTPMessage input) throws SMTPException {
+    public SMTPClientFutureListener<FutureResult<SMTPResponse>> getListener(SMTPClientSession session, SMTPMessage input) throws SMTPException {
         return LMTPPostDataResponseCallback.INSTANCE;
+
     }
+
 
 }

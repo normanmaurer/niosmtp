@@ -19,57 +19,40 @@ package me.normanmaurer.niosmtp.delivery.callback;
 import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
-import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig;
-import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig.PipeliningMode;
-import me.normanmaurer.niosmtp.delivery.SMTPDeliveryEnvelope;
-import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
+
 /**
- * {@link AbstractResponseCallback} implementation which will handle the <code>STARTLS</code> {@link SMTPResponse}
+ * {@link ChainedSMTPClientFutureListener} implementation which will handle the <code>WELCOME</code> {@link SMTPResponse} which is triggered
+ * after the connection is established to the SMTP Server
  * 
  * It will write the next {@link SMTPRequest} to the {@link SMTPClientSession} with the right {@link SMTPResponseCallback} added.
  * 
- * This implementation also handles the <code>PIPELINING</code> and also the <code>STARTTLS</code> extension
  * 
  * @author Norman Maurer
  *
  */
-public class StartTlsResponseCallback extends AbstractResponseCallback implements SMTPClientConstants {
+public class WelcomeResponseListener extends ChainedSMTPClientFutureListener<SMTPResponse> {
 
     /**
      * Get instance of this {@link SMTPResponseCallback} implemenation
      */
-    public final static SMTPResponseCallback INSTANCE = new StartTlsResponseCallback();
-
-    private StartTlsResponseCallback() {
+    public final static WelcomeResponseListener INSTANCE = new WelcomeResponseListener();
+    
+    private WelcomeResponseListener() {
         
     }
     
     @Override
-    public void onResponse(SMTPClientSession session, SMTPResponse response) throws SMTPException {
-        String mail = ((SMTPDeliveryEnvelope) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
-
-        
+    public void onResult(SMTPClientSession session, SMTPResponse response) throws SMTPException {
         int code = response.getCode();
-        if (code < 400) {
-            
-            session.startTLS();
-           
-
-            // We use a SMTPPipelinedRequest if the SMTPServer supports PIPELINING. This will allow the NETTY to get
-            // the MAX throughput as the encoder will write it out in one buffer if possible. This result in less system calls
-            if (session.getSupportedExtensions().contains(PIPELINING_EXTENSION) && ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() != PipeliningMode.NO) {
-                pipelining(session);
-            } else {
-                next(session, SMTPRequestImpl.mail(mail));
-            }
-
+        if (code < 400) {   
+            next(session, SMTPRequestImpl.ehlo(((SMTPDeliveryAgentConfig)session.getConfig()).getHeloName()));
         } else {
             setDeliveryStatusForAll(session, response);
         }
     }
-
+    
 }

@@ -27,13 +27,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import me.normanmaurer.niosmtp.SMTPClientFuture;
+import me.normanmaurer.niosmtp.SMTPClientFutureListener;
 import me.normanmaurer.niosmtp.SMTPMessage;
 import me.normanmaurer.niosmtp.SMTPConnectionException;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
-import me.normanmaurer.niosmtp.SMTPResponseCallback;
+import me.normanmaurer.niosmtp.delivery.FutureResult;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
-import me.normanmaurer.niosmtp.transport.SMTPClientSession.CloseListener;
 import me.normanmaurer.niosmtp.transport.AbstractSMTPClientSession;
 import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
@@ -61,7 +62,7 @@ public class LimitingSMTPClientTransport implements SMTPClientTransport {
 
     private final SMTPClientTransport transport;
     private final int connectionLimit;
-    private final CloseListener closeListener = new ReleaseConnectionCloseHandler();
+    private final SMTPClientFutureListener<FutureResult<Boolean>> closeListener = new ReleaseConnectionCloseHandler();
     private final AtomicInteger connectionCount = new AtomicInteger(0);
     private final ConcurrentLinkedQueue<QueuedConnectRequest> connectionQueue = new ConcurrentLinkedQueue<QueuedConnectRequest>();
     private final int maxQueuedConnectionLimit;
@@ -122,7 +123,9 @@ public class LimitingSMTPClientTransport implements SMTPClientTransport {
 
     
     @Override
-    public void connect(InetSocketAddress remote, SMTPClientConfig config, final SMTPResponseCallback callback) {
+    public SMTPClientFuture<FutureResult<SMTPResponse>> connect(InetSocketAddress remote, SMTPClientConfig config) {
+        return null;
+        /*
         if (connectionCount.incrementAndGet() > connectionLimit)  {
             connectionCount.decrementAndGet();
             if (maxQueuedConnectionLimit > -1 && connectionQueue.size() +1 > maxQueuedConnectionLimit) {
@@ -133,24 +136,21 @@ public class LimitingSMTPClientTransport implements SMTPClientTransport {
         } else {
             connectToServer(remote, config, callback);
         }
+        */
         
     }
 
-    private void connectToServer(InetSocketAddress remote, SMTPClientConfig config, final SMTPResponseCallback callback) {
-        transport.connect(remote, config, new SMTPResponseCallback() {
-            
+    private SMTPClientFuture<FutureResult<SMTPResponse>> connectToServer(InetSocketAddress remote, SMTPClientConfig config) {
+        SMTPClientFuture<FutureResult<SMTPResponse>> future = transport.connect(remote, config);
+        future.addListener(new SMTPClientFutureListener<FutureResult<SMTPResponse>>() {
+
             @Override
-            public void onResponse(SMTPClientSession session, SMTPResponse response) throws Exception {
-                session.addCloseListener(closeListener);
-                callback.onResponse(session, response);
-            }
-            
-            @Override
-            public void onException(SMTPClientSession session, Throwable t) {
-                session.addCloseListener(closeListener);
-                callback.onException(session, t);
+            public void operationComplete(SMTPClientFuture<FutureResult<SMTPResponse>> future) {
+                future.getSession().getCloseFuture().addListener(closeListener);
             }
         });
+        
+        return future;
     }
     
     
@@ -159,7 +159,7 @@ public class LimitingSMTPClientTransport implements SMTPClientTransport {
         // loop over all queued connection requests and fail them all
         QueuedConnectRequest request = null;
         while((request = connectionQueue.poll()) != null) {
-            request.callback.onException(new UnconnectedSMTPClientSession(logger, request.config, getDeliveryMode()), CONNECTION_EXCEPTION);
+        //    request.callback.onException(new UnconnectedSMTPClientSession(logger, request.config, getDeliveryMode()), CONNECTION_EXCEPTION);
         }
         transport.destroy();
 
@@ -168,12 +168,12 @@ public class LimitingSMTPClientTransport implements SMTPClientTransport {
     private final static class QueuedConnectRequest {
         private final InetSocketAddress address;
         private final SMTPClientConfig config;
-        private final SMTPResponseCallback callback;
+        private final SMTPClientFutureListener<FutureResult<SMTPResponse>> listener;
 
-        public QueuedConnectRequest(InetSocketAddress address, SMTPClientConfig config, SMTPResponseCallback callback) {
+        public QueuedConnectRequest(InetSocketAddress address, SMTPClientConfig config, SMTPClientFutureListener<FutureResult<SMTPResponse>> listener) {
             this.address = address;
             this.config = config;
-            this.callback = callback;
+            this.listener = listener;
         }
         
     }
@@ -184,27 +184,29 @@ public class LimitingSMTPClientTransport implements SMTPClientTransport {
      * @author Norman Maurer
      *
      */
-    private final class ReleaseConnectionCloseHandler implements SMTPClientSession.CloseListener {
+    private final class ReleaseConnectionCloseHandler implements SMTPClientFutureListener<FutureResult<Boolean>> {
+
 
         @Override
-        public void onClose(SMTPClientSession session) {
+        public void operationComplete(SMTPClientFuture<FutureResult<Boolean>> future) {
             if(connectionCount.decrementAndGet() <= connectionLimit) {
                 
                 while(connectionCount.incrementAndGet() <= connectionLimit) {
                     QueuedConnectRequest request = connectionQueue.poll();
                     if (request != null) {
-                        connectToServer(request.address, request.config, request.callback);
+                        SMTPClientFuture<FutureResult<SMTPResponse>> cFuture = connectToServer(request.address, request.config);
+                        cFuture.addListener(request.listener);
                     } else {
                         connectionCount.decrementAndGet();
                         break;
                     }
                 }
                 connectionCount.decrementAndGet();
-            }
+            }            
         }
         
     }
-
+/*
     private class UnconnectedSMTPClientSession extends AbstractSMTPClientSession {
 
         private final String id = UUID.randomUUID().toString();
@@ -267,5 +269,6 @@ public class LimitingSMTPClientTransport implements SMTPClientTransport {
         }
         
     }
+    */
 
 }

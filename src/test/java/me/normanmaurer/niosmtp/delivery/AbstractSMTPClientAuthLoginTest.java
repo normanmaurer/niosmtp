@@ -30,7 +30,6 @@ import java.util.Iterator;
 import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.core.SMTPMessageImpl;
 import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus;
-import me.normanmaurer.niosmtp.delivery.DeliveryResult;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgent;
 import me.normanmaurer.niosmtp.delivery.impl.AuthenticationImpl;
 import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryAgentConfigImpl;
@@ -93,11 +92,11 @@ public abstract class AbstractSMTPClientAuthLoginTest extends AbstractSMTPClient
             SMTPDeliveryAgentConfigImpl conf = createConfig();
             conf.setAuthentication(createAuthentication("myuser", "mybadpassword"));
 
-            SMTPClientFuture<Collection<DeliveryResult>> future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes()))));
-            DeliveryResult dr = future.get().iterator().next();
+            SMTPClientFuture<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>> future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes()))));
+            FutureResult<Iterator<DeliveryRecipientStatus>> dr = future.get().iterator().next();
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());
-            Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
+            Iterator<DeliveryRecipientStatus> it = dr.getResult();
             DeliveryRecipientStatus status = it.next();
             assertEquals(DeliveryRecipientStatus.DeliveryStatus.PermanentError, status.getStatus());
             assertEquals(535, status.getResponse().getCode());

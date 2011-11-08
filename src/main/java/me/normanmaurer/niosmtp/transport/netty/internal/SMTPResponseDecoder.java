@@ -69,8 +69,8 @@ class SMTPResponseDecoder extends OneToOneDecoder implements SMTPClientConstants
 
                 }
                 ctx.setAttachment(null);
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Channel " + ctx.getChannel().getId() + " received: [" + StringUtils.toString(response) + "]");
+                if (logger.isInfoEnabled()) {
+                    logger.info("Channel " + ctx.getChannel().getId() + " received: [" + StringUtils.toString(response) + "]");
                 }
                 return response;
             } else if (separator == SMTPResponse.SEPERATOR) {

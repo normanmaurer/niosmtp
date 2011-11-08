@@ -27,12 +27,12 @@ import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
- * Abstract base class of {@link AbstractResponseCallback} which AUTH callbacks should use
+ * Abstract base class of {@link ChainedSMTPClientFutureListener} which AUTH callbacks should use
  * 
  * @author Norman Maurer
  *
  */
-public abstract class AbstractAuthResponseCallback extends AbstractResponseCallback implements SMTPClientConstants{
+public abstract class AbstractAuthResponseListener extends ChainedSMTPClientFutureListener<SMTPResponse> implements SMTPClientConstants{
     @Override
     protected void setDeliveryStatusForAll(SMTPClientSession session, SMTPResponse response) throws SMTPException {
         // check if the SMTPResponse needs to get decoded 

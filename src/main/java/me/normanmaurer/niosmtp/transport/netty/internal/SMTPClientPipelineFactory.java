@@ -16,7 +16,9 @@
 */
 package me.normanmaurer.niosmtp.transport.netty.internal;
 
-import me.normanmaurer.niosmtp.SMTPResponseCallback;
+import me.normanmaurer.niosmtp.SMTPResponse;
+import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
+import me.normanmaurer.niosmtp.delivery.FutureResult;
 import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 
@@ -45,13 +47,13 @@ public class SMTPClientPipelineFactory implements ChannelPipelineFactory, NettyC
     private final static SMTPPipeliningRequestEncoder SMTP_PIPELINING_REQUEST_ENCODER = new SMTPPipeliningRequestEncoder();
     private final static SMTPClientIdleHandler SMTP_CLIENT_IDLE_HANDLER = new SMTPClientIdleHandler();
     private final Timer timer;
-    protected final SMTPResponseCallback callback;
+    protected final SMTPClientFutureImpl<FutureResult<SMTPResponse>> future;
     protected final SMTPClientConfig config;
     
-    public SMTPClientPipelineFactory(SMTPResponseCallback callback, SMTPClientConfig config, Timer timer) {
+    public SMTPClientPipelineFactory(SMTPClientFutureImpl<FutureResult<SMTPResponse>> future, SMTPClientConfig config, Timer timer) {
         this.timer = timer;
         this.config = config;
-        this.callback = callback;
+        this.future = future;
     }
     
     
@@ -73,7 +75,7 @@ public class SMTPClientPipelineFactory implements ChannelPipelineFactory, NettyC
     }
     
     protected ConnectHandler createConnectHandler() {
-        return new ConnectHandler(callback, LOGGER, config, SMTPDeliveryMode.PLAIN, null);
+        return new ConnectHandler(future, LOGGER, config, SMTPDeliveryMode.PLAIN, null);
     }
     
 

@@ -17,23 +17,23 @@
 package me.normanmaurer.niosmtp.delivery.callback;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import me.normanmaurer.niosmtp.SMTPClientFuture;
+import me.normanmaurer.niosmtp.SMTPClientFutureListener;
 import me.normanmaurer.niosmtp.SMTPMessage;
 import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPPipeliningRequest;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
-import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
-import me.normanmaurer.niosmtp.core.SMTPPipelingingResponseCallback;
 import me.normanmaurer.niosmtp.core.SMTPPipeliningRequestImpl;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus;
-import me.normanmaurer.niosmtp.delivery.DeliveryResult;
+import me.normanmaurer.niosmtp.delivery.FutureResult;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliverySessionConstants;
@@ -49,32 +49,49 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  * @author Norman Maurer
  *
  */
-public abstract class AbstractResponseCallback implements SMTPResponseCallback, SMTPDeliverySessionConstants, SMTPClientConstants {
+public abstract class ChainedSMTPClientFutureListener<E> implements SMTPClientFutureListener<FutureResult<E>>, SMTPDeliverySessionConstants, SMTPClientConstants {
     
-    @SuppressWarnings("unchecked")
     @Override
-    public void onException(SMTPClientSession session, Throwable t) {
-        SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
+    public void operationComplete(SMTPClientFuture<FutureResult<E>> future) {
+        FutureResult<E> result = future.getNoWait();
+        SMTPClientSession session = future.getSession();
+        if (!result.isSuccess()) {
+            onException(session, result.getException());
+        } else {
+            try {
+                onResult(session, result.getResult());
+            } catch (SMTPException e) {
+                onException(session, e);
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    
+    protected void onException(SMTPClientSession session, SMTPException e) {
+        SMTPClientFutureImpl<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>> future = (SMTPClientFutureImpl<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>>) session.getAttributes().get(FUTURE_KEY);
         
-        List<DeliveryResult> resultList = ((List<DeliveryResult>) session.getAttributes().get(DELIVERY_RESULT_LIST_KEY));
+        List<FutureResult<Iterator<DeliveryRecipientStatus>>> resultList = ((List<FutureResult<Iterator<DeliveryRecipientStatus>>>) session.getAttributes().get(DELIVERY_RESULT_LIST_KEY));
         Iterator<SMTPDeliveryEnvelope> transactions = ((Iterator<SMTPDeliveryEnvelope>) session.getAttributes().get(SMTP_TRANSACTIONS_KEY));
         
-        resultList.add(DeliveryResultImpl.create(t));
+        resultList.add(DeliveryResultImpl.create(e));
         while(transactions.hasNext()) {
             // Remove the transactions from iterator and place a DeliveryResult which contains a Exception
             transactions.next();
-            resultList.add(DeliveryResultImpl.create(t));
+            resultList.add(DeliveryResultImpl.create(e));
         }
         
         future.setDeliveryStatus(resultList);
         try {
             next(session, SMTPRequestImpl.quit());
-        } catch (SMTPException e) {
+        } catch (SMTPException e1) {
             // ignore on close
         }
 
         session.close();
     }
+    
+    protected abstract void onResult(SMTPClientSession session, E result) throws SMTPException;
     
     @SuppressWarnings("unchecked")
     protected void setDeliveryStatusForAll(SMTPClientSession session, SMTPResponse response) throws SMTPException {
@@ -134,9 +151,9 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
      */
     @SuppressWarnings("unchecked")
     protected void setDeliveryStatus(SMTPClientSession session) throws SMTPException {
-        SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
+        SMTPClientFutureImpl<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>> future = (SMTPClientFutureImpl<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>>) session.getAttributes().get(FUTURE_KEY);
         List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
-        List<DeliveryResult> resultList = ((List<DeliveryResult>) session.getAttributes().get(DELIVERY_RESULT_LIST_KEY));       
+        List<FutureResult<Iterator<DeliveryRecipientStatus>>> resultList = ((List<FutureResult<Iterator<DeliveryRecipientStatus>>>) session.getAttributes().get(DELIVERY_RESULT_LIST_KEY));
         Iterator<SMTPDeliveryEnvelope> transactions = ((Iterator<SMTPDeliveryEnvelope>) session.getAttributes().get(SMTP_TRANSACTIONS_KEY));
 
         resultList.add(new DeliveryResultImpl(statusList));
@@ -162,22 +179,17 @@ public abstract class AbstractResponseCallback implements SMTPResponseCallback, 
     }
     
     protected final void next(SMTPClientSession session, SMTPPipeliningRequest request) throws SMTPException {
-        SMTPResponseCallbackFactory factory = (SMTPResponseCallbackFactory) session.getAttributes().get(SMTP_RESPONSE_CALLBACK_FACTORY);
-        Iterator<SMTPRequest> reqs = request.getRequests().iterator();
-        List<SMTPResponseCallback> callbacks = new ArrayList<SMTPResponseCallback>();
-        while(reqs.hasNext()) {
-            callbacks.add(factory.getCallback(session, reqs.next()));
-        }
-        session.send(request, new SMTPPipelingingResponseCallback(callbacks.iterator()));
+        SMTPClientFutureListenerFactory factory = (SMTPClientFutureListenerFactory) session.getAttributes().get(SMTP_RESPONSE_CALLBACK_FACTORY);
+        session.send(request).addListener(factory.getListener(session, request));
     }
     
     protected final void next(SMTPClientSession session, SMTPRequest request) throws SMTPException {
-        SMTPResponseCallback callback = ((SMTPResponseCallbackFactory) session.getAttributes().get(SMTP_RESPONSE_CALLBACK_FACTORY)).getCallback(session, request);
-        session.send(request, callback);
+        SMTPClientFutureListenerFactory factory = (SMTPClientFutureListenerFactory) session.getAttributes().get(SMTP_RESPONSE_CALLBACK_FACTORY);
+        session.send(request).addListener(factory.getListener(session, request));
     }
     
     protected final void next(SMTPClientSession session, SMTPMessage request) throws SMTPException {
-        SMTPResponseCallback callback = ((SMTPResponseCallbackFactory) session.getAttributes().get(SMTP_RESPONSE_CALLBACK_FACTORY)).getCallback(session, request);
-        session.send(request, callback);
+        SMTPClientFutureListenerFactory factory = (SMTPClientFutureListenerFactory) session.getAttributes().get(SMTP_RESPONSE_CALLBACK_FACTORY);
+        session.send(request).addListener(factory.getListener(session, request));
     }
 }

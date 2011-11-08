@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import me.normanmaurer.niosmtp.SMTPClientFuture;
-import me.normanmaurer.niosmtp.delivery.DeliveryResult;
 
 /**
  * Callback which should be called when a {@link SMTPClientFuture} was received. 
@@ -42,7 +41,7 @@ public abstract class AssertCheck {
      * @param future
      * @throws Exception
      */
-    public void onSMTPClientFuture(SMTPClientFuture<Collection<DeliveryResult>> future) throws Exception {
+    public void onSMTPClientFuture(SMTPClientFuture<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>> future) throws Exception {
         onDeliveryResult(future.get().iterator()); 
     }
     
@@ -53,5 +52,5 @@ public abstract class AssertCheck {
      * 
      * @param result
      */
-    protected abstract void onDeliveryResult(Iterator<DeliveryResult> result);
+    protected abstract void onDeliveryResult(Iterator<FutureResult<Iterator<DeliveryRecipientStatus>>> result);
 }

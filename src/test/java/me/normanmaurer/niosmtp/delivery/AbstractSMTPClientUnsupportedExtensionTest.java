@@ -48,7 +48,6 @@ import org.junit.Test;
 import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPUnsupportedExtensionException;
 import me.normanmaurer.niosmtp.core.SMTPMessageImpl;
-import me.normanmaurer.niosmtp.delivery.DeliveryResult;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgent;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryAgentConfigImpl;
@@ -146,13 +145,13 @@ public abstract class AbstractSMTPClientUnsupportedExtensionTest {
     private final class DependOnPipeliningAssertCheck extends AssertCheck {
 
         @Override
-        protected void onDeliveryResult(Iterator<DeliveryResult> result) {
+        protected void onDeliveryResult(Iterator<FutureResult<Iterator<DeliveryRecipientStatus>>> result) {
             assertTrue(result.hasNext());
             
             // We expect to receive an exception as PIPELINING was not supported
-            DeliveryResult dr = result.next();
+            FutureResult<Iterator<DeliveryRecipientStatus>> dr = result.next();
             assertFalse(dr.isSuccess());
-            assertNull(dr.getRecipientStatus());
+            assertNull(dr.getResult());
             assertEquals(SMTPUnsupportedExtensionException.class, dr.getException().getClass());
             
             assertFalse(result.hasNext());
@@ -175,7 +174,7 @@ public abstract class AbstractSMTPClientUnsupportedExtensionTest {
         SMTPDeliveryAgentConfigImpl conf = createConfig();
         conf.setPipeliningMode(PipeliningMode.DEPEND);
 
-        SMTPClientFuture<Collection<DeliveryResult>> future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes()))));
+        SMTPClientFuture<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>> future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes()))));
         try {
             
             check.onSMTPClientFuture(future);
@@ -202,13 +201,13 @@ public abstract class AbstractSMTPClientUnsupportedExtensionTest {
     private class DependOnStartTLSAssertCheck extends AssertCheck {
 
         
-        protected void onDeliveryResult(Iterator<DeliveryResult> result) {
+        protected void onDeliveryResult(Iterator<FutureResult<Iterator<DeliveryRecipientStatus>>> result) {
             assertTrue(result.hasNext());
 
             // We expect to receive an exception as STARTTLS was not supported
-            DeliveryResult dr = result.next();
+            FutureResult<Iterator<DeliveryRecipientStatus>> dr = result.next();
             assertFalse(dr.isSuccess());
-            assertNull(dr.getRecipientStatus());
+            assertNull(dr.getResult());
             assertEquals(SMTPUnsupportedExtensionException.class, dr.getException().getClass());
             
             assertFalse(result.hasNext());
@@ -231,7 +230,7 @@ public abstract class AbstractSMTPClientUnsupportedExtensionTest {
 
         SMTPDeliveryAgentConfigImpl conf = createConfig();
 
-        SMTPClientFuture<Collection<DeliveryResult>> future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes()))));
+        SMTPClientFuture<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>> future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes()))));
         try {
             check.onSMTPClientFuture(future);
         } finally {

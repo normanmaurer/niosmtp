@@ -21,12 +21,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
+import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPMessage;
-import me.normanmaurer.niosmtp.SMTPMultiResponseCallback;
 import me.normanmaurer.niosmtp.SMTPPipeliningRequest;
 import me.normanmaurer.niosmtp.SMTPRequest;
-import me.normanmaurer.niosmtp.SMTPResponseCallback;
+import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.core.SMTPResponseImpl;
+import me.normanmaurer.niosmtp.delivery.FutureResult;
 import me.normanmaurer.niosmtp.transport.AbstractSMTPClientSession;
 import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
@@ -40,31 +41,12 @@ public class MockSMTPClientSession extends AbstractSMTPClientSession {
         super(LoggerFactory.getLogger(MockSMTPClientSession.class), config, SMTPDeliveryMode.PLAIN, null, null);
     }
 
-    private final List<CloseListener> cListeners = new ArrayList<CloseListener>();
     private boolean closed = false;
     @Override
     public void startTLS() {
         // do nothing
     }
-    
-    @Override
-    public void send(SMTPMessage request, SMTPResponseCallback callback) {
-        try {
-            callback.onResponse(this, new SMTPResponseImpl(250));
-        } catch (Exception e) {
-            callback.onException(this, e);
-        }
-        
-    }
-    
-    @Override
-    public void send(SMTPRequest request, SMTPResponseCallback callback) {
-        try {
-            callback.onResponse(this, new SMTPResponseImpl(250));
-        } catch (Exception e) {
-            callback.onException(this, e);
-        }
-    }
+  
     
     @Override
     public boolean isEncrypted() {
@@ -80,36 +62,31 @@ public class MockSMTPClientSession extends AbstractSMTPClientSession {
     public String getId() {
         return id;
     }
-    
+  
+
+
     @Override
-    public synchronized void close() {
-        closed = true;
-        for (CloseListener l: cListeners) {
-            l.onClose(this);
-        }
-    }
-    
-    @Override
-    public synchronized void addCloseListener(CloseListener listener) {
-        cListeners.add(listener);
+    public SMTPClientFuture<FutureResult<SMTPResponse>> send(SMTPRequest request) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     @Override
-    public synchronized void removeCloseListener(CloseListener listener) {
-        cListeners.remove(listener);
+    public SMTPClientFuture<FutureResult<SMTPResponse>> send(SMTPMessage request) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     @Override
-    public synchronized Iterator<CloseListener> getCloseListeners() {
-        return new ArrayList<CloseListener>(cListeners).iterator();
+    public SMTPClientFuture<FutureResult<Boolean>> getCloseFuture() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
+
     @Override
-    public void send(SMTPPipeliningRequest request, SMTPMultiResponseCallback callback) {
-        try {
-            callback.onResponse(this, new SMTPResponseImpl(250));
-        } catch (Exception e) {
-            callback.onException(this, e);
-        }        
+    public SMTPClientFuture<FutureResult<Boolean>> close() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

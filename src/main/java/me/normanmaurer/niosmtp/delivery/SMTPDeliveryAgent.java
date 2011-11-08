@@ -24,12 +24,14 @@ import java.util.Map;
 
 
 import me.normanmaurer.niosmtp.SMTPClientFuture;
+import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.core.ArrayIterator;
 import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
-import me.normanmaurer.niosmtp.delivery.callback.AbstractResponseCallback;
-import me.normanmaurer.niosmtp.delivery.callback.SMTPResponseCallbackFactory;
-import me.normanmaurer.niosmtp.delivery.callback.SMTPResponseCallbackFactoryImpl;
+import me.normanmaurer.niosmtp.delivery.callback.ChainedSMTPClientFutureListener;
+import me.normanmaurer.niosmtp.delivery.callback.SMTPClientFutureListenerFactory;
+import me.normanmaurer.niosmtp.delivery.callback.SMTPClientFutureListenerFactoryImpl;
+import me.normanmaurer.niosmtp.transport.FutureResultImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
@@ -46,7 +48,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 public class SMTPDeliveryAgent implements SMTPClientConstants, SMTPDeliverySessionConstants {
 
     private final SMTPClientTransport transport;
-    private final static SMTPResponseCallbackFactory FACTORY = new SMTPResponseCallbackFactoryImpl();
+    private final static SMTPClientFutureListenerFactory FACTORY = new SMTPClientFutureListenerFactoryImpl();
     
     public SMTPDeliveryAgent(final SMTPClientTransport transport) {
         this.transport = transport;
@@ -66,23 +68,19 @@ public class SMTPDeliveryAgent implements SMTPClientConstants, SMTPDeliverySessi
      * @param transation
      * @return future
      */
-    public SMTPClientFuture<Collection<DeliveryResult>> deliver(InetSocketAddress host, final SMTPDeliveryAgentConfig config, final SMTPDeliveryEnvelope... transactions) {
+    public SMTPClientFuture<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>> deliver(InetSocketAddress host, final SMTPDeliveryAgentConfig config, final SMTPDeliveryEnvelope... transactions) {
         if (transactions == null || transactions.length == 0) {
             throw new IllegalArgumentException("SMTPTransaction parameter must be not null and the length must be > 0");
         }
 
-        final SMTPClientFutureImpl<Collection<DeliveryResult>> future = new SMTPClientFutureImpl<Collection<DeliveryResult>>();
-        final SMTPResponseCallbackFactory callbackfactory = createFactory();
+        final SMTPClientFutureImpl<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>> future = new SMTPClientFutureImpl<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>>();
+        final SMTPClientFutureListenerFactory factory = createFactory();
         
-        transport.connect(host, config,new AbstractResponseCallback() {
-            @Override
-            public void onResponse(SMTPClientSession session, SMTPResponse response) throws Exception{
-                initSession(session);
-                callbackfactory.getCallback(session).onResponse(session, response);
-            }
+        transport.connect(host, config).addListener(new ChainedSMTPClientFutureListener<SMTPResponse>() {
+          
 
             @Override
-            public void onException(SMTPClientSession session, Throwable t) {
+            public void onException(SMTPClientSession session, SMTPException t) {
                 initSession(session);
                 super.onException(session, t);
             
@@ -104,8 +102,19 @@ public class SMTPDeliveryAgent implements SMTPClientConstants, SMTPDeliverySessi
 
                 attrs.put(FUTURE_KEY, future);
                 attrs.put(DELIVERY_STATUS_KEY, new ArrayList<DeliveryRecipientStatus>());
-                attrs.put(DELIVERY_RESULT_LIST_KEY, new ArrayList<DeliveryResult>());
+                attrs.put(DELIVERY_RESULT_LIST_KEY, new ArrayList<FutureResult<Iterator<DeliveryRecipientStatus>>>());
                 attrs.put(SMTP_RESPONSE_CALLBACK_FACTORY, createFactory());
+            }
+
+            @Override
+            protected void onResult(SMTPClientSession session, SMTPResponse result) throws SMTPException {
+                initSession(session);
+                FutureResult<SMTPResponse> fResult = new FutureResultImpl<SMTPResponse>(result);
+                SMTPClientFutureImpl<FutureResult<SMTPResponse>> future = new SMTPClientFutureImpl<FutureResult<SMTPResponse>>();
+                future.setSMTPClientSession(session);
+                future.addListener(factory.getListener(session));
+                future.setDeliveryStatus(fResult);      
+                
             }
         });
         
@@ -116,11 +125,11 @@ public class SMTPDeliveryAgent implements SMTPClientConstants, SMTPDeliverySessi
 
     
     /**
-     * Return the {@link SMTPResponseCallbackFactory} to use
+     * Return the {@link SMTPClientFutureListenerFactory} to use
      * 
      * @return factory
      */
-    protected SMTPResponseCallbackFactory createFactory() {
+    protected SMTPClientFutureListenerFactory createFactory() {
         return FACTORY;
     }
 }

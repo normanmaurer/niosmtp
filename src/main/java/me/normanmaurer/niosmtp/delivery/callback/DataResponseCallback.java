@@ -19,11 +19,11 @@ package me.normanmaurer.niosmtp.delivery.callback;
 import java.util.Iterator;
 import java.util.List;
 
+import me.normanmaurer.niosmtp.SMTPClientFutureListener;
 import me.normanmaurer.niosmtp.SMTPMessage;
 import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
-import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryEnvelope;
@@ -31,20 +31,20 @@ import me.normanmaurer.niosmtp.delivery.impl.DeliveryRecipientStatusImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
- * {@link AbstractResponseCallback} implementation which will handle the <code>DATA</code> {@link SMTPResponse}
+ * {@link ChainedSMTPClientFutureListener} implementation which will handle the <code>DATA</code> {@link SMTPResponse}
  * 
- * It will write the next {@link SMTPRequest} to the {@link SMTPClientSession} with the right {@link SMTPResponseCallback} added.
+ * It will write the next {@link SMTPRequest} to the {@link SMTPClientSession} with the right {@link SMTPClientFutureListener} added.
  * 
  * 
  * @author Norman Maurer
  *
  */
-public class DataResponseCallback extends AbstractPipelineResponseCallback {
+public class DataResponseCallback extends AbstractPipeliningResponseListener {
 
     /**
      * Get instance of this {@link SMTPResponseCallback} implementation
      */
-    public final static SMTPResponseCallback INSTANCE = new DataResponseCallback();
+    public final static DataResponseCallback INSTANCE = new DataResponseCallback();
     
     protected DataResponseCallback() {
     }
@@ -53,7 +53,7 @@ public class DataResponseCallback extends AbstractPipelineResponseCallback {
     @Override
     public void onResponseInternal(SMTPClientSession session, SMTPResponse response) throws SMTPException {
 
-        SMTPClientFutureImpl future = (SMTPClientFutureImpl) session.getAttributes().get(FUTURE_KEY);
+        SMTPClientFutureImpl<?> future = (SMTPClientFutureImpl<?>) session.getAttributes().get(FUTURE_KEY);
         List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
         SMTPMessage msg = ((SMTPDeliveryEnvelope) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getMessage();
         boolean pipeliningActive = session.getAttributes().containsKey(PIPELINING_ACTIVE_KEY);

@@ -22,7 +22,6 @@ import java.util.List;
 import me.normanmaurer.niosmtp.SMTPMessage;
 import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPResponse;
-import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus.DeliveryStatus;
 import me.normanmaurer.niosmtp.delivery.impl.DeliveryRecipientStatusImpl;
@@ -30,29 +29,29 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 
 /**
- * {@link AbstractResponseCallback} implementation which will handle the <code>POST DATA</code> {@link SMTPResponse} which will
+ * {@link ChainedSMTPClientFutureListener} implementation which will handle the <code>POST DATA</code> {@link SMTPResponse} which will
  * get send after the {@link SMTPMessage} get submitted via the CRLF.CRLF sequence
  * 
  * 
  * @author Norman Maurer
  *
  */
-public class PostDataResponseCallback extends AbstractResponseCallback {
+public class PostDataResponseListener extends ChainedSMTPClientFutureListener<SMTPResponse> {
 
     
     /**
-     * Get instance of this {@link SMTPResponseCallback} implemenation
+     * Get instance of this {@link PostDataResponseListener} implemenation
      */
-    public final static SMTPResponseCallback INSTANCE = new PostDataResponseCallback();
+    public final static PostDataResponseListener INSTANCE = new PostDataResponseListener();
     
     
-    private PostDataResponseCallback() {
+    private PostDataResponseListener() {
         
     }
     
     @SuppressWarnings("unchecked")
     @Override
-    public void onResponse(SMTPClientSession session, SMTPResponse response) throws SMTPException {
+    public void onResult(SMTPClientSession session, SMTPResponse response) throws SMTPException {
 
         List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
         

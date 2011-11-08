@@ -39,7 +39,17 @@ public class SMTPClientFutureImpl<E> implements SMTPClientFuture<E>{
     private final List<SMTPClientFutureListener<E>> listeners = new CopyOnWriteArrayList<SMTPClientFutureListener<E>>();
     private volatile E result;
     private volatile SMTPClientSession session;
+    private final boolean cancelable;
         
+    
+    public SMTPClientFutureImpl(boolean cancelable) {
+        this.cancelable = cancelable;
+    }
+    
+    public SMTPClientFutureImpl() {
+        this(true);
+    }
+    
     /**
      * Set the <code>E</code> for the future and notify all waiting threads + the listeners. This should get called only on time, 
      * otherwise it will throw an {@link IllegalStateException}
@@ -71,7 +81,7 @@ public class SMTPClientFutureImpl<E> implements SMTPClientFuture<E>{
     
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-        if (isDone()) {
+        if (!cancelable || isDone()) {
             return false;
         } else {
             isCancelled = true;

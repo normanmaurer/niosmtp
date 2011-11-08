@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 
 import me.normanmaurer.niosmtp.SMTPClientFuture;
@@ -32,7 +33,7 @@ import me.normanmaurer.niosmtp.delivery.AbstractSMTPClientTest;
 import me.normanmaurer.niosmtp.delivery.AssertCheck;
 import me.normanmaurer.niosmtp.delivery.AsyncAssertCheck;
 import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus;
-import me.normanmaurer.niosmtp.delivery.DeliveryResult;
+import me.normanmaurer.niosmtp.delivery.FutureResult;
 import me.normanmaurer.niosmtp.delivery.LMTPDeliveryAgent;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgent;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryEnvelope;
@@ -114,7 +115,7 @@ public abstract class AbstractLMTPClientTest extends AbstractSMTPClientTest{
             SMTPDeliveryAgentConfigImpl conf = createConfig();
             SMTPDeliveryEnvelope transaction = new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com", "to3@example.com"}), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes())));
             
-            SMTPClientFuture future = c.deliver(new InetSocketAddress(port), conf,transaction);
+            SMTPClientFuture<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>> future = c.deliver(new InetSocketAddress(port), conf,transaction);
             check.onSMTPClientFuture(future);
             
         } finally {
@@ -127,14 +128,14 @@ public abstract class AbstractLMTPClientTest extends AbstractSMTPClientTest{
     public final static class RejectOneRecipientAfterDataAssertCheck extends AssertCheck {
 
         @Override
-        protected void onDeliveryResult(Iterator<DeliveryResult> results) {
+        protected void onDeliveryResult(Iterator<FutureResult<Iterator<DeliveryRecipientStatus>>> results) {
             
-            DeliveryResult dr = results.next();
+            FutureResult<Iterator<DeliveryRecipientStatus>> dr = results.next();
             
             
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());
-            Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
+            Iterator<DeliveryRecipientStatus> it = dr.getResult();
             DeliveryRecipientStatus status = it.next();
             assertEquals(DeliveryRecipientStatus.DeliveryStatus.PermanentError, status.getStatus());
             assertEquals(554, status.getResponse().getCode());

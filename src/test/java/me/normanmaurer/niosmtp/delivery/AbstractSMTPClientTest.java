@@ -29,7 +29,6 @@ import me.normanmaurer.niosmtp.SMTPConnectionException;
 import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.core.SMTPMessageImpl;
 import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus;
-import me.normanmaurer.niosmtp.delivery.DeliveryResult;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgent;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryEnvelope;
 import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryAgentConfigImpl;
@@ -112,7 +111,7 @@ public abstract class AbstractSMTPClientTest {
 
         try {
             SMTPDeliveryAgentConfigImpl conf = createConfig();
-            SMTPClientFuture<Collection<DeliveryResult>> future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes()))));
+            SMTPClientFuture<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>> future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes()))));
             check.onSMTPClientFuture(future);
         } finally {
             smtpServer.unbind();
@@ -124,11 +123,11 @@ public abstract class AbstractSMTPClientTest {
     private final class RejectMailFromAssertCheck extends AssertCheck {
 
         @Override
-        protected void onDeliveryResult(Iterator<DeliveryResult> result) {
-            DeliveryResult dr = result.next();
+        protected void onDeliveryResult(Iterator<FutureResult<Iterator<DeliveryRecipientStatus>>> result) {
+            FutureResult<Iterator<DeliveryRecipientStatus>> dr = result.next();
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());
-            Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
+            Iterator<DeliveryRecipientStatus> it = dr.getResult();
             DeliveryRecipientStatus status = it.next();
             assertEquals(DeliveryRecipientStatus.DeliveryStatus.PermanentError, status.getStatus());
             assertEquals(554, status.getResponse().getCode());
@@ -181,7 +180,7 @@ public abstract class AbstractSMTPClientTest {
 
         try {
             SMTPDeliveryAgentConfigImpl conf = createConfig();
-            SMTPClientFuture<Collection<DeliveryResult>> future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes()))));
+            SMTPClientFuture<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>> future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes()))));
             check.onSMTPClientFuture(future);
         } finally {
             smtpServer.unbind();
@@ -193,11 +192,11 @@ public abstract class AbstractSMTPClientTest {
     private final class RejectHeloAssertCheck extends AssertCheck {
 
         @Override
-        protected void onDeliveryResult(Iterator<DeliveryResult> result) {
-            DeliveryResult dr = result.next();
+        protected void onDeliveryResult(Iterator<FutureResult<Iterator<DeliveryRecipientStatus>>> result) {
+            FutureResult<Iterator<DeliveryRecipientStatus>> dr = result.next();
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());
-            Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
+            Iterator<DeliveryRecipientStatus> it = dr.getResult();
             DeliveryRecipientStatus status = it.next();
             assertEquals(DeliveryRecipientStatus.DeliveryStatus.PermanentError, status.getStatus());
             assertEquals(554, status.getResponse().getCode());
@@ -251,7 +250,7 @@ public abstract class AbstractSMTPClientTest {
         try {
             SMTPDeliveryAgentConfigImpl conf = createConfig();
 
-            SMTPClientFuture<Collection<DeliveryResult>> future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes()))));
+            SMTPClientFuture<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>> future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes()))));
             check.onSMTPClientFuture(future);
         } finally {
             smtpServer.unbind();
@@ -263,11 +262,11 @@ public abstract class AbstractSMTPClientTest {
     private final class RejectAllRecipientsAssertCheck extends AssertCheck {
 
         @Override
-        protected void onDeliveryResult(Iterator<DeliveryResult> result) {
-            DeliveryResult dr = result.next();
+        protected void onDeliveryResult(Iterator<FutureResult<Iterator<DeliveryRecipientStatus>>> result) {
+            FutureResult<Iterator<DeliveryRecipientStatus>> dr = result.next();
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());
-            Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
+            Iterator<DeliveryRecipientStatus> it = dr.getResult();
             DeliveryRecipientStatus status = it.next();
             assertEquals(DeliveryRecipientStatus.DeliveryStatus.PermanentError, status.getStatus());
             assertEquals(554, status.getResponse().getCode());
@@ -317,7 +316,7 @@ public abstract class AbstractSMTPClientTest {
         try {
             SMTPDeliveryAgentConfigImpl conf = createConfig();
 
-            SMTPClientFuture<Collection<DeliveryResult>> future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes()))));
+            SMTPClientFuture<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>> future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com"}), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes()))));
             check.onSMTPClientFuture(future);
         } finally {
             smtpServer.unbind();
@@ -329,11 +328,11 @@ public abstract class AbstractSMTPClientTest {
     private final class RejectDataAssertCheck extends AssertCheck {
 
         @Override
-        protected void onDeliveryResult(Iterator<DeliveryResult> result) {
-            DeliveryResult dr = result.next();
+        protected void onDeliveryResult(Iterator<FutureResult<Iterator<DeliveryRecipientStatus>>> result) {
+            FutureResult<Iterator<DeliveryRecipientStatus>> dr = result.next();
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());
-            Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
+            Iterator<DeliveryRecipientStatus> it = dr.getResult();
             DeliveryRecipientStatus status = it.next();
             assertEquals(DeliveryRecipientStatus.DeliveryStatus.PermanentError, status.getStatus());
             assertEquals(554, status.getResponse().getCode());
@@ -387,7 +386,7 @@ public abstract class AbstractSMTPClientTest {
         try {
             SMTPDeliveryAgentConfigImpl conf = createConfig();
 
-            SMTPClientFuture<Collection<DeliveryResult>> future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com", "to3@example.com"}), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes()))));
+            SMTPClientFuture<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>> future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com", "to3@example.com"}), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes()))));
             check.onSMTPClientFuture(future);
         } finally {
             smtpServer.unbind();
@@ -399,11 +398,11 @@ public abstract class AbstractSMTPClientTest {
     private final class RejectOneRecipientAssertCheck extends AssertCheck {
 
         @Override
-        protected void onDeliveryResult(Iterator<DeliveryResult> result) {
-            DeliveryResult dr = result.next();
+        protected void onDeliveryResult(Iterator<FutureResult<Iterator<DeliveryRecipientStatus>>> result) {
+            FutureResult<Iterator<DeliveryRecipientStatus>> dr = result.next();
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());
-            Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
+            Iterator<DeliveryRecipientStatus> it = dr.getResult();
             DeliveryRecipientStatus status = it.next();
             assertEquals(DeliveryRecipientStatus.DeliveryStatus.Ok, status.getStatus());
             assertEquals(250, status.getResponse().getCode());
@@ -457,7 +456,7 @@ public abstract class AbstractSMTPClientTest {
             SMTPDeliveryAgentConfigImpl conf = createConfig();
             SMTPDeliveryEnvelope transaction = new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] {"to@example.com", "to2@example.com", "to3@example.com"}), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes())));
             
-            SMTPClientFuture<Collection<DeliveryResult>> future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelope[] {transaction, transaction});
+            SMTPClientFuture<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>> future = c.deliver(new InetSocketAddress(port), conf, new SMTPDeliveryEnvelope[] {transaction, transaction});
             check.onSMTPClientFuture(future);
             
         } finally {
@@ -470,14 +469,14 @@ public abstract class AbstractSMTPClientTest {
     private final class MultiplePerConnectionAssertCheck extends AssertCheck {
 
         @Override
-        protected void onDeliveryResult(Iterator<DeliveryResult> results) {
+        protected void onDeliveryResult(Iterator<FutureResult<Iterator<DeliveryRecipientStatus>>> results) {
             
-            DeliveryResult dr = results.next();
+            FutureResult<Iterator<DeliveryRecipientStatus>> dr = results.next();
             
             
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());
-            Iterator<DeliveryRecipientStatus> it = dr.getRecipientStatus();
+            Iterator<DeliveryRecipientStatus> it = dr.getResult();
             DeliveryRecipientStatus status = it.next();
             assertEquals(DeliveryRecipientStatus.DeliveryStatus.Ok, status.getStatus());
             assertEquals(250, status.getResponse().getCode());
@@ -499,7 +498,7 @@ public abstract class AbstractSMTPClientTest {
             dr = results.next();
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());
-            it = dr.getRecipientStatus();
+            it = dr.getResult();
             status = it.next();
             assertEquals(DeliveryRecipientStatus.DeliveryStatus.Ok, status.getStatus());
             assertEquals(250, status.getResponse().getCode());
@@ -539,7 +538,7 @@ public abstract class AbstractSMTPClientTest {
 
         SMTPDeliveryAgentConfigImpl conf = createConfig();
 
-        SMTPClientFuture<Collection<DeliveryResult>> future = c.deliver(new InetSocketAddress(11111), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes()))));
+        SMTPClientFuture<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>> future = c.deliver(new InetSocketAddress(11111), conf, new SMTPDeliveryEnvelopeImpl("from@example.com", Arrays.asList(new String[] { "to@example.com" }), new SMTPMessageImpl(new ByteArrayInputStream("msg".getBytes()))));
         try {
             check.onSMTPClientFuture(future);
         } finally {
@@ -551,10 +550,10 @@ public abstract class AbstractSMTPClientTest {
     private final class ConnectionRefusedAssertCheck extends AssertCheck {
 
         @Override
-        protected void onDeliveryResult(Iterator<DeliveryResult> result) {
-            DeliveryResult dr = result.next();
+        protected void onDeliveryResult(Iterator<FutureResult<Iterator<DeliveryRecipientStatus>>> result) {
+            FutureResult<Iterator<DeliveryRecipientStatus>> dr = result.next();
             assertFalse(dr.isSuccess());
-            assertNull(dr.getRecipientStatus());
+            assertNull(dr.getResult());
             assertEquals(SMTPConnectionException.class, dr.getException().getClass());            
         }
         

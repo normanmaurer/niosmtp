@@ -19,10 +19,10 @@ package me.normanmaurer.niosmtp.delivery.callback;
 import java.util.Iterator;
 import java.util.List;
 
+import me.normanmaurer.niosmtp.SMTPClientFutureListener;
 import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
-import me.normanmaurer.niosmtp.SMTPResponseCallback;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig;
@@ -33,23 +33,23 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 
 /**
- * {@link AbstractResponseCallback} implementation which will handle the <code>RCPT</code> {@link SMTPResponse}
+ * {@link ChainedSMTPClientFutureListener} implementation which will handle the <code>RCPT</code> {@link SMTPResponse}
  * 
- * It will write the next {@link SMTPRequest} to the {@link SMTPClientSession} with the right {@link SMTPResponseCallback} added.
+ * It will write the next {@link SMTPRequest} to the {@link SMTPClientSession} with the right {@link SMTPClientFutureListener} added.
  * 
  * This implementation also handles the <code>PIPELINING</code> extension
  * 
  * @author Norman Maurer
  *
  */
-public class RcptResponseCallback extends AbstractPipelineResponseCallback {
+public class RcptResponseListener extends AbstractPipeliningResponseListener {
 
     /**
-     * Get instance of this {@link SMTPResponseCallback} implemenation
+     * Get instance of this {@link RcptResponseListener} implementation
      */
-    public final static SMTPResponseCallback INSTANCE = new RcptResponseCallback();
+    public final static RcptResponseListener INSTANCE = new RcptResponseListener();
     
-    private RcptResponseCallback() {
+    private RcptResponseListener() {
         
     }
     

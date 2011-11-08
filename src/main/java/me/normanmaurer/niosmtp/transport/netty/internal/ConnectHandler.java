@@ -19,7 +19,9 @@ package me.normanmaurer.niosmtp.transport.netty.internal;
 import javax.net.ssl.SSLEngine;
 
 import me.normanmaurer.niosmtp.SMTPResponse;
-import me.normanmaurer.niosmtp.SMTPResponseCallback;
+import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
+import me.normanmaurer.niosmtp.delivery.FutureResult;
+import me.normanmaurer.niosmtp.transport.FutureResultImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
@@ -44,12 +46,12 @@ class ConnectHandler extends SimpleChannelUpstreamHandler {
 
     private final SSLEngine engine;
     private final SMTPDeliveryMode mode;
-    private final SMTPResponseCallback callback;
+    private final SMTPClientFutureImpl<FutureResult<SMTPResponse>> future;
     private final Logger logger;
     private final SMTPClientConfig config;
 
-    public ConnectHandler(SMTPResponseCallback callback, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode, SSLEngine engine){
-        this.callback = callback;
+    public ConnectHandler(SMTPClientFutureImpl<FutureResult<SMTPResponse>> future, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode, SSLEngine engine){
+        this.future = future;
         this.engine = engine;
         this.mode = mode;
         this.logger = logger;
@@ -69,16 +71,20 @@ class ConnectHandler extends SimpleChannelUpstreamHandler {
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
         Object msg = e.getMessage();
         if (msg instanceof SMTPResponse) {
-            callback.onResponse(createSession(ctx), (SMTPResponse) msg);
             ctx.getChannel().getPipeline().remove(this);
+            future.setSMTPClientSession(createSession(ctx));
+            future.setDeliveryStatus(new FutureResultImpl<SMTPResponse>((SMTPResponse) msg));
         } else {
             super.messageReceived(ctx, e);
         }
     }
     
+    @SuppressWarnings("unchecked")
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
-        callback.onException(createSession(ctx), e.getCause());
         ctx.getChannel().getPipeline().remove(this);
+        future.setSMTPClientSession(createSession(ctx));
+        future.setDeliveryStatus(FutureResult.create(e.getCause()));
+
     }
 }

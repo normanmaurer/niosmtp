@@ -24,7 +24,6 @@ import java.util.concurrent.CountDownLatch;
 
 import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPClientFutureListener;
-import me.normanmaurer.niosmtp.delivery.DeliveryResult;
 
 /**
  * Execute the wrapped {@link AssertCheck} in an asynchronous way by using a {@link SMTPClientFutureListener}
@@ -46,13 +45,13 @@ public class AsyncAssertCheck extends AssertCheck{
      * 
      */
     @Override
-    public void onSMTPClientFuture(SMTPClientFuture<Collection<DeliveryResult>> future) throws Exception {
+    public void onSMTPClientFuture(SMTPClientFuture<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>> future) throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
-        future.addListener(new SMTPClientFutureListener<Collection<DeliveryResult>>() {
+        future.addListener(new SMTPClientFutureListener<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>>() {
             
             @Override
-            public void operationComplete(SMTPClientFuture<Collection<DeliveryResult>> future) {
-                Iterator<DeliveryResult> result = future.getNoWait().iterator();
+            public void operationComplete(SMTPClientFuture<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>> future) {
+                Iterator<FutureResult<Iterator<DeliveryRecipientStatus>>> result = future.getNoWait().iterator();
 
                 onDeliveryResult(result);
                 latch.countDown();
@@ -62,7 +61,7 @@ public class AsyncAssertCheck extends AssertCheck{
     }
 
     @Override
-    protected void onDeliveryResult(Iterator<DeliveryResult> result) {
+    protected void onDeliveryResult(Iterator<FutureResult<Iterator<DeliveryRecipientStatus>>> result) {
         check.onDeliveryResult(result);
     }
 }

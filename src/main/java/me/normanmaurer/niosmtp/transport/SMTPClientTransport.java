@@ -18,8 +18,9 @@ package me.normanmaurer.niosmtp.transport;
 
 import java.net.InetSocketAddress;
 
+import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPResponse;
-import me.normanmaurer.niosmtp.SMTPResponseCallback;
+import me.normanmaurer.niosmtp.delivery.FutureResult;
 
 
 /**
@@ -48,7 +49,7 @@ public interface SMTPClientTransport {
      * @param config
      * @param callback
      */
-    void connect(InetSocketAddress remote, SMTPClientConfig config, SMTPResponseCallback callback);
+    SMTPClientFuture<FutureResult<SMTPResponse>> connect(InetSocketAddress remote, SMTPClientConfig config);
     
     
 

@@ -19,7 +19,9 @@ package me.normanmaurer.niosmtp.transport.netty.internal;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
-import me.normanmaurer.niosmtp.SMTPResponseCallback;
+import me.normanmaurer.niosmtp.SMTPResponse;
+import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
+import me.normanmaurer.niosmtp.delivery.FutureResult;
 import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 
@@ -45,8 +47,8 @@ public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory i
     private final SSLContext context;
     private final SMTPDeliveryMode mode;
 
-    public SecureSMTPClientPipelineFactory(SMTPResponseCallback callback, SMTPClientConfig config, Timer timer, SSLContext context, SMTPDeliveryMode mode) {
-        super(callback, config, timer);
+    public SecureSMTPClientPipelineFactory(SMTPClientFutureImpl<FutureResult<SMTPResponse>> future, SMTPClientConfig config, Timer timer, SSLContext context, SMTPDeliveryMode mode) {
+        super(future, config, timer);
         this.context = context;
         this.mode = mode;
     }
@@ -79,7 +81,7 @@ public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory i
         if (mode == SMTPDeliveryMode.SMTPS || mode == SMTPDeliveryMode.PLAIN) {
             return super.createConnectHandler();
         } else {
-            return new ConnectHandler(callback, LOGGER, config, mode, createSSLClientEngine());
+            return new ConnectHandler(future, LOGGER, config, mode, createSSLClientEngine());
         }
     }
 
