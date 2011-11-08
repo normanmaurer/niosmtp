@@ -93,7 +93,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
     }
     
     
-    private void addFutureHandler(final SMTPClientFutureImpl<FutureResult<SMTPResponse>> future) {
+    protected void addFutureHandler(final SMTPClientFutureImpl<FutureResult<SMTPResponse>> future) {
         SimpleChannelUpstreamHandler handler = new FutureHandler<SMTPResponse>(future) {
 
             @Override
@@ -101,6 +101,28 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
                 if (e.getMessage() instanceof SMTPResponse) {
                     ctx.getPipeline().remove(this);
                     future.setDeliveryStatus(new FutureResultImpl<SMTPResponse>((SMTPResponse)e.getMessage()));
+                } else {
+                    super.messageReceived(ctx, e);
+                }
+            }
+
+            
+        };
+        addHandler(handler);
+
+    }
+    
+    protected void addCollectionFutureHandler(final SMTPClientFutureImpl<FutureResult<Collection<SMTPResponse>>> future, final int responsesCount) {
+        FutureHandler<Collection<SMTPResponse>> handler = new FutureHandler<Collection<SMTPResponse>>(future) {
+            final Collection<SMTPResponse> responses = new ArrayList<SMTPResponse>();
+            @Override
+            public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
+                if (e.getMessage() instanceof SMTPResponse) {
+                    responses.add((SMTPResponse) e.getMessage());
+                    if (responses.size() == responsesCount) {
+                        ctx.getPipeline().remove(this);
+                        future.setDeliveryStatus(new FutureResultImpl<Collection<SMTPResponse>>(responses));
+                    }
                 } else {
                     super.messageReceived(ctx, e);
                 }
@@ -285,24 +307,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
         future.setSMTPClientSession(this);
 
         final int requests = request.getRequests().size();
-        FutureHandler<Collection<SMTPResponse>> handler = new FutureHandler<Collection<SMTPResponse>>(future) {
-            final Collection<SMTPResponse> responses = new ArrayList<SMTPResponse>();
-            @Override
-            public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
-                if (e.getMessage() instanceof SMTPResponse) {
-                    responses.add((SMTPResponse) e.getMessage());
-                    if (responses.size() == requests) {
-                        ctx.getPipeline().remove(this);
-                        future.setDeliveryStatus(new FutureResultImpl<Collection<SMTPResponse>>(responses));
-                    }
-                } else {
-                    super.messageReceived(ctx, e);
-                }
-            }
-
-            
-        };
-        addHandler(handler);
+        addCollectionFutureHandler(future, requests);
         channel.write(request);      
         return future;
     }
