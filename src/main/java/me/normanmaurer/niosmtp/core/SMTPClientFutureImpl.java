@@ -16,15 +16,11 @@
 */
 package me.normanmaurer.niosmtp.core;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import me.normanmaurer.niosmtp.SMTPClientFuture;
-import me.normanmaurer.niosmtp.SMTPClientFutureListener;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
@@ -32,13 +28,11 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  * @author Norman Maurer
  *
  */
-public class SMTPClientFutureImpl<E> implements SMTPClientFuture<E>{
+public class SMTPClientFutureImpl<E> extends AbstractSMTPClientFuture<E>{
     
     private volatile boolean isReady = false;
     private volatile boolean isCancelled = false;
-    private final List<SMTPClientFutureListener<E>> listeners = new CopyOnWriteArrayList<SMTPClientFutureListener<E>>();
     private volatile E result;
-    private volatile SMTPClientSession session;
     private final boolean cancelable;
         
     
@@ -68,11 +62,7 @@ public class SMTPClientFutureImpl<E> implements SMTPClientFuture<E>{
                 
         }
         if (fireListeners) {
-            // notify the listeners
-            Iterator<SMTPClientFutureListener<E>> it = listeners.iterator();
-            while(it.hasNext()) {
-                it.next().operationComplete(this);
-            }
+            notifyListeners();
         }
         
     	
@@ -85,13 +75,11 @@ public class SMTPClientFutureImpl<E> implements SMTPClientFuture<E>{
             return false;
         } else {
             isCancelled = true;
+            SMTPClientSession session = getSession();
             if (session != null) {
                 session.close();
             }
-            Iterator<SMTPClientFutureListener<E>> it = listeners.iterator();
-            while(it.hasNext()) {
-                it.next().operationComplete(this);
-            }
+            notifyListeners();
            return true;
         }
     }
@@ -119,18 +107,6 @@ public class SMTPClientFutureImpl<E> implements SMTPClientFuture<E>{
         return isReady || isCancelled;
     }
 
-    @Override
-    public  void addListener(SMTPClientFutureListener<E> listener) {
-        listeners.add(listener);
-        if (isDone()) {
-            listener.operationComplete(this);
-        }
-    }
-
-    @Override
-    public void removeListener(SMTPClientFutureListener<E> listener) {
-        listeners.remove(listener);
-    }
 
 
     @Override
@@ -147,26 +123,11 @@ public class SMTPClientFutureImpl<E> implements SMTPClientFuture<E>{
         return getNoWait();
     }
 
-    public void setSMTPClientSession(SMTPClientSession session) {
-        this.session = session;
-    }
-
-
     @Override
     public E getNoWait() {
         return result;
     }
 
 
-    @Override
-    public SMTPClientSession getSession() {
-        return session;
-    }
-
-
-    @Override
-    public Iterator<SMTPClientFutureListener<E>> getListeners() {
-        return listeners.iterator();
-    }
 
 }

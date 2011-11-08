@@ -27,6 +27,7 @@ import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.core.ArrayIterator;
+import me.normanmaurer.niosmtp.core.ReadySMTPClientFuture;
 import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.delivery.callback.ChainedSMTPClientFutureListener;
 import me.normanmaurer.niosmtp.delivery.callback.SMTPClientFutureListenerFactory;
@@ -110,11 +111,8 @@ public class SMTPDeliveryAgent implements SMTPClientConstants, SMTPDeliverySessi
             protected void onResult(SMTPClientSession session, SMTPResponse result) throws SMTPException {
                 initSession(session);
                 FutureResult<SMTPResponse> fResult = new FutureResultImpl<SMTPResponse>(result);
-                SMTPClientFutureImpl<FutureResult<SMTPResponse>> future = new SMTPClientFutureImpl<FutureResult<SMTPResponse>>();
-                future.setSMTPClientSession(session);
-                future.addListener(factory.getListener(session));
-                future.setDeliveryStatus(fResult);      
-                
+                ReadySMTPClientFuture<FutureResult<SMTPResponse>> future = new ReadySMTPClientFuture<FutureResult<SMTPResponse>>(session, fResult);
+                future.addListener(factory.getListener(session));                
             }
         });
         

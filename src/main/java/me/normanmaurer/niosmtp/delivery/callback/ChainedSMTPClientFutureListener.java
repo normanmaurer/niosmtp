@@ -67,7 +67,6 @@ public abstract class ChainedSMTPClientFutureListener<E> implements SMTPClientFu
     }
 
     @SuppressWarnings("unchecked")
-    
     protected void onException(SMTPClientSession session, SMTPException e) {
         SMTPClientFutureImpl<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>> future = (SMTPClientFutureImpl<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>>) session.getAttributes().get(FUTURE_KEY);
         
