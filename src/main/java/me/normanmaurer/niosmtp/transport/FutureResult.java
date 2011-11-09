@@ -21,6 +21,13 @@ import java.net.ConnectException;
 import me.normanmaurer.niosmtp.SMTPConnectionException;
 import me.normanmaurer.niosmtp.SMTPException;
 
+/**
+ * 
+ * 
+ * @author Norman Maurer
+ *
+ * @param <E>
+ */
 public abstract class FutureResult<E> {
 
    
