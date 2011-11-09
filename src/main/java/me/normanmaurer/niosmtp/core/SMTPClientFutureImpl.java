@@ -57,7 +57,7 @@ public class SMTPClientFutureImpl<E> extends AbstractSMTPClientFuture<E>{
             isReady = true;
             fireListeners = true;
             synchronized (this) {
-                notify();
+                notifyAll();
             }
                 
         }
