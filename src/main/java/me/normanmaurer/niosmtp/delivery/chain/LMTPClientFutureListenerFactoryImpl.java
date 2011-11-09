@@ -25,7 +25,7 @@ import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.core.LMTPRequest;
-import me.normanmaurer.niosmtp.delivery.FutureResult;
+import me.normanmaurer.niosmtp.transport.FutureResult;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 

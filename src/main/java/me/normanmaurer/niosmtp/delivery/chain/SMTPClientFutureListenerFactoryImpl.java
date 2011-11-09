@@ -28,9 +28,9 @@ import me.normanmaurer.niosmtp.SMTPPipeliningRequest;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.core.ReadySMTPClientFuture;
-import me.normanmaurer.niosmtp.delivery.FutureResult;
-import me.normanmaurer.niosmtp.transport.FutureResultImpl;
+import me.normanmaurer.niosmtp.transport.FutureResult;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
+import me.normanmaurer.niosmtp.transport.impl.FutureResultImpl;
 
 public class SMTPClientFutureListenerFactoryImpl implements SMTPClientFutureListenerFactory{
 

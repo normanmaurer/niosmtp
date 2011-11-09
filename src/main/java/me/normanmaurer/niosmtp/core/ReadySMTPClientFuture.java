@@ -38,6 +38,15 @@ import java.util.concurrent.TimeoutException;
 
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
+/**
+ * {@link AbstractSMTPClientFuture} implementation which represent a "ready" future. 
+ * 
+ * So no blocking will be in place on any method call
+ * 
+ * @author Norman Maurer
+ *
+ * @param <E>
+ */
 public class ReadySMTPClientFuture<E> extends AbstractSMTPClientFuture<E> {
 
     private final E result;

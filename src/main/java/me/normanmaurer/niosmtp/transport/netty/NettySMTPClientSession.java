@@ -36,13 +36,13 @@ import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.core.DataTerminatingInputStream;
 import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
-import me.normanmaurer.niosmtp.delivery.FutureResult;
 import me.normanmaurer.niosmtp.transport.AbstractSMTPClientSession;
-import me.normanmaurer.niosmtp.transport.FutureResultImpl;
+import me.normanmaurer.niosmtp.transport.FutureResult;
 import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
+import me.normanmaurer.niosmtp.transport.impl.FutureResultImpl;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;

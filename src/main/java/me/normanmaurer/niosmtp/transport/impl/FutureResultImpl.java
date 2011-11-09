@@ -1,6 +1,7 @@
-package me.normanmaurer.niosmtp.transport;
+package me.normanmaurer.niosmtp.transport.impl;
 
-import me.normanmaurer.niosmtp.delivery.FutureResult;
+import me.normanmaurer.niosmtp.transport.FutureResult;
+
 
 
 public class FutureResultImpl<E> extends FutureResult<E>{

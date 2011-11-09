@@ -24,6 +24,7 @@ import java.util.concurrent.CountDownLatch;
 
 import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPClientFutureListener;
+import me.normanmaurer.niosmtp.transport.FutureResult;
 
 /**
  * Execute the wrapped {@link AssertCheck} in an asynchronous way by using a {@link SMTPClientFutureListener}

@@ -19,7 +19,7 @@ package me.normanmaurer.niosmtp.delivery.impl;
 import java.util.Iterator;
 
 import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus;
-import me.normanmaurer.niosmtp.delivery.FutureResult;
+import me.normanmaurer.niosmtp.transport.FutureResult;
 
 /**
  * Simple {@link DeliveryResult} implementation 

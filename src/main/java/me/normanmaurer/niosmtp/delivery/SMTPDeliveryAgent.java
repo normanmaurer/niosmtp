@@ -32,10 +32,11 @@ import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.delivery.chain.ChainedSMTPClientFutureListener;
 import me.normanmaurer.niosmtp.delivery.chain.SMTPClientFutureListenerFactory;
 import me.normanmaurer.niosmtp.delivery.chain.SMTPClientFutureListenerFactoryImpl;
-import me.normanmaurer.niosmtp.transport.FutureResultImpl;
+import me.normanmaurer.niosmtp.transport.FutureResult;
 import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
+import me.normanmaurer.niosmtp.transport.impl.FutureResultImpl;
 
 
 

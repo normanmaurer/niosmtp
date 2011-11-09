@@ -20,7 +20,6 @@ import java.net.InetSocketAddress;
 
 import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPResponse;
-import me.normanmaurer.niosmtp.delivery.FutureResult;
 
 
 /**

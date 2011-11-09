@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import me.normanmaurer.niosmtp.SMTPClientFuture;
+import me.normanmaurer.niosmtp.transport.FutureResult;
 
 /**
  * Callback which should be called when a {@link SMTPClientFuture} was received. 

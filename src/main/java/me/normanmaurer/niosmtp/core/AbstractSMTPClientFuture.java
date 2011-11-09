@@ -24,6 +24,14 @@ import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPClientFutureListener;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
+/**
+ * 
+ * Abstract base class for {@link SMTPClientFuture} implementations 
+ * 
+ * @author Norman Maurer
+ *
+ * @param <E>
+ */
 public abstract class AbstractSMTPClientFuture<E> implements SMTPClientFuture<E>{
 
     private final List<SMTPClientFutureListener<E>> listeners = new CopyOnWriteArrayList<SMTPClientFutureListener<E>>();
@@ -38,7 +46,7 @@ public abstract class AbstractSMTPClientFuture<E> implements SMTPClientFuture<E>
     }
 
     @Override
-    public  void addListener(SMTPClientFutureListener<E> listener) {
+    public void addListener(SMTPClientFutureListener<E> listener) {
         listeners.add(listener);
         if (isDone()) {
             listener.operationComplete(this);
