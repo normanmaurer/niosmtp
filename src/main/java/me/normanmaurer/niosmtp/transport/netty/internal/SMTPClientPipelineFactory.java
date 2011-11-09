@@ -78,8 +78,8 @@ public class SMTPClientPipelineFactory implements ChannelPipelineFactory, NettyC
         return pipeline;
     }
     
-    protected ConnectHandler createConnectHandler() {
-        return new ConnectHandler(future, LOGGER, config, SMTPDeliveryMode.PLAIN, null, factory);
+    protected SMTPConnectHandler createConnectHandler() {
+        return new SMTPConnectHandler(future, LOGGER, config, SMTPDeliveryMode.PLAIN, null, factory);
     }
     
 

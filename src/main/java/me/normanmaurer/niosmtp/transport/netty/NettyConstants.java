@@ -41,7 +41,7 @@ public interface NettyConstants {
     public static final String IDLE_HANDLER_KEY = "idleHandler";
     
     /**
-     * The key to use when adding the {@link ConnectHandler} to the {@link ChannelPipeline}
+     * The key to use when adding the {@link SMTPConnectHandler} to the {@link ChannelPipeline}
      */
     public static final String CONNECT_HANDLER_KEY = "connectHandler";
     

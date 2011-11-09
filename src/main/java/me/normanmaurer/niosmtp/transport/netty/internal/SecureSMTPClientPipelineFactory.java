@@ -79,11 +79,11 @@ public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory i
     
 
     @Override
-    protected ConnectHandler createConnectHandler() {
+    protected SMTPConnectHandler createConnectHandler() {
         if (mode == SMTPDeliveryMode.SMTPS || mode == SMTPDeliveryMode.PLAIN) {
             return super.createConnectHandler();
         } else {
-            return new ConnectHandler(future, LOGGER, config, mode, createSSLClientEngine(), factory);
+            return new SMTPConnectHandler(future, LOGGER, config, mode, createSSLClientEngine(), factory);
         }
     }
 

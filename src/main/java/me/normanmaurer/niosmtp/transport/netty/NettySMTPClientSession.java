@@ -83,7 +83,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
     public NettySMTPClientSession(Channel channel, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode,  SSLEngine engine) {
         super(logger, config, mode, (InetSocketAddress) channel.getLocalAddress(), (InetSocketAddress) channel.getRemoteAddress());      
         this.channel = channel;
-        channel.getPipeline().addBefore(IDLE_HANDLER_KEY, "callback", new CallbackAdapter(closeFuture));
+        channel.getPipeline().addBefore(IDLE_HANDLER_KEY, "callback", new CloseHandler(closeFuture, logger));
 
         this.engine = engine;
 
@@ -272,16 +272,27 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
       
     }
     
-    protected static final class CallbackAdapter extends SimpleChannelUpstreamHandler {
+    private static final class CloseHandler extends SimpleChannelUpstreamHandler {
         private final SMTPClientFutureImpl<FutureResult<Boolean>> closeFuture;
+        private final Logger log;
 
 
-        public CallbackAdapter(SMTPClientFutureImpl<FutureResult<Boolean>> closeFuture) {
+        public CloseHandler(SMTPClientFutureImpl<FutureResult<Boolean>> closeFuture, Logger log) {
             this.closeFuture = closeFuture;
+            this.log = log;
         }
      
         
         
+        @Override
+        public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
+            if (log.isDebugEnabled()) {
+                log.debug("Exception during processing", e.getCause());
+            }
+        }
+
+
+
         @Override
         public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
             closeFuture.setDeliveryStatus(new FutureResultImpl<Boolean>(true));

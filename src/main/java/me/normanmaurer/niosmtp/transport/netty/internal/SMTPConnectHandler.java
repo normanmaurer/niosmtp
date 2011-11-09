@@ -43,7 +43,7 @@ import org.slf4j.Logger;
  * @author Norman Maurer
  *
  */
-public class ConnectHandler extends SimpleChannelUpstreamHandler {
+public class SMTPConnectHandler extends SimpleChannelUpstreamHandler {
 
     private final SSLEngine engine;
     private final SMTPDeliveryMode mode;
@@ -52,7 +52,7 @@ public class ConnectHandler extends SimpleChannelUpstreamHandler {
     private final SMTPClientConfig config;
     private final SMTPClientSessionFactory factory;
 
-    public ConnectHandler(SMTPClientFutureImpl<FutureResult<SMTPResponse>> future, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode, SSLEngine engine, SMTPClientSessionFactory factory){
+    public SMTPConnectHandler(SMTPClientFutureImpl<FutureResult<SMTPResponse>> future, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode, SSLEngine engine, SMTPClientSessionFactory factory){
         this.future = future;
         this.engine = engine;
         this.mode = mode;
