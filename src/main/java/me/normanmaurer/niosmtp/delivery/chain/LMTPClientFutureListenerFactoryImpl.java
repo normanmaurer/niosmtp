@@ -61,7 +61,6 @@ public class LMTPClientFutureListenerFactoryImpl extends SMTPClientFutureListene
     @Override
     public SMTPClientFutureListener<FutureResult<Collection<SMTPResponse>>> getListener(SMTPClientSession session, SMTPMessage input) throws SMTPException {
         return LMTPPostDataResponseCallback.INSTANCE;
-
     }
 
 
