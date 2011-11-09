@@ -21,6 +21,8 @@ import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.delivery.FutureResult;
 import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
+import me.normanmaurer.niosmtp.transport.netty.NettyConstants;
+import me.normanmaurer.niosmtp.transport.netty.SMTPClientSessionFactory;
 
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
@@ -49,11 +51,13 @@ public class SMTPClientPipelineFactory implements ChannelPipelineFactory, NettyC
     private final Timer timer;
     protected final SMTPClientFutureImpl<FutureResult<SMTPResponse>> future;
     protected final SMTPClientConfig config;
+    protected final SMTPClientSessionFactory factory;
     
-    public SMTPClientPipelineFactory(SMTPClientFutureImpl<FutureResult<SMTPResponse>> future, SMTPClientConfig config, Timer timer) {
+    public SMTPClientPipelineFactory(SMTPClientFutureImpl<FutureResult<SMTPResponse>> future, SMTPClientConfig config, Timer timer, SMTPClientSessionFactory factory) {
         this.timer = timer;
         this.config = config;
         this.future = future;
+        this.factory = factory;
     }
     
     
@@ -75,7 +79,7 @@ public class SMTPClientPipelineFactory implements ChannelPipelineFactory, NettyC
     }
     
     protected ConnectHandler createConnectHandler() {
-        return new ConnectHandler(future, LOGGER, config, SMTPDeliveryMode.PLAIN, null);
+        return new ConnectHandler(future, LOGGER, config, SMTPDeliveryMode.PLAIN, null, factory);
     }
     
 

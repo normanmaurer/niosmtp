@@ -14,8 +14,9 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.delivery.callback;
+package me.normanmaurer.niosmtp.delivery.chain;
 
+import java.util.Collection;
 import java.util.Locale;
 
 import me.normanmaurer.niosmtp.SMTPClientFutureListener;
@@ -35,7 +36,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  * @author Norman Maurer
  *
  */
-public class LMTPClientFutureListenerFactory extends SMTPClientFutureListenerFactoryImpl {
+public class LMTPClientFutureListenerFactoryImpl extends SMTPClientFutureListenerFactoryImpl {
 
     @Override
     public SMTPClientFutureListener<FutureResult<SMTPResponse>> getListener(SMTPClientSession session, SMTPRequest request) throws SMTPException {
@@ -58,7 +59,7 @@ public class LMTPClientFutureListenerFactory extends SMTPClientFutureListenerFac
     }
 
     @Override
-    public SMTPClientFutureListener<FutureResult<SMTPResponse>> getListener(SMTPClientSession session, SMTPMessage input) throws SMTPException {
+    public SMTPClientFutureListener<FutureResult<Collection<SMTPResponse>>> getListener(SMTPClientSession session, SMTPMessage input) throws SMTPException {
         return LMTPPostDataResponseCallback.INSTANCE;
 
     }

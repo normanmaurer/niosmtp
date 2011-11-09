@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.delivery.callback;
+package me.normanmaurer.niosmtp.delivery.chain;
 
 
 import java.util.Collection;
@@ -68,5 +68,5 @@ public interface SMTPClientFutureListenerFactory {
      * @return callback
      * @throws SMTPException
      */
-    public SMTPClientFutureListener<FutureResult<SMTPResponse>> getListener(SMTPClientSession session, SMTPMessage input) throws SMTPException;
+    public SMTPClientFutureListener<FutureResult<Collection<SMTPResponse>>> getListener(SMTPClientSession session, SMTPMessage input) throws SMTPException;
 }

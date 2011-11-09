@@ -14,8 +14,9 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.delivery.callback;
+package me.normanmaurer.niosmtp.delivery.chain;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -36,7 +37,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  * @author Norman Maurer
  *
  */
-public class PostDataResponseListener extends ChainedSMTPClientFutureListener<SMTPResponse> {
+public class PostDataResponseListener extends ChainedSMTPClientFutureListener<Collection<SMTPResponse>> {
 
     
     /**
@@ -51,10 +52,14 @@ public class PostDataResponseListener extends ChainedSMTPClientFutureListener<SM
     
     @SuppressWarnings("unchecked")
     @Override
-    public void onResult(SMTPClientSession session, SMTPResponse response) throws SMTPException {
+    public void onResult(SMTPClientSession session, Collection<SMTPResponse> responses) throws SMTPException {
 
         List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
         
+        if (responses.size() > 1) {
+            throw new SMTPException("Received more then 1 SMTPResponse");
+        } 
+        SMTPResponse response = responses.iterator().next();
         int code = response.getCode();
 
         if (code < 400) {
@@ -75,7 +80,6 @@ public class PostDataResponseListener extends ChainedSMTPClientFutureListener<SM
 
         }    
         setDeliveryStatus(session);
-
     }
 
     

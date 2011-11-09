@@ -16,8 +16,8 @@
 */
 package me.normanmaurer.niosmtp.delivery;
 
-import me.normanmaurer.niosmtp.delivery.callback.LMTPClientFutureListenerFactory;
-import me.normanmaurer.niosmtp.delivery.callback.SMTPClientFutureListenerFactory;
+import me.normanmaurer.niosmtp.delivery.chain.LMTPClientFutureListenerFactoryImpl;
+import me.normanmaurer.niosmtp.delivery.chain.SMTPClientFutureListenerFactory;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 
 
@@ -30,7 +30,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
  */
 public class LMTPDeliveryAgent extends SMTPDeliveryAgent{
     
-    private final static LMTPClientFutureListenerFactory FACTORY = new LMTPClientFutureListenerFactory();
+    private final static LMTPClientFutureListenerFactoryImpl FACTORY = new LMTPClientFutureListenerFactoryImpl();
     
     public LMTPDeliveryAgent(SMTPClientTransport transport) {
         super(transport);

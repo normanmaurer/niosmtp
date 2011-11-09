@@ -25,6 +25,7 @@ import me.normanmaurer.niosmtp.transport.FutureResultImpl;
 import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
+import me.normanmaurer.niosmtp.transport.netty.SMTPClientSessionFactory;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -42,37 +43,40 @@ import org.slf4j.Logger;
  * @author Norman Maurer
  *
  */
-class ConnectHandler extends SimpleChannelUpstreamHandler {
+public class ConnectHandler extends SimpleChannelUpstreamHandler {
 
     private final SSLEngine engine;
     private final SMTPDeliveryMode mode;
     private final SMTPClientFutureImpl<FutureResult<SMTPResponse>> future;
     private final Logger logger;
     private final SMTPClientConfig config;
+    private final SMTPClientSessionFactory factory;
 
-    public ConnectHandler(SMTPClientFutureImpl<FutureResult<SMTPResponse>> future, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode, SSLEngine engine){
+    public ConnectHandler(SMTPClientFutureImpl<FutureResult<SMTPResponse>> future, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode, SSLEngine engine, SMTPClientSessionFactory factory){
         this.future = future;
         this.engine = engine;
         this.mode = mode;
         this.logger = logger;
         this.config = config;
+        this.factory = factory;
     }
     
-    private SMTPClientSession createSession(ChannelHandlerContext ctx) {
+    private SMTPClientSession getSession(ChannelHandlerContext ctx) {
         Object attachment = ctx.getAttachment();
         if (attachment == null) {
-            attachment =  NettySMTPClientSession.create(ctx.getChannel(), logger, config, mode, engine);
+            attachment =  factory.newSession(ctx.getChannel(), logger, config, mode, engine);
             ctx.setAttachment(attachment);
         }
         return (SMTPClientSession) attachment;
     }
+    
     
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
         Object msg = e.getMessage();
         if (msg instanceof SMTPResponse) {
             ctx.getChannel().getPipeline().remove(this);
-            future.setSMTPClientSession(createSession(ctx));
+            future.setSMTPClientSession(getSession(ctx));
             future.setDeliveryStatus(new FutureResultImpl<SMTPResponse>((SMTPResponse) msg));
         } else {
             super.messageReceived(ctx, e);
@@ -83,7 +87,7 @@ class ConnectHandler extends SimpleChannelUpstreamHandler {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
         ctx.getChannel().getPipeline().remove(this);
-        future.setSMTPClientSession(createSession(ctx));
+        future.setSMTPClientSession(getSession(ctx));
         future.setDeliveryStatus(FutureResult.create(e.getCause()));
 
     }

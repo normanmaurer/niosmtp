@@ -14,9 +14,9 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.delivery.callback;
+package me.normanmaurer.niosmtp.delivery.chain;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -33,7 +33,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  * @author Norman Maurer
  *
  */
-public class LMTPPostDataResponseCallback extends ChainedSMTPClientFutureListener<SMTPResponse>{
+public class LMTPPostDataResponseCallback extends ChainedSMTPClientFutureListener<Collection<SMTPResponse>>{
     
     
     /**
@@ -41,8 +41,6 @@ public class LMTPPostDataResponseCallback extends ChainedSMTPClientFutureListene
      */
     public final static LMTPPostDataResponseCallback INSTANCE = new LMTPPostDataResponseCallback();
 
-    private final static String DATA_PROCESSING = "DATA_PROCESSING";
-    private final static String SUCCESSFUL_RECPIENTS = "SUCCESSFUL_RECIPIENTS";
     
     private LMTPPostDataResponseCallback() {
         
@@ -50,36 +48,19 @@ public class LMTPPostDataResponseCallback extends ChainedSMTPClientFutureListene
     
     @SuppressWarnings("unchecked")
     @Override
-    public void onResult(SMTPClientSession session, SMTPResponse response) throws SMTPException {
+    public void onResult(SMTPClientSession session, Collection<SMTPResponse> response) throws SMTPException {
         
         List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
-        if (!session.getAttributes().containsKey(DATA_PROCESSING)) {
-            session.getAttributes().put(DATA_PROCESSING, true);
-            List<DeliveryRecipientStatusImpl> successful = new ArrayList<DeliveryRecipientStatusImpl>();
-            Iterator<DeliveryRecipientStatus> status = statusList.iterator();
-            while(status.hasNext()) {
-                DeliveryRecipientStatus s = status.next();
-                if (s.getStatus() == DeliveryStatus.Ok) {
-                    successful.add((DeliveryRecipientStatusImpl)s);
-                }
-            }
-            session.getAttributes().put(SUCCESSFUL_RECPIENTS, successful.iterator());
-            
-        }
-        DeliveryRecipientStatusImpl status = ((Iterator<DeliveryRecipientStatusImpl>)session.getAttributes().get(SUCCESSFUL_RECPIENTS)).next();
-        status.setResponse(response);
+
         
-        if (isDone(session)) {
-            session.getAttributes().remove(SUCCESSFUL_RECPIENTS);
-            session.getAttributes().remove(DATA_PROCESSING);
-            setDeliveryStatus(session);
-        }
+        Iterator<SMTPResponse> responses = response.iterator();
+        Iterator<DeliveryRecipientStatus> status = statusList.iterator();
+        while(status.hasNext()) {
+            DeliveryRecipientStatus s = status.next();
+            if (s.getStatus() == DeliveryStatus.Ok) {
+                ((DeliveryRecipientStatusImpl)s).setResponse(responses.next());
+            }
+        }            
+        setDeliveryStatus(session);        
     }
-
-    @SuppressWarnings("unchecked")
-    public boolean isDone(SMTPClientSession session) {
-        Iterator<DeliveryRecipientStatusImpl> statusIt = (Iterator<DeliveryRecipientStatusImpl>)session.getAttributes().get(SUCCESSFUL_RECPIENTS);
-        return (statusIt == null || !statusIt.hasNext());
-    }
-
 }

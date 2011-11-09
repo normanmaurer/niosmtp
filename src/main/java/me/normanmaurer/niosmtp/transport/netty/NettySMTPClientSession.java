@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.transport.netty.internal;
+package me.normanmaurer.niosmtp.transport.netty;
 
 
 import java.io.IOException;
@@ -30,6 +30,7 @@ import javax.net.ssl.SSLEngine;
 import me.normanmaurer.niosmtp.SMTPByteArrayMessage;
 import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPMessage;
+import me.normanmaurer.niosmtp.SMTPMessageSubmit;
 import me.normanmaurer.niosmtp.SMTPPipeliningRequest;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
@@ -78,21 +79,17 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
     private final SSLEngine engine;
     private final SMTPClientFutureImpl<FutureResult<Boolean>> closeFuture = new SMTPClientFutureImpl<FutureResult<Boolean>>();
     private final AtomicInteger futureCount = new AtomicInteger(0);
-
-    protected NettySMTPClientSession(Channel channel, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode,  SSLEngine engine) {
+    
+    public NettySMTPClientSession(Channel channel, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode,  SSLEngine engine) {
         super(logger, config, mode, (InetSocketAddress) channel.getLocalAddress(), (InetSocketAddress) channel.getRemoteAddress());      
         this.channel = channel;
+        channel.getPipeline().addBefore(IDLE_HANDLER_KEY, "callback", new CallbackAdapter(closeFuture));
+
         this.engine = engine;
 
     }
     
-    public static NettySMTPClientSession create(Channel channel, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode, SSLEngine engine) {
-        NettySMTPClientSession session = new NettySMTPClientSession(channel, logger, config, mode, engine);
-        session.channel.getPipeline().addBefore(IDLE_HANDLER_KEY, "callback", new CallbackAdapter(session.closeFuture));
-        return session;
-    }
-    
-    
+
     protected void addFutureHandler(final SMTPClientFutureImpl<FutureResult<SMTPResponse>> future) {
         SimpleChannelUpstreamHandler handler = new FutureHandler<SMTPResponse>(future) {
 
@@ -172,12 +169,20 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
 
     
     @Override
-    public SMTPClientFuture<FutureResult<SMTPResponse>> send(SMTPMessage msg) {
-        SMTPClientFutureImpl<FutureResult<SMTPResponse>> future = new SMTPClientFutureImpl<FutureResult<SMTPResponse>>(false);
+    public SMTPClientFuture<FutureResult<Collection<SMTPResponse>>> send(SMTPMessageSubmit msg) {
+        SMTPClientFutureImpl<FutureResult<Collection<SMTPResponse>>> future = new SMTPClientFutureImpl<FutureResult<Collection<SMTPResponse>>>(false);
         future.setSMTPClientSession(this);
 
+        addCollectionFutureHandler(future,1 );
+        writeMessage(msg.getMessage());
+        return future;
+                    
+    }
+    
+
+    protected void writeMessage(SMTPMessage msg) {
         Set<String> extensions = getSupportedExtensions();
-        addFutureHandler(future);
+
         if (msg instanceof SMTPByteArrayMessage) {
             byte[] data;
             
@@ -203,11 +208,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
                    
             channel.write(new ChunkedStream(new DataTerminatingInputStream(msgIn)));
         }
-        return future;
-                    
     }
-    
-
     @Override
     public SMTPClientFuture<FutureResult<Boolean>> close() {
         channel.write(ChannelBuffers.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
@@ -336,5 +337,5 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
             
         }
         
-    };
+    }
 }

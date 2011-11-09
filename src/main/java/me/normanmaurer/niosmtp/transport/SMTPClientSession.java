@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 import me.normanmaurer.niosmtp.SMTPClientFuture;
-import me.normanmaurer.niosmtp.SMTPMessage;
+import me.normanmaurer.niosmtp.SMTPMessageSubmit;
 import me.normanmaurer.niosmtp.SMTPPipeliningRequest;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
@@ -112,12 +112,12 @@ public interface SMTPClientSession {
 
     
     /**
-     * Send the given {@link SMTPMessage} to the connected SMTP-Server.
+     * Send the given {@link SMTPMessageSubmit} to the connected SMTP-Server.
      * 
      * @param request
      * @return future
      */
-    SMTPClientFuture<FutureResult<SMTPResponse>> send(SMTPMessage request);
+    SMTPClientFuture<FutureResult<Collection<SMTPResponse>>> send(SMTPMessageSubmit request);
 
     /**
      * Close the {@link SMTPClientSession}
@@ -163,7 +163,5 @@ public interface SMTPClientSession {
      * @return localAddress
      */
     InetSocketAddress getLocalAddress();
-    
-        
 
 }

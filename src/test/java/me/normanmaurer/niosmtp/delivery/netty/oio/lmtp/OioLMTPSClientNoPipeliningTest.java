@@ -18,14 +18,14 @@ package me.normanmaurer.niosmtp.delivery.netty.oio.lmtp;
 
 import me.normanmaurer.niosmtp.delivery.lmtp.AbstractLMTPSClientNoPipelingTest;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransportFactory;
-import me.normanmaurer.niosmtp.transport.netty.NettySMTPClientTransportFactory;
+import me.normanmaurer.niosmtp.transport.netty.NettyLMTPClientTransportFactory;
 
 public class OioLMTPSClientNoPipeliningTest extends AbstractLMTPSClientNoPipelingTest{
 
 
     @Override
     protected SMTPClientTransportFactory createFactory() {
-        return NettySMTPClientTransportFactory.createOio();
+        return NettyLMTPClientTransportFactory.createOio();
     }
 
 

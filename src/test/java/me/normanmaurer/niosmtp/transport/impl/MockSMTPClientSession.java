@@ -16,17 +16,13 @@
 */
 package me.normanmaurer.niosmtp.transport.impl;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.Collection;
 import java.util.UUID;
 
 import me.normanmaurer.niosmtp.SMTPClientFuture;
-import me.normanmaurer.niosmtp.SMTPMessage;
-import me.normanmaurer.niosmtp.SMTPPipeliningRequest;
+import me.normanmaurer.niosmtp.SMTPMessageSubmit;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
-import me.normanmaurer.niosmtp.core.SMTPResponseImpl;
 import me.normanmaurer.niosmtp.delivery.FutureResult;
 import me.normanmaurer.niosmtp.transport.AbstractSMTPClientSession;
 import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
@@ -71,11 +67,7 @@ public class MockSMTPClientSession extends AbstractSMTPClientSession {
         return null;
     }
 
-    @Override
-    public SMTPClientFuture<FutureResult<SMTPResponse>> send(SMTPMessage request) {
-        // TODO Auto-generated method stub
-        return null;
-    }
+
 
     @Override
     public SMTPClientFuture<FutureResult<Boolean>> getCloseFuture() {
@@ -86,6 +78,13 @@ public class MockSMTPClientSession extends AbstractSMTPClientSession {
 
     @Override
     public SMTPClientFuture<FutureResult<Boolean>> close() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    @Override
+    public SMTPClientFuture<FutureResult<Collection<SMTPResponse>>> send(SMTPMessageSubmit request) {
         // TODO Auto-generated method stub
         return null;
     }

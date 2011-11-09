@@ -59,7 +59,7 @@ public abstract class AbstractLMTPClientAuthLoginTest extends AbstractSMTPClient
     protected SMTPDeliveryAgent createAgent(SMTPClientTransport transport) {
         return new LMTPDeliveryAgent(transport);
     }
-
+    
     @Override
     protected NettyServer create(Hook hook) throws WiringException {
         LMTPProtocolHandlerChain chain = new LMTPProtocolHandlerChain();

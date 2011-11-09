@@ -14,9 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.transport.netty.internal;
-
-import me.normanmaurer.niosmtp.transport.netty.internal.SecureSMTPClientPipelineFactory.SslHandshakeHandler;
+package me.normanmaurer.niosmtp.transport.netty;
 
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.handler.ssl.SslHandler;
@@ -30,7 +28,7 @@ import org.jboss.netty.handler.timeout.IdleStateHandler;
  * @author Norman Maurer
  *
  */
-interface NettyConstants {
+public interface NettyConstants {
 
     /**
      * The key to used when adding the Framer to the {@link ChannelPipeline}

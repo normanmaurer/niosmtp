@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.delivery.callback;
+package me.normanmaurer.niosmtp.delivery.chain;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,9 +30,11 @@ import me.normanmaurer.niosmtp.SMTPPipeliningRequest;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
+import me.normanmaurer.niosmtp.core.SMTPMessageSubmitImpl;
 import me.normanmaurer.niosmtp.core.SMTPPipeliningRequestImpl;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus;
+import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus.DeliveryStatus;
 import me.normanmaurer.niosmtp.delivery.FutureResult;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig.PipeliningMode;
@@ -187,8 +189,16 @@ public abstract class ChainedSMTPClientFutureListener<E> implements SMTPClientFu
         session.send(request).addListener(factory.getListener(session, request));
     }
     
+    @SuppressWarnings("unchecked")
     protected final void next(SMTPClientSession session, SMTPMessage request) throws SMTPException {
         SMTPClientFutureListenerFactory factory = (SMTPClientFutureListenerFactory) session.getAttributes().get(SMTP_RESPONSE_CALLBACK_FACTORY);
-        session.send(request).addListener(factory.getListener(session, request));
+        List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
+        int rcpts = 0;
+        for(DeliveryRecipientStatus status: statusList) {
+            if(status.getStatus() == DeliveryStatus.Ok) {
+                rcpts++;
+            }
+        }
+        session.send(new SMTPMessageSubmitImpl(request, rcpts)).addListener(factory.getListener(session, request));
     }
 }

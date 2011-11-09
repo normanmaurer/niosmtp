@@ -14,17 +14,35 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.delivery.netty.oio.lmtp;
+package me.normanmaurer.niosmtp.core;
 
-import me.normanmaurer.niosmtp.delivery.lmtp.AbstractLMTPStartTLSNoPipeliningClientTest;
-import me.normanmaurer.niosmtp.transport.SMTPClientTransportFactory;
-import me.normanmaurer.niosmtp.transport.netty.NettyLMTPClientTransportFactory;
+import me.normanmaurer.niosmtp.SMTPMessage;
+import me.normanmaurer.niosmtp.SMTPMessageSubmit;
 
-public class NioLMTPStartTLSNoPipeliningClientTest extends AbstractLMTPStartTLSNoPipeliningClientTest{
+/**
+ * 
+ * @author Norman Maurer
+ */
+public class SMTPMessageSubmitImpl implements SMTPMessageSubmit{
+
+    private final SMTPMessage message;
+    private final int recipients;
+
+    public SMTPMessageSubmitImpl(SMTPMessage message, int recipients ) {
+        this.message = message;
+        this.recipients = recipients;
+    }
     
     @Override
-    protected SMTPClientTransportFactory createFactory() {
-        return NettyLMTPClientTransportFactory.createOio();
+    public int getRecipients() {
+        return recipients;
     }
+
+    @Override
+    public SMTPMessage getMessage() {
+        return message;
+    } 
+    
+
 
 }

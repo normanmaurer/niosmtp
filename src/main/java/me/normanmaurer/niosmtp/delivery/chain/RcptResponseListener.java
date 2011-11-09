@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package me.normanmaurer.niosmtp.delivery.callback;
+package me.normanmaurer.niosmtp.delivery.chain;
 
 import java.util.Iterator;
 import java.util.List;
@@ -60,9 +60,9 @@ public class RcptResponseListener extends AbstractPipeliningResponseListener {
 
         Iterator<String> recipients = (Iterator<String>) session.getAttributes().get(RECIPIENTS_KEY);
         List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
-        
-        statusList.add(new DeliveryRecipientStatusImpl((String) session.getAttributes().get(CURRENT_RCPT_KEY), response));
        
+        String curRcpt = (String) session.getAttributes().get(CURRENT_RCPT_KEY);
+        statusList.add(new DeliveryRecipientStatusImpl(curRcpt, response));
         boolean pipeliningActive = session.getAttributes().containsKey(PIPELINING_ACTIVE_KEY);
         
         if (recipients.hasNext()) {

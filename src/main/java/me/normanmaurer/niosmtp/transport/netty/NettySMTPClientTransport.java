@@ -57,11 +57,13 @@ class NettySMTPClientTransport implements SMTPClientTransport{
     private final Timer timer = new HashedWheelTimer();
     private final ClientSocketChannelFactory factory;
     private final DefaultChannelGroup channelGroup = new DefaultChannelGroup();
+    private final SMTPClientSessionFactory sessionFactory;
 
-    NettySMTPClientTransport(SMTPDeliveryMode mode, SSLContext context, ClientSocketChannelFactory factory) {
+    NettySMTPClientTransport(SMTPDeliveryMode mode, SSLContext context, ClientSocketChannelFactory factory, SMTPClientSessionFactory sessionFactory) {
         this.context = context;
         this.mode = mode;
         this.factory = factory;
+        this.sessionFactory = sessionFactory;
     }
 
     
@@ -80,14 +82,14 @@ class NettySMTPClientTransport implements SMTPClientTransport{
         ChannelPipelineFactory cp;
         switch (mode) {
         case PLAIN:
-            cp = new SMTPClientPipelineFactory(future, config, timer);
+            cp = new SMTPClientPipelineFactory(future, config, timer, sessionFactory);
             break;
         case SMTPS:
             // just move on to STARTTLS_DEPEND
         case STARTTLS_TRY:
             // just move on to STARTTLS_DEPEND
         case STARTTLS_DEPEND:
-            cp = new SecureSMTPClientPipelineFactory(future, config, timer,context, mode);
+            cp = new SecureSMTPClientPipelineFactory(future, config, timer,context, mode, sessionFactory);
             break;
         default:
             throw new IllegalArgumentException("Unknown DeliveryMode " + mode);
@@ -119,6 +121,5 @@ class NettySMTPClientTransport implements SMTPClientTransport{
         channelGroup.close().awaitUninterruptibly();
         factory.releaseExternalResources();
     }
-
 
 }
