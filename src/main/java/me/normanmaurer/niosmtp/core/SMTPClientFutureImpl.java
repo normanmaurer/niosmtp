@@ -19,12 +19,14 @@ package me.normanmaurer.niosmtp.core;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
 import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
- * Basic {@link SMTPClientFuture} implementation 
+ * Basic {@link SMTPClientFuture} implementation
+ * 
  * @author Norman Maurer
  *
  */
@@ -32,7 +34,7 @@ public class SMTPClientFutureImpl<E> extends AbstractSMTPClientFuture<E>{
     
     private volatile boolean isReady = false;
     private volatile boolean isCancelled = false;
-    private volatile E result;
+    private final AtomicReference<E> result = new AtomicReference<E>();
     private final boolean cancelable;
         
     
@@ -45,17 +47,15 @@ public class SMTPClientFutureImpl<E> extends AbstractSMTPClientFuture<E>{
     }
     
     /**
-     * Set the <code>E</code> for the future and notify all waiting threads + the listeners. This should get called only on time, 
-     * otherwise it will throw an {@link IllegalStateException}
-     * 
+     * Set the <code>E</code> for the future and notify all waiting threads + the listeners. 
+     *  
      * @param result
      */
-    public void setDeliveryStatus(E result) {
+    public void setResult(E result) {
         boolean fireListeners = false;
         if (!isDone()) {
-            this.result = result;
+            fireListeners = this.result.compareAndSet(null, result);
             isReady = true;
-            fireListeners = true;
             synchronized (this) {
                 notifyAll();
             }
@@ -125,7 +125,7 @@ public class SMTPClientFutureImpl<E> extends AbstractSMTPClientFuture<E>{
 
     @Override
     public E getNoWait() {
-        return result;
+        return result.get();
     }
 
 
