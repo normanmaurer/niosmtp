@@ -97,7 +97,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
             public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
                 if (e.getMessage() instanceof SMTPResponse) {
                     ctx.getPipeline().remove(this);
-                    future.setDeliveryStatus(new FutureResultImpl<SMTPResponse>((SMTPResponse)e.getMessage()));
+                    future.setResult(new FutureResultImpl<SMTPResponse>((SMTPResponse)e.getMessage()));
                 } else {
                     super.messageReceived(ctx, e);
                 }
@@ -118,7 +118,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
                     responses.add((SMTPResponse) e.getMessage());
                     if (responses.size() == responsesCount) {
                         ctx.getPipeline().remove(this);
-                        future.setDeliveryStatus(new FutureResultImpl<Collection<SMTPResponse>>(responses));
+                        future.setResult(new FutureResultImpl<Collection<SMTPResponse>>(responses));
                     }
                 } else {
                     super.messageReceived(ctx, e);
@@ -295,7 +295,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
 
         @Override
         public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-            closeFuture.setDeliveryStatus(new FutureResultImpl<Boolean>(true));
+            closeFuture.setResult(new FutureResultImpl<Boolean>(true));
             super.channelClosed(ctx, e);
         }
     }
@@ -344,7 +344,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
             ctx.getPipeline().remove(this);
-            future.setDeliveryStatus(FutureResult.create(e.getCause()));
+            future.setResult(FutureResult.create(e.getCause()));
             
         }
         

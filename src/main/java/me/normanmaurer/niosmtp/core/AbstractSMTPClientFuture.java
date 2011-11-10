@@ -37,6 +37,9 @@ public abstract class AbstractSMTPClientFuture<E> implements SMTPClientFuture<E>
     private final List<SMTPClientFutureListener<E>> listeners = new CopyOnWriteArrayList<SMTPClientFutureListener<E>>();
     private volatile SMTPClientSession session;
 
+    /**
+     * Notify all registered {@link SMTPClientFutureListener}'s
+     */
     protected void notifyListeners() {
         // notify the listeners
         Iterator<SMTPClientFutureListener<E>> it = listeners.iterator();
@@ -64,6 +67,11 @@ public abstract class AbstractSMTPClientFuture<E> implements SMTPClientFuture<E>
         return session;
     }
 
+    /**
+     * Set the {@link SMTPClientSession} which does belong to this {@link SMTPClientFuture}
+     * 
+     * @param session
+     */
     public void setSMTPClientSession(SMTPClientSession session) {
         this.session = session;
     }

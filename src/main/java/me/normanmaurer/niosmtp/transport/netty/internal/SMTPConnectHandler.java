@@ -77,7 +77,7 @@ public class SMTPConnectHandler extends SimpleChannelUpstreamHandler {
         if (msg instanceof SMTPResponse) {
             ctx.getChannel().getPipeline().remove(this);
             future.setSMTPClientSession(getSession(ctx));
-            future.setDeliveryStatus(new FutureResultImpl<SMTPResponse>((SMTPResponse) msg));
+            future.setResult(new FutureResultImpl<SMTPResponse>((SMTPResponse) msg));
         } else {
             super.messageReceived(ctx, e);
         }
@@ -88,7 +88,7 @@ public class SMTPConnectHandler extends SimpleChannelUpstreamHandler {
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
         ctx.getChannel().getPipeline().remove(this);
         future.setSMTPClientSession(getSession(ctx));
-        future.setDeliveryStatus(FutureResult.create(e.getCause()));
+        future.setResult(FutureResult.create(e.getCause()));
 
     }
 }

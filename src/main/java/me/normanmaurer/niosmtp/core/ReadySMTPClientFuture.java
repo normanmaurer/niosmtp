@@ -62,26 +62,42 @@ public class ReadySMTPClientFuture<E> extends AbstractSMTPClientFuture<E> {
         return result;
     }
 
+    /**
+     * Returns <code>false</code>
+     */
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
         return false;
     }
 
+    /**
+     * Calls {@link #getNoWait()}
+     */
     @Override
     public E get() throws InterruptedException, ExecutionException {
-        return result;
+        return getNoWait();
     }
 
+    
+    /**
+     * Calls {@link #getNoWait()}
+     */
     @Override
     public E get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        return result;
+        return getNoWait();
     }
 
+    /**
+     * Returns <code>false</code>
+     */
     @Override
     public boolean isCancelled() {
         return false;
     }
 
+    /**
+     * Returns <code>true</code>
+     */
     @Override
     public boolean isDone() {
         return true;

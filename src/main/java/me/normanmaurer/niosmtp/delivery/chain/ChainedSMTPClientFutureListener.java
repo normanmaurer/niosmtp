@@ -82,7 +82,7 @@ public abstract class ChainedSMTPClientFutureListener<E> implements SMTPClientFu
             resultList.add(DeliveryResultImpl.create(e));
         }
         
-        future.setDeliveryStatus(resultList);
+        future.setResult(resultList);
         try {
             next(session, SMTPRequestImpl.quit());
         } catch (SMTPException e1) {
@@ -160,7 +160,7 @@ public abstract class ChainedSMTPClientFutureListener<E> implements SMTPClientFu
         resultList.add(new DeliveryResultImpl(statusList));
         
         if (!transactions.hasNext()) {
-            future.setDeliveryStatus(resultList);
+            future.setResult(resultList);
 
             next(session, SMTPRequestImpl.quit());
             session.close();

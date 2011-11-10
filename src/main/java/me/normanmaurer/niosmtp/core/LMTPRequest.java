@@ -29,6 +29,12 @@ public class LMTPRequest extends SMTPRequestImpl{
         super(command, argument);
     }
     
+    /**
+     * Return a new <code>LHLO</code> {@link LMTPRequest}
+     * 
+     * @param hello
+     * @return lhlo
+     */
     public static LMTPRequest lhlo(String hello) {
         return new LMTPRequest(LHLO_COMMAND, hello);
     }
