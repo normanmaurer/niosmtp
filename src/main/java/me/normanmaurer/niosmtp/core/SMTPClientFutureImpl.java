@@ -36,6 +36,7 @@ public class SMTPClientFutureImpl<E> extends AbstractSMTPClientFuture<E>{
     private volatile boolean isCancelled = false;
     private final AtomicReference<E> result = new AtomicReference<E>();
     private final boolean cancelable;
+    private int waiters;
         
     
     public SMTPClientFutureImpl(boolean cancelable) {
@@ -57,7 +58,9 @@ public class SMTPClientFutureImpl<E> extends AbstractSMTPClientFuture<E>{
             fireListeners = this.result.compareAndSet(null, result);
             isReady = true;
             synchronized (this) {
-                notifyAll();
+                if (waiters > 0) {
+                    notifyAll();
+                }
             }
                 
         }
@@ -87,14 +90,23 @@ public class SMTPClientFutureImpl<E> extends AbstractSMTPClientFuture<E>{
     private synchronized void checkReady() throws InterruptedException {
         
         while (!isReady) {
-            wait();
-
+            try {
+                waiters++;
+                wait();
+            } finally {
+                waiters--;
+            }
         }
     }
 
     private synchronized void checkReady(long timeout) throws InterruptedException {
         while (!isReady) {
-            wait(timeout);
+            try {
+                waiters++;
+                wait(timeout);
+            } finally {
+                waiters--;
+            }
         }
     }
     
