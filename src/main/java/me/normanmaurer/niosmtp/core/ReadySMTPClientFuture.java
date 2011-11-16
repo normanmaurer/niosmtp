@@ -75,6 +75,9 @@ public class ReadySMTPClientFuture<E> extends AbstractSMTPClientFuture<E> {
      */
     @Override
     public E get() throws InterruptedException, ExecutionException {
+        if (Thread.interrupted()) {
+            throw new InterruptedException();
+        }
         return getNoWait();
     }
 
@@ -84,6 +87,9 @@ public class ReadySMTPClientFuture<E> extends AbstractSMTPClientFuture<E> {
      */
     @Override
     public E get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        if (Thread.interrupted()) {
+            throw new InterruptedException();
+        }
         return getNoWait();
     }
 

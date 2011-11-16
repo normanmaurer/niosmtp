@@ -85,6 +85,7 @@ public class SMTPClientFutureImpl<E> extends AbstractSMTPClientFuture<E>{
     }
     
     private synchronized void checkReady() throws InterruptedException {
+        
         while (!isReady) {
             wait();
 
@@ -111,6 +112,9 @@ public class SMTPClientFutureImpl<E> extends AbstractSMTPClientFuture<E>{
 
     @Override
     public E get() throws InterruptedException, ExecutionException {
+        if (Thread.interrupted()) {
+            throw new InterruptedException();
+        }
         checkReady();
         return getNoWait();
     }
@@ -119,6 +123,9 @@ public class SMTPClientFutureImpl<E> extends AbstractSMTPClientFuture<E>{
 
     @Override
     public E get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        if (Thread.interrupted()) {
+            throw new InterruptedException();
+        }
         checkReady(unit.toMillis(timeout));
         return getNoWait();
     }
