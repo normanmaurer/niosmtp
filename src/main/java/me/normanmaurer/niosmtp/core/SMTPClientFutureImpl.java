@@ -32,7 +32,6 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  */
 public class SMTPClientFutureImpl<E> extends AbstractSMTPClientFuture<E>{
     
-    private volatile boolean isReady = false;
     private volatile boolean isCancelled = false;
     private final AtomicReference<E> result = new AtomicReference<E>();
     private final boolean cancelable;
@@ -56,7 +55,6 @@ public class SMTPClientFutureImpl<E> extends AbstractSMTPClientFuture<E>{
         boolean fireListeners = false;
         if (!isDone()) {
             fireListeners = this.result.compareAndSet(null, result);
-            isReady = true;
             synchronized (this) {
                 if (waiters > 0) {
                     notifyAll();
@@ -89,7 +87,7 @@ public class SMTPClientFutureImpl<E> extends AbstractSMTPClientFuture<E>{
     
     private synchronized void checkReady() throws InterruptedException {
         
-        while (!isReady) {
+        while (!isDone()) {
             try {
                 waiters++;
                 wait();
@@ -100,7 +98,7 @@ public class SMTPClientFutureImpl<E> extends AbstractSMTPClientFuture<E>{
     }
 
     private synchronized void checkReady(long timeout) throws InterruptedException {
-        while (!isReady) {
+        while (!isDone()) {
             try {
                 waiters++;
                 wait(timeout);
@@ -117,7 +115,7 @@ public class SMTPClientFutureImpl<E> extends AbstractSMTPClientFuture<E>{
 
     @Override
     public  boolean isDone() {
-        return isReady || isCancelled;
+        return result.get() != null || isCancelled;
     }
 
 

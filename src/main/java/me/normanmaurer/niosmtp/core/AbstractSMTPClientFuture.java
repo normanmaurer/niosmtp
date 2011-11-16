@@ -16,9 +16,9 @@
 */
 package me.normanmaurer.niosmtp.core;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPClientFutureListener;
@@ -34,36 +34,55 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  */
 public abstract class AbstractSMTPClientFuture<E> implements SMTPClientFuture<E>{
 
-    private final List<SMTPClientFutureListener<E>> listeners = new CopyOnWriteArrayList<SMTPClientFutureListener<E>>();
+    private final Object mutex = new Object();
+    private List<SMTPClientFutureListener<E>> listeners;
     private volatile SMTPClientSession session;
 
     /**
      * Notify all registered {@link SMTPClientFutureListener}'s
      */
-    protected void notifyListeners() {
-        // notify the listeners
-        Iterator<SMTPClientFutureListener<E>> it = listeners.iterator();
-        while(it.hasNext()) {
-            it.next().operationComplete(this);
+    protected final void notifyListeners() {
+        synchronized (mutex) {
+            if (listeners != null) {
+                // notify the listeners
+                Iterator<SMTPClientFutureListener<E>> it = listeners.iterator();
+                while(it.hasNext()) {
+                    it.next().operationComplete(this);
+                }
+                listeners = null;
+            }
         }
     }
 
     @Override
-    public void addListener(SMTPClientFutureListener<E> listener) {
-        listeners.add(listener);
+    public final void addListener(SMTPClientFutureListener<E> listener) {
+
         if (isDone()) {
             listener.operationComplete(this);
+        } else {
+            synchronized (mutex) {
+                if (listeners == null) {
+                    listeners = new ArrayList<SMTPClientFutureListener<E>>();
+                }
+                listeners.add(listener);
+            }
         }
     }
 
     @Override
-    public void removeListener(SMTPClientFutureListener<E> listener) {
-        listeners.remove(listener);
+    public final void removeListener(SMTPClientFutureListener<E> listener) {
+        if (!isDone()) {
+            synchronized (mutex) {
+                if (listeners != null) {
+                    listeners.remove(listener);
+                }
+            }
+        }
     }
     
 
     @Override
-    public SMTPClientSession getSession() {
+    public final SMTPClientSession getSession() {
         return session;
     }
 
@@ -72,14 +91,8 @@ public abstract class AbstractSMTPClientFuture<E> implements SMTPClientFuture<E>
      * 
      * @param session
      */
-    public void setSMTPClientSession(SMTPClientSession session) {
+    public final void setSMTPClientSession(SMTPClientSession session) {
         this.session = session;
     }
 
-
-
-    @Override
-    public Iterator<SMTPClientFutureListener<E>> getListeners() {
-        return listeners.iterator();
-    }
 }

@@ -63,14 +63,5 @@ public interface SMTPClientFuture<E> extends Future<E>{
      * @param listener
      */
     void removeListener(SMTPClientFutureListener<E> listener);
-    
-    
-    /**
-     * Return all {@link SMTPClientFutureListener}'s which are registered 
-     * 
-     * @return listeners
-     */
-    Iterator<SMTPClientFutureListener<E>> getListeners();
-       
 
 }
