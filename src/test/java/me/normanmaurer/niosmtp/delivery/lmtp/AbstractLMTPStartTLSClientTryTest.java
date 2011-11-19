@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.apache.james.protocols.api.Secure;
 import org.apache.james.protocols.api.handler.WiringException;
 import org.apache.james.protocols.impl.NettyServer;
 import org.apache.james.protocols.lmtp.LMTPConfigurationImpl;
@@ -69,14 +70,7 @@ public abstract class AbstractLMTPStartTLSClientTryTest extends AbstractSMTPStar
         }
         LMTPProtocolHandlerChain chain = new LMTPProtocolHandlerChain(hook);
 
-        return new NettyServer(new SMTPProtocol(chain, new LMTPConfigurationImpl() {
-
-            @Override
-            public boolean isStartTLSSupported() {
-                return true;
-            }
-            
-        }), BogusSslContextFactory.getServerContext());
+        return new NettyServer(new SMTPProtocol(chain, new LMTPConfigurationImpl()), Secure.createStartTls(BogusSslContextFactory.getServerContext()));
     }
     
     @Test

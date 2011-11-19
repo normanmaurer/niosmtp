@@ -20,6 +20,7 @@ import java.util.List;
 
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 
+import org.apache.james.protocols.api.Secure;
 import org.apache.james.protocols.api.handler.ProtocolHandler;
 import org.apache.james.protocols.api.handler.WiringException;
 import org.apache.james.protocols.impl.NettyServer;
@@ -34,14 +35,7 @@ public abstract class AbstractSMTPStartTLSClientTryTest extends AbstractSMTPStar
 
     @Override
     protected NettyServer create(Hook hook) throws WiringException {
-        SMTPConfigurationImpl config = new SMTPConfigurationImpl() {
-
-            @Override
-            public boolean isStartTLSSupported() {
-                return true;
-            }
-            
-        };
+        SMTPConfigurationImpl config = new SMTPConfigurationImpl();
              
         SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain(hook) {
 
@@ -61,7 +55,7 @@ public abstract class AbstractSMTPStartTLSClientTryTest extends AbstractSMTPStar
 
             
         };
-        return new NettyServer(new SMTPProtocol(chain, config),BogusSslContextFactory.getServerContext());
+        return new NettyServer(new SMTPProtocol(chain, config), Secure.createStartTls(BogusSslContextFactory.getServerContext()));
         
     }
 

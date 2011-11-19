@@ -21,6 +21,7 @@ import java.util.List;
 
 import javax.net.ssl.SSLContext;
 
+import org.apache.james.protocols.api.Secure;
 import org.apache.james.protocols.api.handler.ProtocolHandler;
 import org.apache.james.protocols.api.handler.WiringException;
 import org.apache.james.protocols.impl.NettyServer;
@@ -70,14 +71,7 @@ public abstract class AbstractLMTPClientUnsupportedExtensionTest extends Abstrac
     }
     
     protected NettyServer create(SSLContext context) throws WiringException {
-        LMTPConfiguration config = new LMTPConfigurationImpl() {
-
-            @Override
-            public boolean isStartTLSSupported() {
-                return true;
-            }
-            
-        };
+        LMTPConfiguration config = new LMTPConfigurationImpl();
         
         LMTPProtocolHandlerChain chain = new LMTPProtocolHandlerChain() {
 
@@ -98,7 +92,7 @@ public abstract class AbstractLMTPClientUnsupportedExtensionTest extends Abstrac
             
         };
         chain.wireExtensibleHandlers();
-        return new NettyServer(new SMTPProtocol(chain, config), context);
+        return new NettyServer(new SMTPProtocol(chain, config), Secure.createStartTls(context));
     }
     
     protected SMTPDeliveryAgent createAgent(SMTPClientTransport transport) {
