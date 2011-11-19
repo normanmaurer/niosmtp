@@ -101,7 +101,7 @@ public abstract class AbstractLMTPClientTest extends AbstractSMTPClientTest{
             }
         });
         
-        smtpServer.setListenAddresses(Arrays.asList(new InetSocketAddress(port)));
+        smtpServer.setListenAddresses(new InetSocketAddress(port));
 
         smtpServer.bind();
 

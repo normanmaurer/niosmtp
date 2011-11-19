@@ -101,7 +101,7 @@ public abstract class AbstractSMTPClientTest {
             }
             
         });
-        smtpServer.setListenAddresses(Arrays.asList(new InetSocketAddress(port)));
+        smtpServer.setListenAddresses(new InetSocketAddress(port));
 
         smtpServer.bind();
 
@@ -167,7 +167,7 @@ public abstract class AbstractSMTPClientTest {
 
             
         });
-        smtpServer.setListenAddresses(Arrays.asList(new InetSocketAddress(port)));
+        smtpServer.setListenAddresses(new InetSocketAddress(port));
 
         smtpServer.bind();
 
@@ -236,7 +236,7 @@ public abstract class AbstractSMTPClientTest {
             
             
         });
-        smtpServer.setListenAddresses(Arrays.asList(new InetSocketAddress(port)));
+        smtpServer.setListenAddresses(new InetSocketAddress(port));
 
         smtpServer.bind();
 
@@ -303,7 +303,7 @@ public abstract class AbstractSMTPClientTest {
 
 
         });
-        smtpServer.setListenAddresses(Arrays.asList(new InetSocketAddress(port)));
+        smtpServer.setListenAddresses(new InetSocketAddress(port));
 
         smtpServer.bind();
 
@@ -373,7 +373,7 @@ public abstract class AbstractSMTPClientTest {
             }
 
         });
-        smtpServer.setListenAddresses(Arrays.asList(new InetSocketAddress(port)));
+        smtpServer.setListenAddresses(new InetSocketAddress(port));
 
         smtpServer.bind();
 
@@ -442,7 +442,7 @@ public abstract class AbstractSMTPClientTest {
         NettyServer smtpServer = create(new SimpleHook() {
 
         });
-        smtpServer.setListenAddresses(Arrays.asList(new InetSocketAddress(port)));
+        smtpServer.setListenAddresses(new InetSocketAddress(port));
 
         smtpServer.bind();
 

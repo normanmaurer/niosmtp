@@ -163,7 +163,7 @@ public abstract class AbstractSMTPClientUnsupportedExtensionTest {
     private void checkDependOnPipelining(AssertCheck check) throws Exception {
         int port = TestUtils.getFreePort();
         NettyServer smtpServer = create();
-        smtpServer.setListenAddresses(Arrays.asList(new InetSocketAddress(port)));
+        smtpServer.setListenAddresses(new InetSocketAddress(port));
         smtpServer.bind();
 
         
@@ -219,7 +219,7 @@ public abstract class AbstractSMTPClientUnsupportedExtensionTest {
         int port = TestUtils.getFreePort();
         
         NettyServer smtpServer = create(BogusSslContextFactory.getServerContext());
-        smtpServer.setListenAddresses(Arrays.asList(new InetSocketAddress(port)));
+        smtpServer.setListenAddresses(new InetSocketAddress(port));
         
         smtpServer.bind();
 

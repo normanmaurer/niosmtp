@@ -79,7 +79,7 @@ public abstract class AbstractSMTPClientAuthLoginTest extends AbstractSMTPClient
         int port = TestUtils.getFreePort();
 
         NettyServer smtpServer = create(new SimpleHook());
-        smtpServer.setListenAddresses(Arrays.asList(new InetSocketAddress(port)));
+        smtpServer.setListenAddresses(new InetSocketAddress(port));
 
         smtpServer.bind();
 

@@ -99,7 +99,7 @@ public abstract class AbstractLMTPStartTLSClientTryTest extends AbstractSMTPStar
             }
         });
         
-        smtpServer.setListenAddresses(Arrays.asList(new InetSocketAddress(port)));
+        smtpServer.setListenAddresses(new InetSocketAddress(port));
 
         smtpServer.bind();
 
