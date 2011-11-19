@@ -21,6 +21,7 @@ import java.util.List;
 
 import javax.net.ssl.SSLContext;
 
+import org.apache.james.protocols.api.handler.ProtocolHandler;
 import org.apache.james.protocols.api.handler.WiringException;
 import org.apache.james.protocols.impl.NettyServer;
 import org.apache.james.protocols.lmtp.LMTPConfiguration;
@@ -43,8 +44,8 @@ public abstract class AbstractLMTPClientUnsupportedExtensionTest extends Abstrac
         LMTPProtocolHandlerChain chain = new LMTPProtocolHandlerChain() {
 
             @Override
-            protected List<Object> initDefaultHandlers() {
-                List<Object> defaultHandlers =  super.initDefaultHandlers();
+            protected List<ProtocolHandler> initDefaultHandlers() {
+                List<ProtocolHandler> defaultHandlers =  super.initDefaultHandlers();
                 for (int i = 0 ; i < defaultHandlers.size(); i++) {
                     Object h = defaultHandlers.get(i);
                     if (h instanceof LhloCmdHandler) {
@@ -63,6 +64,8 @@ public abstract class AbstractLMTPClientUnsupportedExtensionTest extends Abstrac
                 return defaultHandlers;
             }
         };
+        chain.wireExtensibleHandlers();
+
         return new NettyServer(new SMTPProtocol(chain, config));
     }
     
@@ -79,8 +82,8 @@ public abstract class AbstractLMTPClientUnsupportedExtensionTest extends Abstrac
         LMTPProtocolHandlerChain chain = new LMTPProtocolHandlerChain() {
 
             @Override
-            protected List<Object> initDefaultHandlers() {
-                List<Object> defaultHandlers =  super.initDefaultHandlers();
+            protected List<ProtocolHandler> initDefaultHandlers() {
+                List<ProtocolHandler> defaultHandlers =  super.initDefaultHandlers();
                 for (int i = 0 ; i < defaultHandlers.size(); i++) {
                     Object h = defaultHandlers.get(i);
                     if (h instanceof StartTlsCmdHandler) {
@@ -94,6 +97,7 @@ public abstract class AbstractLMTPClientUnsupportedExtensionTest extends Abstrac
 
             
         };
+        chain.wireExtensibleHandlers();
         return new NettyServer(new SMTPProtocol(chain, config), context);
     }
     

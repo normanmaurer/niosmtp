@@ -20,6 +20,7 @@ import java.util.List;
 
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 
+import org.apache.james.protocols.api.handler.ProtocolHandler;
 import org.apache.james.protocols.api.handler.WiringException;
 import org.apache.james.protocols.impl.NettyServer;
 import org.apache.james.protocols.smtp.SMTPConfigurationImpl;
@@ -42,11 +43,11 @@ public abstract class AbstractSMTPStartTLSClientTryTest extends AbstractSMTPStar
             
         };
              
-        SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain() {
+        SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain(hook) {
 
             @Override
-            protected List<Object> initDefaultHandlers() {
-                List<Object> defaultHandlers =  super.initDefaultHandlers();
+            protected List<ProtocolHandler> initDefaultHandlers() {
+                List<ProtocolHandler> defaultHandlers =  super.initDefaultHandlers();
                 for (int i = 0 ; i < defaultHandlers.size(); i++) {
                     Object h = defaultHandlers.get(i);
                     if (h instanceof StartTlsCmdHandler) {
@@ -60,7 +61,6 @@ public abstract class AbstractSMTPStartTLSClientTryTest extends AbstractSMTPStar
 
             
         };
-        chain.addHook(hook);
         return new NettyServer(new SMTPProtocol(chain, config),BogusSslContextFactory.getServerContext());
         
     }

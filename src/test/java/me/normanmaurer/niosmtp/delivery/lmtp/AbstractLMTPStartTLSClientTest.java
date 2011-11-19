@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.james.protocols.api.handler.ProtocolHandler;
 import org.apache.james.protocols.api.handler.WiringException;
 import org.apache.james.protocols.impl.NettyServer;
 import org.apache.james.protocols.lmtp.LMTPConfigurationImpl;
@@ -65,20 +66,20 @@ public abstract class AbstractLMTPStartTLSClientTest extends AbstractSMTPStartTL
 
     @Override
     protected NettyServer create(Hook hook) throws WiringException {
-        LMTPProtocolHandlerChain chain = new LMTPProtocolHandlerChain() {
+        if (hook instanceof SimpleHook) {
+            hook = new SimpleHookAdapter((SimpleHook)hook);
+        }
+        LMTPProtocolHandlerChain chain = new LMTPProtocolHandlerChain(hook) {
+
 
             @Override
-            protected List<Object> initDefaultHandlers() {
-                List<Object> handlers =  super.initDefaultHandlers();
+            protected List<ProtocolHandler> initDefaultHandlers() {
+                List<ProtocolHandler> handlers =  super.initDefaultHandlers();
                 handlers.add(new StartTlsCmdHandler());
                 return handlers;
             }
             
         };
-        if (hook instanceof SimpleHook) {
-            hook = new SimpleHookAdapter((SimpleHook)hook);
-        }
-        chain.addHook(hook);
         return new NettyServer(new SMTPProtocol(chain, new LMTPConfigurationImpl() {
 
             @Override

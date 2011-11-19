@@ -58,12 +58,11 @@ public abstract class AbstractLMTPSClientTest extends AbstractSMTPSClientTest{
 
     @Override
     protected NettyServer create(Hook hook) throws WiringException {
-        
-        LMTPProtocolHandlerChain chain = new LMTPProtocolHandlerChain();
         if (hook instanceof SimpleHook) {
             hook = new SimpleHookAdapter((SimpleHook)hook);
         }
-        chain.addHook(hook);
+        LMTPProtocolHandlerChain chain = new LMTPProtocolHandlerChain(hook);
+
         return new NettyServer(new SMTPProtocol(chain, new LMTPConfigurationImpl()), BogusSslContextFactory.getServerContext());
     
     }

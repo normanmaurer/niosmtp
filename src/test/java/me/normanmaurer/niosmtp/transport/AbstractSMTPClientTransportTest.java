@@ -41,8 +41,7 @@ public abstract class AbstractSMTPClientTransportTest {
 
     protected NettyServer create(Hook hook) throws WiringException {
         SMTPConfigurationImpl config = new SMTPConfigurationImpl();
-        SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain();
-        chain.addHook(hook);
+        SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain(hook);
         return new NettyServer(new SMTPProtocol(chain, config));
 
     }
