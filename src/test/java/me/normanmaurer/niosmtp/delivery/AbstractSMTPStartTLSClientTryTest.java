@@ -20,7 +20,7 @@ import java.util.List;
 
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 
-import org.apache.james.protocols.api.Secure;
+import org.apache.james.protocols.api.Encryption;
 import org.apache.james.protocols.api.handler.ProtocolHandler;
 import org.apache.james.protocols.api.handler.WiringException;
 import org.apache.james.protocols.impl.NettyServer;
@@ -55,7 +55,7 @@ public abstract class AbstractSMTPStartTLSClientTryTest extends AbstractSMTPStar
 
             
         };
-        return new NettyServer(new SMTPProtocol(chain, config), Secure.createStartTls(BogusSslContextFactory.getServerContext()));
+        return new NettyServer(new SMTPProtocol(chain, config), Encryption.createStartTls(BogusSslContextFactory.getServerContext()));
         
     }
 

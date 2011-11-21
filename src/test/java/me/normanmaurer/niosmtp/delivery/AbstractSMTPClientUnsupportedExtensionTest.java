@@ -35,7 +35,7 @@ import java.util.List;
 import javax.net.ssl.SSLContext;
 
 
-import org.apache.james.protocols.api.Secure;
+import org.apache.james.protocols.api.Encryption;
 import org.apache.james.protocols.api.handler.ProtocolHandler;
 import org.apache.james.protocols.api.handler.WiringException;
 import org.apache.james.protocols.impl.NettyServer;
@@ -124,7 +124,7 @@ public abstract class AbstractSMTPClientUnsupportedExtensionTest {
             
         };
         chain.wireExtensibleHandlers();
-        return new NettyServer(new SMTPProtocol(chain, config), Secure.createStartTls(context));
+        return new NettyServer(new SMTPProtocol(chain, config), Encryption.createStartTls(context));
     }
     
     protected SMTPDeliveryAgent createAgent(SMTPClientTransport transport) {

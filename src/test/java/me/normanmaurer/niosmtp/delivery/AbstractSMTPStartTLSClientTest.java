@@ -18,7 +18,7 @@ package me.normanmaurer.niosmtp.delivery;
 
 
 
-import org.apache.james.protocols.api.Secure;
+import org.apache.james.protocols.api.Encryption;
 import org.apache.james.protocols.api.handler.WiringException;
 import org.apache.james.protocols.impl.NettyServer;
 import org.apache.james.protocols.smtp.SMTPConfigurationImpl;
@@ -37,7 +37,7 @@ public abstract class AbstractSMTPStartTLSClientTest extends AbstractSMTPClientT
         SMTPConfigurationImpl config = new SMTPConfigurationImpl();
         
         SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain(hook);
-        return new NettyServer(new SMTPProtocol(chain, config),Secure.createStartTls(BogusSslContextFactory.getServerContext()));
+        return new NettyServer(new SMTPProtocol(chain, config), Encryption.createStartTls(BogusSslContextFactory.getServerContext()));
     }
 
     @Override

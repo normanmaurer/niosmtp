@@ -39,7 +39,7 @@ import me.normanmaurer.niosmtp.transport.FutureResult;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 import me.normanmaurer.niosmtp.util.TestUtils;
 
-import org.apache.james.protocols.api.Secure;
+import org.apache.james.protocols.api.Encryption;
 import org.apache.james.protocols.api.handler.WiringException;
 import org.apache.james.protocols.impl.NettyServer;
 import org.apache.james.protocols.lmtp.LMTPConfigurationImpl;
@@ -64,7 +64,7 @@ public abstract class AbstractLMTPSClientTest extends AbstractSMTPSClientTest{
         }
         LMTPProtocolHandlerChain chain = new LMTPProtocolHandlerChain(hook);
 
-        return new NettyServer(new SMTPProtocol(chain, new LMTPConfigurationImpl()), Secure.createTls(BogusSslContextFactory.getServerContext()));
+        return new NettyServer(new SMTPProtocol(chain, new LMTPConfigurationImpl()), Encryption.createTls(BogusSslContextFactory.getServerContext()));
     
     }
 
