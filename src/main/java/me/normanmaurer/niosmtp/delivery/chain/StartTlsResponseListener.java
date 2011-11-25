@@ -56,10 +56,10 @@ public class StartTlsResponseListener extends ChainedSMTPClientFutureListener<SM
         int code = response.getCode();
         if (code < 400) {
             
-            session.startTLS().addListener(new SMTPClientFutureListener<FutureResult<Boolean>>() {
+            session.startTLS().addListener(new SMTPClientFutureListener<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>>() {
                 
                 @Override
-                public void operationComplete(SMTPClientFuture<FutureResult<Boolean>> future) {
+                public void operationComplete(SMTPClientFuture<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>> future) {
                     try {
                         // We use a SMTPPipelinedRequest if the SMTPServer supports PIPELINING. This will allow the NETTY to get
                         // the MAX throughput as the encoder will write it out in one buffer if possible. This result in less system calls

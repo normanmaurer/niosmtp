@@ -26,6 +26,7 @@ import me.normanmaurer.niosmtp.SMTPMessageSubmit;
 import me.normanmaurer.niosmtp.SMTPPipeliningRequest;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
+import me.normanmaurer.niosmtp.transport.FutureResult.Void;
 
 import org.slf4j.Logger;
 
@@ -91,7 +92,7 @@ public interface SMTPClientSession {
     /**
      * Start TLS encryption
      */
-    SMTPClientFuture<FutureResult<Boolean>> startTLS();
+    SMTPClientFuture<FutureResult<Void>> startTLS();
         
     /**
      * Send the given {@link SMTPRequest} to the connected SMTP-Server. 
@@ -123,14 +124,14 @@ public interface SMTPClientSession {
      * 
      * @return future
      */
-    SMTPClientFuture<FutureResult<Boolean>> close();
+    SMTPClientFuture<FutureResult<Void>> close();
     
     /**
      * Return the {@link SMTPClientFuture} which will get notified once the {@link SMTPClientSession} was closed
      * 
      * @return future
      */
-    SMTPClientFuture<FutureResult<Boolean>> getCloseFuture();
+    SMTPClientFuture<FutureResult<Void>> getCloseFuture();
     
     /**
      * Return <code>true</code> if the {@link SMTPClientSession} is closed (disconnected)

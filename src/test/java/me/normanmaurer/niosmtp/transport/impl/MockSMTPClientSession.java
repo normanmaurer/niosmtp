@@ -39,7 +39,7 @@ public class MockSMTPClientSession extends AbstractSMTPClientSession {
 
     private boolean closed = false;
     @Override
-    public SMTPClientFuture<FutureResult<Boolean>> startTLS() {
+    public SMTPClientFuture<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>> startTLS() {
         return null;
     }
   
@@ -70,14 +70,14 @@ public class MockSMTPClientSession extends AbstractSMTPClientSession {
 
 
     @Override
-    public SMTPClientFuture<FutureResult<Boolean>> getCloseFuture() {
+    public SMTPClientFuture<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>> getCloseFuture() {
         // TODO Auto-generated method stub
         return null;
     }
 
 
     @Override
-    public SMTPClientFuture<FutureResult<Boolean>> close() {
+    public SMTPClientFuture<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>> close() {
         // TODO Auto-generated method stub
         return null;
     }

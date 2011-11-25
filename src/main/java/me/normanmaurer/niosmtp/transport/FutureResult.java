@@ -30,8 +30,28 @@ import me.normanmaurer.niosmtp.SMTPException;
  */
 public abstract class FutureResult<E> {
 
-   
-    private SMTPException exception;
+    /**
+     * Place holder for a return type of {@link FutureResult} that does not hold any value
+     * 
+     * @author Maurer
+     *
+     */
+    public final static class Void {      
+    }
+    
+    private final static FutureResult<Void> VOID_RESULT= new FutureResult<Void>(null) {
+        private final Void VOID = new Void();
+
+        @Override
+        public Void getResult() {
+            return VOID;
+        }
+        
+    };
+    
+    
+    
+    private final SMTPException exception;
 
     protected FutureResult(SMTPException exception) {
         this.exception = exception;
@@ -88,6 +108,15 @@ public abstract class FutureResult<E> {
             
         };
         
+    }
+    
+    /**
+     * Create a {@link FutureResult} which does not hold a real value on succes
+     * 
+     * @return voidResult
+     */
+    public static FutureResult<Void> createVoid() {
+        return VOID_RESULT;
     }
 
 }

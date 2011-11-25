@@ -80,7 +80,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
     
     private final Channel channel;
     private final SSLEngine engine;
-    private final SMTPClientFutureImpl<FutureResult<Boolean>> closeFuture = new SMTPClientFutureImpl<FutureResult<Boolean>>();
+    private final SMTPClientFutureImpl<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>> closeFuture = new SMTPClientFutureImpl<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>>();
     private final AtomicInteger futureCount = new AtomicInteger(0);
     private static final SMTPException STARTTLS_EXCEPTION = new SMTPException("SMTPClientSession already ecrypted!");
     
@@ -153,9 +153,9 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
 
     @SuppressWarnings("unchecked")
     @Override
-    public SMTPClientFuture<FutureResult<Boolean>> startTLS() {
+    public SMTPClientFuture<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>> startTLS() {
         if (!isEncrypted()) {
-            final SMTPClientFutureImpl<FutureResult<Boolean>> future = new SMTPClientFutureImpl<FutureResult<Boolean>>(false);
+            final SMTPClientFutureImpl<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>> future = new SMTPClientFutureImpl<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>>(false);
 
             SslHandler sslHandler =  new SslHandler(engine, false);
             channel.getPipeline().addFirst(SSL_HANDLER_KEY, sslHandler);
@@ -164,7 +164,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
                 @Override
                 public void operationComplete(ChannelFuture cfuture) throws Exception {
                     if (cfuture.isSuccess()) {
-                        future.setResult(new FutureResultImpl<Boolean>(true));
+                        future.setResult(FutureResult.createVoid());
                     } else {
                         future.setResult(FutureResult.create(cfuture.getCause()));
                     }
@@ -173,7 +173,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
             
             return future;
         } else {
-            return new ReadySMTPClientFuture<FutureResult<Boolean>>(this, FutureResult.create(STARTTLS_EXCEPTION));
+            return new ReadySMTPClientFuture<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>>(this, FutureResult.create(STARTTLS_EXCEPTION));
         }
     }
     
@@ -231,7 +231,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
         }
     }
     @Override
-    public SMTPClientFuture<FutureResult<Boolean>> close() {
+    public SMTPClientFuture<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>> close() {
         channel.write(ChannelBuffers.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
         return closeFuture;
     }
@@ -294,11 +294,11 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
     }
     
     private static final class CloseHandler extends SimpleChannelUpstreamHandler {
-        private final SMTPClientFutureImpl<FutureResult<Boolean>> closeFuture;
+        private final SMTPClientFutureImpl<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>> closeFuture;
         private final Logger log;
 
 
-        public CloseHandler(SMTPClientFutureImpl<FutureResult<Boolean>> closeFuture, Logger log) {
+        public CloseHandler(SMTPClientFutureImpl<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>> closeFuture, Logger log) {
             this.closeFuture = closeFuture;
             this.log = log;
         }
@@ -316,7 +316,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
 
         @Override
         public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-            closeFuture.setResult(new FutureResultImpl<Boolean>(true));
+            closeFuture.setResult(FutureResult.createVoid());
             super.channelClosed(ctx, e);
         }
     }
@@ -346,7 +346,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
     }
 
     @Override
-    public SMTPClientFuture<FutureResult<Boolean>> getCloseFuture() {
+    public SMTPClientFuture<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>> getCloseFuture() {
         return closeFuture;
     }
     

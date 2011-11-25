@@ -62,7 +62,7 @@ public class LimitingSMTPClientTransport implements SMTPClientTransport {
 
     private final SMTPClientTransport transport;
     private final int connectionLimit;
-    private final SMTPClientFutureListener<FutureResult<Boolean>> closeListener = new ReleaseConnectionCloseHandler();
+    private final SMTPClientFutureListener<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>> closeListener = new ReleaseConnectionCloseHandler();
     private final AtomicInteger connectionCount = new AtomicInteger(0);
     private final ConcurrentLinkedQueue<QueuedConnectRequest> connectionQueue = new ConcurrentLinkedQueue<QueuedConnectRequest>();
     private final int maxQueuedConnectionLimit;
@@ -184,11 +184,11 @@ public class LimitingSMTPClientTransport implements SMTPClientTransport {
      * @author Norman Maurer
      *
      */
-    private final class ReleaseConnectionCloseHandler implements SMTPClientFutureListener<FutureResult<Boolean>> {
+    private final class ReleaseConnectionCloseHandler implements SMTPClientFutureListener<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>> {
 
 
         @Override
-        public void operationComplete(SMTPClientFuture<FutureResult<Boolean>> future) {
+        public void operationComplete(SMTPClientFuture<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>> future) {
             if(connectionCount.decrementAndGet() <= connectionLimit) {
                 
                 while(connectionCount.incrementAndGet() <= connectionLimit) {

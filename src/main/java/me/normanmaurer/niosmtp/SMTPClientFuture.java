@@ -16,7 +16,6 @@
 */
 package me.normanmaurer.niosmtp;
 
-import java.util.Iterator;
 import java.util.concurrent.Future;
 
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
