@@ -16,6 +16,8 @@
 */
 package me.normanmaurer.niosmtp.delivery.chain;
 
+import me.normanmaurer.niosmtp.SMTPClientFuture;
+import me.normanmaurer.niosmtp.SMTPClientFutureListener;
 import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
@@ -23,6 +25,7 @@ import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgentConfig.PipeliningMode;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryEnvelope;
+import me.normanmaurer.niosmtp.transport.FutureResult;
 import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
@@ -48,24 +51,34 @@ public class StartTlsResponseListener extends ChainedSMTPClientFutureListener<SM
     }
     
     @Override
-    public void onResult(SMTPClientSession session, SMTPResponse response) throws SMTPException {
-        String mail = ((SMTPDeliveryEnvelope) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
-
+    public void onResult(final SMTPClientSession session, SMTPResponse response) throws SMTPException {
         
         int code = response.getCode();
         if (code < 400) {
             
-            session.startTLS();
+            session.startTLS().addListener(new SMTPClientFutureListener<FutureResult<Boolean>>() {
+                
+                @Override
+                public void operationComplete(SMTPClientFuture<FutureResult<Boolean>> future) {
+                    try {
+                        // We use a SMTPPipelinedRequest if the SMTPServer supports PIPELINING. This will allow the NETTY to get
+                        // the MAX throughput as the encoder will write it out in one buffer if possible. This result in less system calls
+                        if (session.getSupportedExtensions().contains(PIPELINING_EXTENSION) && ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() != PipeliningMode.NO) {
+                            pipelining(session);
+                        } else {
+                            String mail = ((SMTPDeliveryEnvelope) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
+
+                            next(session, SMTPRequestImpl.mail(mail));
+                        }
+                    } catch (SMTPException e) {
+                        onException(session, e);
+                    }
+                    
+                }
+            });
            
 
-            // We use a SMTPPipelinedRequest if the SMTPServer supports PIPELINING. This will allow the NETTY to get
-            // the MAX throughput as the encoder will write it out in one buffer if possible. This result in less system calls
-            if (session.getSupportedExtensions().contains(PIPELINING_EXTENSION) && ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() != PipeliningMode.NO) {
-                pipelining(session);
-            } else {
-                next(session, SMTPRequestImpl.mail(mail));
-            }
-
+           
         } else {
             setDeliveryStatusForAll(session, response);
         }

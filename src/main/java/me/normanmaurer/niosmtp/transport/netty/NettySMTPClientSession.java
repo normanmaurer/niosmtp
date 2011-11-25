@@ -29,12 +29,14 @@ import javax.net.ssl.SSLEngine;
 
 import me.normanmaurer.niosmtp.SMTPByteArrayMessage;
 import me.normanmaurer.niosmtp.SMTPClientFuture;
+import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPMessage;
 import me.normanmaurer.niosmtp.SMTPMessageSubmit;
 import me.normanmaurer.niosmtp.SMTPPipeliningRequest;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.core.DataTerminatingInputStream;
+import me.normanmaurer.niosmtp.core.ReadySMTPClientFuture;
 import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.transport.AbstractSMTPClientSession;
 import me.normanmaurer.niosmtp.transport.FutureResult;
@@ -47,6 +49,7 @@ import me.normanmaurer.niosmtp.transport.impl.FutureResultImpl;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -79,6 +82,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
     private final SSLEngine engine;
     private final SMTPClientFutureImpl<FutureResult<Boolean>> closeFuture = new SMTPClientFutureImpl<FutureResult<Boolean>>();
     private final AtomicInteger futureCount = new AtomicInteger(0);
+    private static final SMTPException STARTTLS_EXCEPTION = new SMTPException("SMTPClientSession already ecrypted!");
     
     public NettySMTPClientSession(Channel channel, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode,  SSLEngine engine) {
         super(logger, config, mode, (InetSocketAddress) channel.getLocalAddress(), (InetSocketAddress) channel.getRemoteAddress());      
@@ -147,12 +151,29 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
         return channel.getId() + "";
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public void startTLS() {
+    public SMTPClientFuture<FutureResult<Boolean>> startTLS() {
         if (!isEncrypted()) {
+            final SMTPClientFutureImpl<FutureResult<Boolean>> future = new SMTPClientFutureImpl<FutureResult<Boolean>>(false);
+
             SslHandler sslHandler =  new SslHandler(engine, false);
             channel.getPipeline().addFirst(SSL_HANDLER_KEY, sslHandler);
-            sslHandler.handshake();
+            sslHandler.handshake().addListener(new ChannelFutureListener() {
+                
+                @Override
+                public void operationComplete(ChannelFuture cfuture) throws Exception {
+                    if (cfuture.isSuccess()) {
+                        future.setResult(new FutureResultImpl<Boolean>(true));
+                    } else {
+                        future.setResult(FutureResult.create(cfuture.getCause()));
+                    }
+                }
+            });
+            
+            return future;
+        } else {
+            return new ReadySMTPClientFuture<FutureResult<Boolean>>(this, FutureResult.create(STARTTLS_EXCEPTION));
         }
     }
     

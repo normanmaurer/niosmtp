@@ -91,7 +91,7 @@ public interface SMTPClientSession {
     /**
      * Start TLS encryption
      */
-    void startTLS();
+    SMTPClientFuture<FutureResult<Boolean>> startTLS();
         
     /**
      * Send the given {@link SMTPRequest} to the connected SMTP-Server. 

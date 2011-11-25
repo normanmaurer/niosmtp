@@ -39,8 +39,8 @@ public class MockSMTPClientSession extends AbstractSMTPClientSession {
 
     private boolean closed = false;
     @Override
-    public void startTLS() {
-        // do nothing
+    public SMTPClientFuture<FutureResult<Boolean>> startTLS() {
+        return null;
     }
   
     
