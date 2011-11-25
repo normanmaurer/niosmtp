@@ -19,7 +19,6 @@ package me.normanmaurer.niosmtp.transport;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -74,7 +73,7 @@ public abstract class AbstractSMTPClientSession implements SMTPClientSession {
     }
 
     @Override
-    public Map<String, Object> getAttributes() {
+    public ConcurrentMap<String, Object> getAttributes() {
         return attrs;
     }
 

@@ -18,8 +18,8 @@ package me.normanmaurer.niosmtp.transport;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 
 import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPMessageSubmit;
@@ -51,7 +51,7 @@ public interface SMTPClientSession {
      * 
      * @return attributes
      */
-    Map<String, Object> getAttributes();
+    ConcurrentMap<String, Object> getAttributes();
     
     /**
      * Return a "read-only" {@link Set} of all supported EXTENSIONS. This will be set in the EHLO Response so you will get an empty {@link Set} before the EHLO
