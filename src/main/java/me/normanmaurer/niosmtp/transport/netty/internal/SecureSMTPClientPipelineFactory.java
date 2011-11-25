@@ -27,10 +27,13 @@ import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 import me.normanmaurer.niosmtp.transport.netty.NettyConstants;
 import me.normanmaurer.niosmtp.transport.netty.SMTPClientSessionFactory;
 
+import org.jboss.netty.channel.ChannelFuture;
+import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
+import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.ssl.SslHandler;
 import org.jboss.netty.util.Timer;
@@ -45,7 +48,6 @@ import org.jboss.netty.util.Timer;
 public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory implements NettyConstants{
 
     private final static SslHandshakeHandler SSL_HANDSHAKE_HANDLER = new SslHandshakeHandler();
-    
     private final SSLContext context;
     private final SMTPDeliveryMode mode;
 
@@ -95,11 +97,21 @@ public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineFactory i
      *
      */
     protected final static class SslHandshakeHandler extends SimpleChannelUpstreamHandler {
+        private static final ChannelFutureListener HANDSHAKE_LISTENER = new ChannelFutureListener() {
 
+            @Override
+            public void operationComplete(ChannelFuture future) throws Exception {
+                if (!future.isSuccess()) {
+                    Channels.fireExceptionCaught(future.getChannel(), future.getCause());
+                }
+            }
+            
+        };
+        
         @Override
         public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
             SslHandler sslHandler = ctx.getPipeline().get(SslHandler.class);
-            sslHandler.handshake();
+            sslHandler.handshake().addListener(HANDSHAKE_LISTENER);
         }
         
     }
