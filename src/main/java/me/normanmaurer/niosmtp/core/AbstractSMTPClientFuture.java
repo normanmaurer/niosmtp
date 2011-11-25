@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPClientFutureListener;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
@@ -36,7 +39,8 @@ public abstract class AbstractSMTPClientFuture<E> implements SMTPClientFuture<E>
 
     private List<SMTPClientFutureListener<E>> listeners;
     private volatile SMTPClientSession session;
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSMTPClientFuture.class);
+    
     /**
      * Notify all registered {@link SMTPClientFutureListener}'s
      */
@@ -52,7 +56,13 @@ public abstract class AbstractSMTPClientFuture<E> implements SMTPClientFuture<E>
         }
         if (it != null) {
             while(it.hasNext()) {
-                it.next().operationComplete(this);
+                SMTPClientFutureListener<E> listener = null;
+                try {
+                    listener = it.next();
+                    listener.operationComplete(this);
+                } catch (Throwable e) {
+                    LOGGER.warn("Exception thrown while executing " + SMTPClientFutureListener.class.getName() + " " + listener, e);
+                }
             }
         }
     }
