@@ -34,7 +34,6 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  */
 public abstract class AbstractSMTPClientFuture<E> implements SMTPClientFuture<E>{
 
-    private final Object mutex = new Object();
     private List<SMTPClientFutureListener<E>> listeners;
     private volatile SMTPClientSession session;
 
@@ -42,41 +41,43 @@ public abstract class AbstractSMTPClientFuture<E> implements SMTPClientFuture<E>
      * Notify all registered {@link SMTPClientFutureListener}'s
      */
     protected final void notifyListeners() {
-        synchronized (mutex) {
+    	Iterator<SMTPClientFutureListener<E>> it = null;
+        synchronized (this) {
             if (listeners != null) {
                 // notify the listeners
-                Iterator<SMTPClientFutureListener<E>> it = listeners.iterator();
-                while(it.hasNext()) {
-                    it.next().operationComplete(this);
-                }
+                it  = listeners.iterator();
+
                 listeners = null;
+            }
+        }
+        if (it != null) {
+            while(it.hasNext()) {
+                it.next().operationComplete(this);
             }
         }
     }
 
     @Override
-    public final void addListener(SMTPClientFutureListener<E> listener) {
+    public final synchronized void addListener(SMTPClientFutureListener<E> listener) {
 
         if (isDone()) {
             listener.operationComplete(this);
         } else {
-            synchronized (mutex) {
-                if (listeners == null) {
-                    listeners = new ArrayList<SMTPClientFutureListener<E>>();
-                }
-                listeners.add(listener);
+            if (listeners == null) {
+                listeners = new ArrayList<SMTPClientFutureListener<E>>();
             }
+            listeners.add(listener);
+
         }
     }
 
     @Override
-    public final void removeListener(SMTPClientFutureListener<E> listener) {
+    public final synchronized void removeListener(SMTPClientFutureListener<E> listener) {
         if (!isDone()) {
-            synchronized (mutex) {
-                if (listeners != null) {
-                    listeners.remove(listener);
-                }
+            if (listeners != null) {
+                listeners.remove(listener);
             }
+            
         }
     }
     
