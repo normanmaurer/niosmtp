@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  * @author Norman Maurer
  *
  */
-class SMTPRequestEncoder extends OneToOneEncoder implements SMTPClientConstants{
+public class SMTPRequestEncoder extends OneToOneEncoder implements SMTPClientConstants{
     private final Logger logger = LoggerFactory.getLogger(SMTPRequestEncoder.class);
 
     private final static byte[] CRLF = new byte[] {'\r', '\n'};

@@ -16,6 +16,12 @@
 */
 package me.normanmaurer.niosmtp.transport.netty;
 
+import me.normanmaurer.niosmtp.transport.netty.internal.SMTPClientIdleHandler;
+import me.normanmaurer.niosmtp.transport.netty.internal.SMTPConnectHandler;
+import me.normanmaurer.niosmtp.transport.netty.internal.SMTPPipeliningRequestEncoder;
+import me.normanmaurer.niosmtp.transport.netty.internal.SMTPRequestEncoder;
+import me.normanmaurer.niosmtp.transport.netty.internal.SMTPResponseDecoder;
+
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.handler.ssl.SslHandler;
 import org.jboss.netty.handler.stream.ChunkedWriteHandler;
@@ -65,11 +71,7 @@ public interface NettyConstants {
      * The key to use when adding the {@link ChunkedWriteHandler} to the {@link ChannelPipeline}
      */
     public static final String CHUNK_WRITE_HANDLER_KEY ="chunkWriteHandler";
-  
-    /**
-     * The key to use when adding the {@link MessageInputEncoder} to the {@link ChannelPipeline}
-     */
-    public static final String MESSAGE_INPUT_ENCODER_KEY ="messageInputEncoder";
+
     
     /**
      * The key to use when adding the {@link SslHandler} to the pipeline

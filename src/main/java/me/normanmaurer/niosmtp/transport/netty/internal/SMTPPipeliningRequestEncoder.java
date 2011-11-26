@@ -20,6 +20,7 @@ import me.normanmaurer.niosmtp.SMTPPipeliningRequest;
 import me.normanmaurer.niosmtp.core.StringUtils;
 import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 
+import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -33,7 +34,7 @@ import org.slf4j.LoggerFactory;
  * @author Norman Maurer
  *
  */
-class SMTPPipeliningRequestEncoder extends OneToOneEncoder implements SMTPClientConstants{
+public class SMTPPipeliningRequestEncoder extends OneToOneEncoder implements SMTPClientConstants{
     private final Logger logger = LoggerFactory.getLogger(SMTPRequestEncoder.class);
 
     private final static byte[] CRLF = new byte[] {'\r', '\n'};
