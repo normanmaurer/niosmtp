@@ -26,7 +26,7 @@ import java.util.List;
 import org.apache.james.protocols.api.Encryption;
 import org.apache.james.protocols.api.handler.ProtocolHandler;
 import org.apache.james.protocols.api.handler.WiringException;
-import org.apache.james.protocols.impl.NettyServer;
+import org.apache.james.protocols.netty.NettyServer;
 import org.apache.james.protocols.lmtp.LMTPConfigurationImpl;
 import org.apache.james.protocols.lmtp.LMTPProtocolHandlerChain;
 import org.apache.james.protocols.lmtp.hook.DeliverToRecipientHook;
