@@ -46,7 +46,7 @@ public interface SMTPClientTransport {
      * 
      * @param remote
      * @param config
-     * @param callback
+     * @return future
      */
     SMTPClientFuture<FutureResult<SMTPResponse>> connect(InetSocketAddress remote, SMTPClientConfig config);
     
