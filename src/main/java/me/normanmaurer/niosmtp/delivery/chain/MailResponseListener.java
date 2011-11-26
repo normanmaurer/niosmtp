@@ -40,7 +40,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 public class MailResponseListener extends AbstractPipeliningResponseListener {
     
     /**
-     * Get instance of this {@link SMTPResponseCallback} implemenation
+     * Get instance of this {@link MailResponseListener} implementation
      */
     public static final MailResponseListener INSTANCE= new MailResponseListener();
     

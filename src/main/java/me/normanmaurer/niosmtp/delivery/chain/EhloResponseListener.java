@@ -19,6 +19,7 @@ package me.normanmaurer.niosmtp.delivery.chain;
 import java.util.Iterator;
 import java.util.Set;
 
+import me.normanmaurer.niosmtp.SMTPClientFutureListener;
 import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
@@ -35,7 +36,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 /**
  * {@link ChainedSMTPClientFutureListener} implementation which will handle the <code>EHLO</code> {@link SMTPResponse}
  * 
- * It will write the next {@link SMTPRequest} to the {@link SMTPClientSession} with the right {@link SMTPResponseCallback} added.
+ * It will write the next {@link SMTPRequest} to the {@link SMTPClientSession} with the right {@link SMTPClientFutureListener} added.
  * 
  * This implementation also handles the <code>PIPELINING</code> and also the <code>STARTTLS</code> extension
  * 
@@ -46,7 +47,7 @@ public class EhloResponseListener extends ChainedSMTPClientFutureListener<SMTPRe
 
     
     /**
-     * Get instance of this {@link SMTPResponseCallback} implemenation
+     * Get instance of this {@link EhloResponseListener} implemenation
      */
     public static final EhloResponseListener INSTANCE = new EhloResponseListener();
     

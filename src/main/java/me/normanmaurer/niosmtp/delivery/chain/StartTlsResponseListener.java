@@ -32,7 +32,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 /**
  * {@link ChainedSMTPClientFutureListener} implementation which will handle the <code>STARTLS</code> {@link SMTPResponse}
  * 
- * It will write the next {@link SMTPRequest} to the {@link SMTPClientSession} with the right {@link SMTPResponseCallback} added.
+ * It will write the next {@link SMTPRequest} to the {@link SMTPClientSession} with the right {@link StartTlsResponseListener} added.
  * 
  * This implementation also handles the <code>PIPELINING</code> and also the <code>STARTTLS</code> extension
  * 

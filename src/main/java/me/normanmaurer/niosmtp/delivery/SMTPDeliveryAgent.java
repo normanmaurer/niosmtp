@@ -67,7 +67,7 @@ public class SMTPDeliveryAgent implements SMTPClientConstants, SMTPDeliverySessi
      * 
      * @param host
      * @param config
-     * @param transation
+     * @param transactions
      * @return future
      */
     public SMTPClientFuture<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>> deliver(InetSocketAddress host, final SMTPDeliveryAgentConfig config, final SMTPDeliveryEnvelope... transactions) {
@@ -105,7 +105,7 @@ public class SMTPDeliveryAgent implements SMTPClientConstants, SMTPDeliverySessi
                 attrs.put(FUTURE_KEY, future);
                 attrs.put(DELIVERY_STATUS_KEY, new ArrayList<DeliveryRecipientStatus>());
                 attrs.put(DELIVERY_RESULT_LIST_KEY, new ArrayList<FutureResult<Iterator<DeliveryRecipientStatus>>>());
-                attrs.put(SMTP_RESPONSE_CALLBACK_FACTORY, createFactory());
+                attrs.put(SMTP_CLIENT_FUTURE_LISTENER_FACTORY, createFactory());
             }
 
             @Override

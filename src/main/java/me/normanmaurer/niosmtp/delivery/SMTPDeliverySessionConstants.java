@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
+import me.normanmaurer.niosmtp.delivery.chain.SMTPClientFutureListenerFactory;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
@@ -58,7 +59,7 @@ public interface SMTPDeliverySessionConstants {
     
     
     /**
-     * Key under which the already processed {@link DeliveryResult}'s are stored as a {@link List}
+     * Key under which the already processed results are stored as a {@link List}
      */
     public static final String DELIVERY_RESULT_LIST_KEY = "delivery_result_List";
 
@@ -76,7 +77,7 @@ public interface SMTPDeliverySessionConstants {
 
 
     /**
-     * Key under which the {@link SMTPResponseCallbackFactory} will be stored
+     * Key under which the {@link SMTPClientFutureListenerFactory} will be stored
      */
-    public final static String SMTP_RESPONSE_CALLBACK_FACTORY ="smtp_response_callback_factory";
+    public final static String SMTP_CLIENT_FUTURE_LISTENER_FACTORY ="smtp_client_future_listener_factory";
 }

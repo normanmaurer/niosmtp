@@ -39,7 +39,7 @@ public class AuthPlainResponseListener extends AbstractAuthResponseListener{
     
 
     /**
-     * Get instance of this {@link SMTPResponseCallback} implementation
+     * Get instance of this {@link AuthPlainResponseListener} implementation
      */
     public final static AuthPlainResponseListener INSTANCE = new AuthPlainResponseListener();
     
