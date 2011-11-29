@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
  * @author Norman Maurer
  * 
  */
-class SMTPResponseDecoder extends OneToOneDecoder implements SMTPClientConstants{
+public class SMTPResponseDecoder extends OneToOneDecoder implements SMTPClientConstants{
     private final Logger logger = LoggerFactory.getLogger(SMTPResponseDecoder.class);
 
     @Override

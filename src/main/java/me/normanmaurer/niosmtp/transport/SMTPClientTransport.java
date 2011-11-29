@@ -41,12 +41,12 @@ public interface SMTPClientTransport {
     SMTPDeliveryMode getDeliveryMode();
     
     /**
-     * Connect to the given {@link InetSocketAddress} and executure the {@link SMTPResponseCallback} once the Welcome {@link SMTPResponse} 
+     * Connect to the given {@link InetSocketAddress} and returns a {@link SMTPClientFuture}. The {@link SMTPClientFuture} is notified once the Welcome {@link SMTPResponse} 
      * was received or an {@link Exception} was thrown
      * 
      * @param remote
      * @param config
-     * @param callback
+     * @return future
      */
     SMTPClientFuture<FutureResult<SMTPResponse>> connect(InetSocketAddress remote, SMTPClientConfig config);
     

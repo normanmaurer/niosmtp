@@ -64,7 +64,7 @@ public interface SMTPClientSession {
     /**
      * Add the supported EXTENSIONS for the {@link SMTPClientSession}. 
      * 
-     * @param extensions
+     * @param extension
      */
     void addSupportedExtensions(String extension);
     
@@ -85,12 +85,14 @@ public interface SMTPClientSession {
     /**
      * Return <code>true</code> if the {@link SMTPClientSession} is encrypted
      * 
-     * @return
+     * @return encrypted
      */
     boolean isEncrypted();
     
     /**
      * Start TLS encryption
+     * 
+     * @return future
      */
     SMTPClientFuture<FutureResult<Void>> startTLS();
         

@@ -29,7 +29,7 @@ import me.normanmaurer.niosmtp.transport.FutureResult;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
- * A Factory which is responsible for return the right {@link SMTPClientFutureListener} depending on the state of the {@link SMTPSession} and the {@link SMTPRequest} or 
+ * A Factory which is responsible for return the right {@link SMTPClientFutureListener} depending on the state of the {@link SMTPClientSession} and the {@link SMTPRequest} or 
  * {@link SMTPMessage}
  * 
  * @author Norman Maurer
@@ -47,7 +47,7 @@ public interface SMTPClientFutureListenerFactory {
     public SMTPClientFutureListener<FutureResult<SMTPResponse>> getListener(SMTPClientSession session) throws SMTPException;
     
     /**
-     * Return the {@link SMTPClientFutureListener} for the given {@link SMTPSession} and {@link SMTPRequest}
+     * Return the {@link SMTPClientFutureListener} for the given {@link SMTPClientSession} and {@link SMTPRequest}
      * 
      * @param session
      * @param request
@@ -61,7 +61,7 @@ public interface SMTPClientFutureListenerFactory {
 
     
     /**
-     * Return the {@link SMTPClientFutureListener} for the given {@link SMTPSession} and {@link SMTPMessage}
+     * Return the {@link SMTPClientFutureListener} for the given {@link SMTPClientSession} and {@link SMTPMessage}
      * 
      * @param session
      * @param input

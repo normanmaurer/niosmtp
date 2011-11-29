@@ -31,7 +31,7 @@ import org.jboss.netty.handler.timeout.IdleStateEvent;
  * @author Norman Maurer
  *
  */
-class SMTPClientIdleHandler extends IdleStateAwareChannelUpstreamHandler{
+public class SMTPClientIdleHandler extends IdleStateAwareChannelUpstreamHandler{
 
     @Override
     public void channelIdle(ChannelHandlerContext ctx, IdleStateEvent e) throws Exception {

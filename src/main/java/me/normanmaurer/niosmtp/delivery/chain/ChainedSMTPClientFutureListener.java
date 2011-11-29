@@ -46,7 +46,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
- * Abstract base implementation of {@link SMTPResponseCallback} which comple the {@link SMTPClientFuture} on an {@link Exception}
+ * Abstract base implementation of {@link SMTPClientFutureListener} which completes the {@link SMTPClientFuture} on an {@link Exception}
  * 
  * @author Norman Maurer
  *
@@ -180,18 +180,18 @@ public abstract class ChainedSMTPClientFutureListener<E> implements SMTPClientFu
     }
     
     protected final void next(SMTPClientSession session, SMTPPipeliningRequest request) throws SMTPException {
-        SMTPClientFutureListenerFactory factory = (SMTPClientFutureListenerFactory) session.getAttributes().get(SMTP_RESPONSE_CALLBACK_FACTORY);
+        SMTPClientFutureListenerFactory factory = (SMTPClientFutureListenerFactory) session.getAttributes().get(SMTP_CLIENT_FUTURE_LISTENER_FACTORY);
         session.send(request).addListener(factory.getListener(session, request));
     }
     
     protected final void next(SMTPClientSession session, SMTPRequest request) throws SMTPException {
-        SMTPClientFutureListenerFactory factory = (SMTPClientFutureListenerFactory) session.getAttributes().get(SMTP_RESPONSE_CALLBACK_FACTORY);
+        SMTPClientFutureListenerFactory factory = (SMTPClientFutureListenerFactory) session.getAttributes().get(SMTP_CLIENT_FUTURE_LISTENER_FACTORY);
         session.send(request).addListener(factory.getListener(session, request));
     }
     
     @SuppressWarnings("unchecked")
     protected final void next(SMTPClientSession session, SMTPMessage request) throws SMTPException {
-        SMTPClientFutureListenerFactory factory = (SMTPClientFutureListenerFactory) session.getAttributes().get(SMTP_RESPONSE_CALLBACK_FACTORY);
+        SMTPClientFutureListenerFactory factory = (SMTPClientFutureListenerFactory) session.getAttributes().get(SMTP_CLIENT_FUTURE_LISTENER_FACTORY);
         List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
         int rcpts = 0;
         for(DeliveryRecipientStatus status: statusList) {

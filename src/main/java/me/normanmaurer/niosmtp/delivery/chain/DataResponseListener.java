@@ -39,14 +39,14 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
  * @author Norman Maurer
  *
  */
-public class DataResponseCallback extends AbstractPipeliningResponseListener {
+public class DataResponseListener extends AbstractPipeliningResponseListener {
 
     /**
-     * Get instance of this {@link SMTPResponseCallback} implementation
+     * Get instance of this {@link DataResponseListener} implementation
      */
-    public final static DataResponseCallback INSTANCE = new DataResponseCallback();
+    public final static DataResponseListener INSTANCE = new DataResponseListener();
     
-    protected DataResponseCallback() {
+    protected DataResponseListener() {
     }
     
     @SuppressWarnings("unchecked")

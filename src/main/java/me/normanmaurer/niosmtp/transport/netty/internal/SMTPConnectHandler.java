@@ -18,6 +18,7 @@ package me.normanmaurer.niosmtp.transport.netty.internal;
 
 import javax.net.ssl.SSLEngine;
 
+import me.normanmaurer.niosmtp.SMTPClientFutureListener;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.transport.FutureResult;
@@ -38,7 +39,7 @@ import org.slf4j.Logger;
  * {@link SimpleChannelUpstreamHandler} sub-class which acts as adapter for an {@link SMTPResponseCallback}. 
  * 
  * The special thing about this implementation is that I will remove itself from the {@link ChannelPipeline} after the first {@link #messageReceived(ChannelHandlerContext, MessageEvent)}
- * was executed. It also takes care to create the {@link NettySMTPClientSession} and inject it the wrapped {@link SMTPResponseCallback}.
+ * was executed. It also takes care to create the {@link NettySMTPClientSession} and inject it the wrapped {@link SMTPClientFutureListener}.
  * 
  * @author Norman Maurer
  *

@@ -31,7 +31,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 public class LMTPWelcomeResponseListener extends ChainedSMTPClientFutureListener<SMTPResponse> {
 
     /**
-     * Get instance of this {@link PostDataResponseCallback} implementation
+     * Get instance of this {@link LMTPWelcomeResponseListener} implementation
      */
     public final static LMTPWelcomeResponseListener INSTANCE = new LMTPWelcomeResponseListener();
     

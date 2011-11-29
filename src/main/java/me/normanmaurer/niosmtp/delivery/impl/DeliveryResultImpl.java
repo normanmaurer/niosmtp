@@ -22,7 +22,8 @@ import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.transport.FutureResult;
 
 /**
- * Simple {@link DeliveryResult} implementation 
+ * Simple {@link FutureResult} implementation which holds an {@link Iterator} with all the {@link DeliveryRecipientStatus} instaces
+ * 
  * 
  * @author Norman Maurer
  *

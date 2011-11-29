@@ -55,7 +55,7 @@ public class SMTPClientFutureListenerFactoryImpl implements SMTPClientFutureList
         } else if (SMTPRequest.RCPT_COMMAND.equals(cmd)) {
             return RcptResponseListener.INSTANCE;
         } else if (SMTPRequest.DATA_COMMAND.equals(cmd)) {
-            return DataResponseCallback.INSTANCE;
+            return DataResponseListener.INSTANCE;
         } else if (SMTPRequest.STARTTLS_COMMAND.equals(cmd)) {
             return StartTlsResponseListener.INSTANCE;
         } else if (SMTPRequest.AUTH_COMMAND.equals(cmd) && arg != null) {
