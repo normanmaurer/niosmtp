@@ -148,7 +148,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
     
     @Override
     public String getId() {
-        return channel.getId() + "";
+        return Integer.toString(channel.getId());
     }
 
     @SuppressWarnings("unchecked")
