@@ -45,7 +45,7 @@ public abstract class AbstractSMTPClientFuture<E> implements SMTPClientFuture<E>
      * Notify all registered {@link SMTPClientFutureListener}'s
      */
     protected final void notifyListeners() {
-    	Iterator<SMTPClientFutureListener<E>> it = null;
+        Iterator<SMTPClientFutureListener<E>> it = null;
         synchronized (this) {
             if (listeners != null) {
                 // notify the listeners
