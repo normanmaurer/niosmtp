@@ -17,6 +17,7 @@
 package me.normanmaurer.niosmtp.transport;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
@@ -26,9 +27,12 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 
 import me.normanmaurer.niosmtp.SMTPClientFuture;
+import me.normanmaurer.niosmtp.SMTPClientFutureListener;
 import me.normanmaurer.niosmtp.SMTPPipeliningRequest;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.SMTPResponse;
+import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
+import me.normanmaurer.niosmtp.transport.impl.FutureResultImpl;
 
 import org.slf4j.Logger;
 
@@ -106,11 +110,48 @@ public abstract class AbstractSMTPClientSession implements SMTPClientSession {
      */
     @Override
     public SMTPClientFuture<FutureResult<Collection<SMTPResponse>>> send(SMTPPipeliningRequest request) {
+        SMTPClientFutureImpl<FutureResult<Collection<SMTPResponse>>> future = new SMTPClientFutureImpl<FutureResult<Collection<SMTPResponse>>>(false);
+        future.setSMTPClientSession(this);
+        AggregationListener listener = new AggregationListener(future, request.getRequests().size());
         for(SMTPRequest req: request.getRequests()) {
-            send(req);
+            send(req).addListener(listener);
         }
-        return null;
+        return future;
     }
     
+    private static final class AggregationListener implements SMTPClientFutureListener<FutureResult<SMTPResponse>> {
+        private final SMTPClientFutureImpl<FutureResult<Collection<SMTPResponse>>> future;
+        private int count;
+        private final Collection<SMTPResponse> responses;
+        
+        public AggregationListener(SMTPClientFutureImpl<FutureResult<Collection<SMTPResponse>>> future, int expectedResponses) {
+            this.future = future;
+            this.count = expectedResponses;
+            this.responses = new ArrayList<SMTPResponse>(count);
+        }
+        @SuppressWarnings("unchecked")
+        @Override
+        public void operationComplete(SMTPClientFuture<FutureResult<SMTPResponse>> sfuture) {
+            FutureResult<SMTPResponse> result = sfuture.getNoWait();
+            if (!result.isSuccess()) {
+                future.setResult(FutureResult.create(result.getException()));
+            } else {
+                boolean done = false;
+                synchronized (responses) {
+                    responses.add(result.getResult());
+
+                    if (--count <= 0) {
+                        done = true;
+                    }
+                }
+                if (done) {
+                    future.setResult(new FutureResultImpl<Collection<SMTPResponse>>(responses));
+                }
+            }
+
+        }
+        
+    }
+        
     
 }
