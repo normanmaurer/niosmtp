@@ -21,7 +21,7 @@ import org.apache.james.protocols.smtp.MailEnvelope;
 import org.apache.james.protocols.smtp.SMTPSession;
 import org.apache.james.protocols.smtp.hook.HookResult;
 import org.apache.james.protocols.smtp.hook.SimpleHook;
-import org.apache.mailet.MailAddress;
+import org.apache.james.protocols.smtp.MailAddress;
 
 
 public class SimpleHookAdapter extends SimpleHook implements DeliverToRecipientHook{

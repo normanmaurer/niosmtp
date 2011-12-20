@@ -27,6 +27,7 @@ import org.apache.james.protocols.netty.NettyServer;
 import org.apache.james.protocols.lmtp.LMTPConfigurationImpl;
 import org.apache.james.protocols.lmtp.LMTPProtocolHandlerChain;
 import org.apache.james.protocols.lmtp.hook.DeliverToRecipientHook;
+import org.apache.james.protocols.smtp.MailAddress;
 import org.apache.james.protocols.smtp.MailEnvelope;
 import org.apache.james.protocols.smtp.SMTPProtocol;
 import org.apache.james.protocols.smtp.SMTPSession;
@@ -34,7 +35,6 @@ import org.apache.james.protocols.smtp.hook.Hook;
 import org.apache.james.protocols.smtp.hook.HookResult;
 import org.apache.james.protocols.smtp.hook.HookReturnCode;
 import org.apache.james.protocols.smtp.hook.SimpleHook;
-import org.apache.mailet.MailAddress;
 import org.junit.Test;
 
 import me.normanmaurer.niosmtp.SMTPClientFuture;
@@ -96,6 +96,7 @@ public abstract class AbstractLMTPClientNoPipeliningTest extends AbstractSMTPCli
                 }
                 return new HookResult(HookReturnCode.OK);
             }
+
         });
         
         smtpServer.setListenAddresses(new InetSocketAddress(port));

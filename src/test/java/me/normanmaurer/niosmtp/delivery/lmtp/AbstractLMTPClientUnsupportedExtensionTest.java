@@ -28,7 +28,7 @@ import org.apache.james.protocols.netty.NettyServer;
 import org.apache.james.protocols.lmtp.LMTPConfiguration;
 import org.apache.james.protocols.lmtp.LMTPConfigurationImpl;
 import org.apache.james.protocols.lmtp.LMTPProtocolHandlerChain;
-import org.apache.james.protocols.lmtp.LhloCmdHandler;
+import org.apache.james.protocols.lmtp.core.LhloCmdHandler;
 import org.apache.james.protocols.smtp.SMTPProtocol;
 import org.apache.james.protocols.smtp.SMTPSession;
 import org.apache.james.protocols.smtp.core.esmtp.StartTlsCmdHandler;

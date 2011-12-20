@@ -277,7 +277,7 @@
 
   <properties>
     <target.jdk>1.6</target.jdk>
-    <protocols.version>1.6-beta3</protocols.version>
+    <protocols.version>1.6-beta4-SNAPSHOT</protocols.version>
     <slf4j.version>1.6.3</slf4j.version>
   </properties>
 
