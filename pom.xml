@@ -23,9 +23,29 @@
   <artifactId>niosmtp</artifactId>
   <name>niosmtp</name>
   <version>0.1-SNAPSHOT</version>
-  <description>NIO based SMTP client</description>
+  <description>NIO based SMTP/LMTP client</description>
   <inceptionYear>2011</inceptionYear>
   <packaging>jar</packaging>
+  <url>https://github.com/normanmaurer/niosmtp</url>
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+    </license>
+  </licenses>
+  <scm>
+    <url>https://github.com/normanmaurer/niosmtp</url>
+    <connection>scm:git:git://github.com/normanmaurer/niosmtp.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/normanmaurer/niosmtp.git</developerConnection>
+  </scm>
+  <developers>
+    <developer>
+      <id>norman.maurer</id>
+      <name>Norman Maurer</name>
+      <email>norman@apache.org</email>
+      <url>http://www.murkycloud.com</url>
+    </developer>
+  </developers>
   
   <prerequisites>
     <maven>3.0.2</maven>
@@ -41,6 +61,7 @@
       </releases>
     </repository>
   </repositories>
+  
   <build>
     <plugins>
       <plugin>
@@ -217,6 +238,40 @@
             <Embed-Dependency>*;scope=runtime</Embed-Dependency>
           </instructions>
         </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.2.1</version>
+        <executions>
+          <execution>
+            <id>generate-distribution</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <descriptors>
+            <descriptor>${basedir}/src/assembly/default.xml</descriptor>
+          </descriptors>
+          <attach>${attach-distribution}</attach>
+          <appendAssemblyId>true</appendAssemblyId>
+          <tarLongFileMode>gnu</tarLongFileMode>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>1.4</version>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
     
