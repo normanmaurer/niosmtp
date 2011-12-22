@@ -196,7 +196,26 @@
               </reportSets>
             </plugin>
           </reportPlugins>
-
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>bundle-manifest</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>manifest</goal>
+            </goals>
+          </execution>
+        </executions>
+        <extensions>true</extensions>
+        <configuration>
+          <instructions>
+            <Export-Package>me.normanmaurer.niosmtp.*</Export-Package>
+            <Embed-Dependency>*;scope=runtime</Embed-Dependency>
+          </instructions>
         </configuration>
       </plugin>
     </plugins>
