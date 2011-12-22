@@ -51,9 +51,9 @@ public class AuthPlainResponseListener extends AbstractAuthResponseListener{
     
     @Override
     public void onResult(SMTPClientSession session, SMTPResponse response) throws SMTPException {
-        if (session.getAttributes().remove(PROCESS_AUTH) != null) {
+        if (session.setAttribute(PROCESS_AUTH, null) != null) {
             if (response.getCode() == 235) {
-                String mail = ((SMTPDeliveryEnvelope)session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
+                String mail = ((SMTPDeliveryEnvelope)session.getAttribute(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
 
                 
                 boolean supportsPipelining = session.getSupportedExtensions().contains(PIPELINING_EXTENSION);
@@ -71,7 +71,7 @@ public class AuthPlainResponseListener extends AbstractAuthResponseListener{
             }
         } else {
             if (response.getCode() == 334) {
-                session.getAttributes().put(PROCESS_AUTH, true);
+                session.setAttribute(PROCESS_AUTH, true);
                 Authentication auth = ((SMTPDeliveryAgentConfig)session.getConfig()).getAuthentication();
                 String userPass = auth.getUsername() + "\0" + auth.getPassword();
                 SMTPClientFuture<FutureResult<SMTPResponse>> future = session.send(new SMTPRequestImpl(new String(Base64.encodeBase64(userPass.getBytes(CHARSET)), CHARSET), null));

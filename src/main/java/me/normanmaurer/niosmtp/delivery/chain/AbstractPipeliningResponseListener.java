@@ -33,8 +33,8 @@ public abstract class AbstractPipeliningResponseListener extends ChainedSMTPClie
     @Override
     public final void onResult(SMTPClientSession session, SMTPResponse response) throws SMTPException {
 
-        if (session.getAttributes().containsKey(PIPELINING_ACTIVE_KEY)) {
-            SMTPClientFuture<?> future = (SMTPClientFuture<?>) session.getAttributes().get(FUTURE_KEY);
+        if (session.getAttribute(PIPELINING_ACTIVE_KEY) != null) {
+            SMTPClientFuture<?> future = (SMTPClientFuture<?>) session.getAttribute(FUTURE_KEY);
 
             // Check if the future is complete if not execute the callback
             if (!future.isDone()) {

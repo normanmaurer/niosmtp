@@ -50,10 +50,10 @@ public class AuthLoginResponseListener extends AbstractAuthResponseListener{
     }
     @Override
     public void onResult(SMTPClientSession session, SMTPResponse response) throws SMTPException {
-        if (session.getAttributes().containsKey(PROCESS_PASSWORD)) {
-            session.getAttributes().remove(PROCESS_PASSWORD);
+        if (session.getAttribute(PROCESS_PASSWORD) != null) {
+            session.setAttribute(PROCESS_PASSWORD, null);
             if (response.getCode() == 235) {
-                String mail = ((SMTPDeliveryEnvelope)session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
+                String mail = ((SMTPDeliveryEnvelope)session.getAttribute(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
                 
                 boolean supportsPipelining = session.getSupportedExtensions().contains(PIPELINING_EXTENSION);
                 // We use a SMTPPipelinedRequest if the SMTPServer supports
@@ -68,11 +68,11 @@ public class AuthLoginResponseListener extends AbstractAuthResponseListener{
             } else {
                 setDeliveryStatusForAll(session, response);
             }
-        } else if (session.getAttributes().containsKey(PROCESS_USERNAME)) {
-            session.getAttributes().remove(PROCESS_USERNAME);
+        } else if (session.getAttribute(PROCESS_USERNAME) != null) {
+            session.setAttribute(PROCESS_USERNAME, null);
 
             if (response.getCode() == 334) {
-                session.getAttributes().put(PROCESS_PASSWORD, true);
+                session.setAttribute(PROCESS_PASSWORD, true);
                 SMTPClientFuture<FutureResult<SMTPResponse>> future = session.send(new SMTPRequestImpl(new String(Base64.encodeBase64(((SMTPDeliveryAgentConfig)session.getConfig()).getAuthentication().getPassword().getBytes(CHARSET)), CHARSET), null));
                 future.addListener(INSTANCE);
             } else {
@@ -81,7 +81,7 @@ public class AuthLoginResponseListener extends AbstractAuthResponseListener{
             }
         } else {
             if (response.getCode() == 334) {
-                session.getAttributes().put(PROCESS_USERNAME, true);
+                session.setAttribute(PROCESS_USERNAME, true);
                 SMTPClientFuture<FutureResult<SMTPResponse>> future = session.send(new SMTPRequestImpl(new String(Base64.encodeBase64(((SMTPDeliveryAgentConfig)session.getConfig()).getAuthentication().getUsername().getBytes(CHARSET)), CHARSET), null));
                 future.addListener(INSTANCE);
             } else {

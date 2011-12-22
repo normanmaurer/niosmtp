@@ -19,7 +19,6 @@ package me.normanmaurer.niosmtp.transport;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
 
 import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPMessageSubmit;
@@ -47,11 +46,21 @@ public interface SMTPClientSession {
     SMTPDeliveryMode getDeliveryMode();
     
     /**
-     * Return a map of attributes which can be used to store data which should be used within the scope of the {@link SMTPClientSession}
+     * Allow to store a object to the {@link SMTPClientSession} with the given key. To remove a previous stored object just use a <code>null</code> value with the given key.
      * 
-     * @return attributes
+     * @param key the key under which the given value should be stored
+     * @param value the value which should be stored under the given key or null if the previous stored value should just be removed
+     * @return storedValue the previous stored value or null if no value was stored before with the key
      */
-    ConcurrentMap<String, Object> getAttributes();
+    Object setAttribute(String key, Object value);
+    
+    /**
+     * Return the value which was stored under the key
+     * 
+     * @param key the key for which the value should be returned
+     * @return value the value for the given key or <code>null</code> if no value is stored under the given key
+     */
+    Object getAttribute(String key);
     
     /**
      * Return a "read-only" {@link Set} of all supported EXTENSIONS. This will be set in the EHLO Response so you will get an empty {@link Set} before the EHLO

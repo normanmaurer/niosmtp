@@ -66,7 +66,7 @@ public class StartTlsResponseListener extends ChainedSMTPClientFutureListener<SM
                         if (session.getSupportedExtensions().contains(PIPELINING_EXTENSION) && ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() != PipeliningMode.NO) {
                             pipelining(session);
                         } else {
-                            String mail = ((SMTPDeliveryEnvelope) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
+                            String mail = ((SMTPDeliveryEnvelope) session.getAttribute(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
 
                             next(session, SMTPRequestImpl.mail(mail));
                         }

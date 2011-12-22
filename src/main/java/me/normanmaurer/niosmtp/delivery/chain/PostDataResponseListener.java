@@ -54,7 +54,7 @@ public class PostDataResponseListener extends ChainedSMTPClientFutureListener<Co
     @Override
     public void onResult(SMTPClientSession session, Collection<SMTPResponse> responses) throws SMTPException {
 
-        List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
+        List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttribute(DELIVERY_STATUS_KEY);
         
         if (responses.size() > 1) {
             throw new SMTPException("Received more then 1 SMTPResponse");

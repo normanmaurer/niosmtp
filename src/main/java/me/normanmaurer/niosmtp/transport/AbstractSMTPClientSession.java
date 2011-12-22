@@ -76,9 +76,19 @@ public abstract class AbstractSMTPClientSession implements SMTPClientSession {
         return mode;
     }
 
+
     @Override
-    public ConcurrentMap<String, Object> getAttributes() {
-        return attrs;
+    public Object setAttribute(String key, Object value) {
+        if (value == null) {
+            return attrs.remove(key);
+        } else {
+            return attrs.put(key, value);
+        }
+    }
+
+    @Override
+    public Object getAttribute(String key) {
+        return attrs.get(key);
     }
 
     @Override

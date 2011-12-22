@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPClientFutureListener;
@@ -70,10 +69,10 @@ public abstract class ChainedSMTPClientFutureListener<E> implements SMTPClientFu
 
     @SuppressWarnings("unchecked")
     protected void onException(SMTPClientSession session, SMTPException e) {
-        SMTPClientFutureImpl<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>> future = (SMTPClientFutureImpl<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>>) session.getAttributes().get(FUTURE_KEY);
+        SMTPClientFutureImpl<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>> future = (SMTPClientFutureImpl<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>>) session.getAttribute(FUTURE_KEY);
         
-        List<FutureResult<Iterator<DeliveryRecipientStatus>>> resultList = ((List<FutureResult<Iterator<DeliveryRecipientStatus>>>) session.getAttributes().get(DELIVERY_RESULT_LIST_KEY));
-        Iterator<SMTPDeliveryEnvelope> transactions = ((Iterator<SMTPDeliveryEnvelope>) session.getAttributes().get(SMTP_TRANSACTIONS_KEY));
+        List<FutureResult<Iterator<DeliveryRecipientStatus>>> resultList = ((List<FutureResult<Iterator<DeliveryRecipientStatus>>>) session.getAttribute(DELIVERY_RESULT_LIST_KEY));
+        Iterator<SMTPDeliveryEnvelope> transactions = ((Iterator<SMTPDeliveryEnvelope>) session.getAttribute(SMTP_TRANSACTIONS_KEY));
         
         resultList.add(DeliveryResultImpl.create(e));
         while(transactions.hasNext()) {
@@ -96,8 +95,8 @@ public abstract class ChainedSMTPClientFutureListener<E> implements SMTPClientFu
     
     @SuppressWarnings("unchecked")
     protected void setDeliveryStatusForAll(SMTPClientSession session, SMTPResponse response) throws SMTPException {
-        Iterator<String> recipients = (Iterator<String>) session.getAttributes().get(RECIPIENTS_KEY);
-        List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
+        Iterator<String> recipients = (Iterator<String>) session.getAttribute(RECIPIENTS_KEY);
+        List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttribute(DELIVERY_STATUS_KEY);
 
         while (recipients.hasNext()) {
             statusList.add(new DeliveryRecipientStatusImpl(recipients.next(), response));
@@ -113,16 +112,15 @@ public abstract class ChainedSMTPClientFutureListener<E> implements SMTPClientFu
      */
     @SuppressWarnings("unchecked")
     private void initSession(SMTPClientSession session) {
-        Map<String, Object> attrs = session.getAttributes();
-        Iterator<SMTPDeliveryEnvelope> transactionList = ((Iterator<SMTPDeliveryEnvelope>) session.getAttributes().get(SMTP_TRANSACTIONS_KEY));
+        Iterator<SMTPDeliveryEnvelope> transactionList = ((Iterator<SMTPDeliveryEnvelope>) session.getAttribute(SMTP_TRANSACTIONS_KEY));
         SMTPDeliveryEnvelope transaction =  transactionList.next();
         
-        attrs.put(CURRENT_SMTP_TRANSACTION_KEY,transaction);
-        attrs.put(RECIPIENTS_KEY, transaction.getRecipients().iterator());
-        attrs.put(DELIVERY_STATUS_KEY, new ArrayList<DeliveryRecipientStatus>());
+        session.setAttribute(CURRENT_SMTP_TRANSACTION_KEY,transaction);
+        session.setAttribute(RECIPIENTS_KEY, transaction.getRecipients().iterator());
+        session.setAttribute(DELIVERY_STATUS_KEY, new ArrayList<DeliveryRecipientStatus>());
 
         // cleanup old attribute
-        attrs.remove(CURRENT_RCPT_KEY);
+        session.setAttribute(CURRENT_RCPT_KEY, null);
 
     }
     
@@ -135,9 +133,9 @@ public abstract class ChainedSMTPClientFutureListener<E> implements SMTPClientFu
      * @throws SMTPException 
      */
     protected void pipelining(SMTPClientSession session) throws SMTPException {
-        SMTPDeliveryEnvelope transaction = (SMTPDeliveryEnvelope) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY);
+        SMTPDeliveryEnvelope transaction = (SMTPDeliveryEnvelope) session.getAttribute(CURRENT_SMTP_TRANSACTION_KEY);
         
-        session.getAttributes().put(PIPELINING_ACTIVE_KEY, true);
+        session.setAttribute(PIPELINING_ACTIVE_KEY, true);
         SMTPPipeliningRequest request = new SMTPPipeliningRequestImpl(transaction.getSender(), transaction.getRecipients().iterator());
         next(session, request);
         
@@ -152,10 +150,10 @@ public abstract class ChainedSMTPClientFutureListener<E> implements SMTPClientFu
      */
     @SuppressWarnings("unchecked")
     protected void setDeliveryStatus(SMTPClientSession session) throws SMTPException {
-        SMTPClientFutureImpl<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>> future = (SMTPClientFutureImpl<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>>) session.getAttributes().get(FUTURE_KEY);
-        List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
-        List<FutureResult<Iterator<DeliveryRecipientStatus>>> resultList = ((List<FutureResult<Iterator<DeliveryRecipientStatus>>>) session.getAttributes().get(DELIVERY_RESULT_LIST_KEY));
-        Iterator<SMTPDeliveryEnvelope> transactions = ((Iterator<SMTPDeliveryEnvelope>) session.getAttributes().get(SMTP_TRANSACTIONS_KEY));
+        SMTPClientFutureImpl<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>> future = (SMTPClientFutureImpl<Collection<FutureResult<Iterator<DeliveryRecipientStatus>>>>) session.getAttribute(FUTURE_KEY);
+        List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttribute(DELIVERY_STATUS_KEY);
+        List<FutureResult<Iterator<DeliveryRecipientStatus>>> resultList = ((List<FutureResult<Iterator<DeliveryRecipientStatus>>>) session.getAttribute(DELIVERY_RESULT_LIST_KEY));
+        Iterator<SMTPDeliveryEnvelope> transactions = ((Iterator<SMTPDeliveryEnvelope>) session.getAttribute(SMTP_TRANSACTIONS_KEY));
 
         resultList.add(new DeliveryResultImpl(statusList));
         
@@ -171,7 +169,7 @@ public abstract class ChainedSMTPClientFutureListener<E> implements SMTPClientFu
             if (session.getSupportedExtensions().contains(PIPELINING_EXTENSION) && ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() != PipeliningMode.NO) {
                 pipelining(session);
             } else {
-                String sender = ((SMTPDeliveryEnvelope) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
+                String sender = ((SMTPDeliveryEnvelope) session.getAttribute(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
 
                 next(session, SMTPRequestImpl.mail(sender));
             }
@@ -180,19 +178,19 @@ public abstract class ChainedSMTPClientFutureListener<E> implements SMTPClientFu
     }
     
     protected final void next(SMTPClientSession session, SMTPPipeliningRequest request) throws SMTPException {
-        SMTPClientFutureListenerFactory factory = (SMTPClientFutureListenerFactory) session.getAttributes().get(SMTP_CLIENT_FUTURE_LISTENER_FACTORY);
+        SMTPClientFutureListenerFactory factory = (SMTPClientFutureListenerFactory) session.getAttribute(SMTP_CLIENT_FUTURE_LISTENER_FACTORY);
         session.send(request).addListener(factory.getListener(session, request));
     }
     
     protected final void next(SMTPClientSession session, SMTPRequest request) throws SMTPException {
-        SMTPClientFutureListenerFactory factory = (SMTPClientFutureListenerFactory) session.getAttributes().get(SMTP_CLIENT_FUTURE_LISTENER_FACTORY);
+        SMTPClientFutureListenerFactory factory = (SMTPClientFutureListenerFactory) session.getAttribute(SMTP_CLIENT_FUTURE_LISTENER_FACTORY);
         session.send(request).addListener(factory.getListener(session, request));
     }
     
     @SuppressWarnings("unchecked")
     protected final void next(SMTPClientSession session, SMTPMessage request) throws SMTPException {
-        SMTPClientFutureListenerFactory factory = (SMTPClientFutureListenerFactory) session.getAttributes().get(SMTP_CLIENT_FUTURE_LISTENER_FACTORY);
-        List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
+        SMTPClientFutureListenerFactory factory = (SMTPClientFutureListenerFactory) session.getAttribute(SMTP_CLIENT_FUTURE_LISTENER_FACTORY);
+        List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttribute(DELIVERY_STATUS_KEY);
         int rcpts = 0;
         for(DeliveryRecipientStatus status: statusList) {
             if(status.getStatus() == DeliveryStatus.Ok) {

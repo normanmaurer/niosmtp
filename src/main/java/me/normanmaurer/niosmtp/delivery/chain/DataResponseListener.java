@@ -53,10 +53,10 @@ public class DataResponseListener extends AbstractPipeliningResponseListener {
     @Override
     public void onResponseInternal(SMTPClientSession session, SMTPResponse response) throws SMTPException {
 
-        SMTPClientFutureImpl<?> future = (SMTPClientFutureImpl<?>) session.getAttributes().get(FUTURE_KEY);
-        List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
-        SMTPMessage msg = ((SMTPDeliveryEnvelope) session.getAttributes().get(CURRENT_SMTP_TRANSACTION_KEY)).getMessage();
-        boolean pipeliningActive = session.getAttributes().containsKey(PIPELINING_ACTIVE_KEY);
+        SMTPClientFutureImpl<?> future = (SMTPClientFutureImpl<?>) session.getAttribute(FUTURE_KEY);
+        List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttribute(DELIVERY_STATUS_KEY);
+        SMTPMessage msg = ((SMTPDeliveryEnvelope) session.getAttribute(CURRENT_SMTP_TRANSACTION_KEY)).getMessage();
+        boolean pipeliningActive = session.getAttribute(PIPELINING_ACTIVE_KEY) != null;
 
         int code = response.getCode();
 

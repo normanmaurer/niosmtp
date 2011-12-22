@@ -20,7 +20,6 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 
 
 import me.normanmaurer.niosmtp.SMTPClientFuture;
@@ -94,18 +93,18 @@ public class SMTPDeliveryAgent implements SMTPClientConstants, SMTPDeliverySessi
              * @param session
              */
             private void initSession(SMTPClientSession session) {
-                Map<String, Object> attrs = session.getAttributes();
+                
                 
                 Iterator<SMTPDeliveryEnvelope> transactionIt = new ArrayIterator<SMTPDeliveryEnvelope>(transactions);
-                attrs.put(SMTP_TRANSACTIONS_KEY, transactionIt);
+                session.setAttribute(SMTP_TRANSACTIONS_KEY, transactionIt);
                 SMTPDeliveryEnvelope transaction = transactionIt.next();
-                attrs.put(CURRENT_SMTP_TRANSACTION_KEY, transaction);
-                attrs.put(RECIPIENTS_KEY, transaction.getRecipients().iterator());
+                session.setAttribute(CURRENT_SMTP_TRANSACTION_KEY, transaction);
+                session.setAttribute(RECIPIENTS_KEY, transaction.getRecipients().iterator());
 
-                attrs.put(FUTURE_KEY, future);
-                attrs.put(DELIVERY_STATUS_KEY, new ArrayList<DeliveryRecipientStatus>());
-                attrs.put(DELIVERY_RESULT_LIST_KEY, new ArrayList<FutureResult<Iterator<DeliveryRecipientStatus>>>());
-                attrs.put(SMTP_CLIENT_FUTURE_LISTENER_FACTORY, createFactory());
+                session.setAttribute(FUTURE_KEY, future);
+                session.setAttribute(DELIVERY_STATUS_KEY, new ArrayList<DeliveryRecipientStatus>());
+                session.setAttribute(DELIVERY_RESULT_LIST_KEY, new ArrayList<FutureResult<Iterator<DeliveryRecipientStatus>>>());
+                session.setAttribute(SMTP_CLIENT_FUTURE_LISTENER_FACTORY, createFactory());
             }
 
             @Override

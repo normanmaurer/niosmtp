@@ -51,7 +51,7 @@ public class MailResponseListener extends AbstractPipeliningResponseListener {
     @SuppressWarnings("unchecked")
     @Override
     protected void onResponseInternal(SMTPClientSession session, SMTPResponse response) throws SMTPException {
-        Iterator<String> recipients = (Iterator<String>) session.getAttributes().get(RECIPIENTS_KEY);
+        Iterator<String> recipients = (Iterator<String>) session.getAttribute(RECIPIENTS_KEY);
 
         int code = response.getCode();
         if (code > 400) {
@@ -60,11 +60,11 @@ public class MailResponseListener extends AbstractPipeliningResponseListener {
             String rcpt = recipients.next();
             
             // store the current recipient we are processing
-            session.getAttributes().put(CURRENT_RCPT_KEY, rcpt);
+            session.setAttribute(CURRENT_RCPT_KEY, rcpt);
             
             // only write the request if the SMTPServer does not support PIPELINING and we don't want to use it
             // as otherwise we already sent this 
-            if (!session.getAttributes().containsKey(PIPELINING_ACTIVE_KEY) || ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() == PipeliningMode.NO) {
+            if (session.getAttribute(PIPELINING_ACTIVE_KEY) == null || ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() == PipeliningMode.NO) {
                 next(session, SMTPRequestImpl.rcpt(rcpt));
 
             }

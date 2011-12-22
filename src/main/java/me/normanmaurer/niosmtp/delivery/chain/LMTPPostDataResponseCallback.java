@@ -50,7 +50,7 @@ public class LMTPPostDataResponseCallback extends ChainedSMTPClientFutureListene
     @Override
     public void onResult(SMTPClientSession session, Collection<SMTPResponse> response) throws SMTPException {
         
-        List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
+        List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttribute(DELIVERY_STATUS_KEY);
 
         
         Iterator<SMTPResponse> responses = response.iterator();

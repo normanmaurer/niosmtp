@@ -58,18 +58,18 @@ public class RcptResponseListener extends AbstractPipeliningResponseListener {
     @Override
     protected void onResponseInternal(SMTPClientSession session, SMTPResponse response) throws SMTPException {
 
-        Iterator<String> recipients = (Iterator<String>) session.getAttributes().get(RECIPIENTS_KEY);
-        List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttributes().get(DELIVERY_STATUS_KEY);
+        Iterator<String> recipients = (Iterator<String>) session.getAttribute(RECIPIENTS_KEY);
+        List<DeliveryRecipientStatus> statusList = (List<DeliveryRecipientStatus>) session.getAttribute(DELIVERY_STATUS_KEY);
        
-        String curRcpt = (String) session.getAttributes().get(CURRENT_RCPT_KEY);
+        String curRcpt = (String) session.getAttribute(CURRENT_RCPT_KEY);
         statusList.add(new DeliveryRecipientStatusImpl(curRcpt, response));
-        boolean pipeliningActive = session.getAttributes().containsKey(PIPELINING_ACTIVE_KEY);
-        
+        boolean pipeliningActive = session.getAttribute(PIPELINING_ACTIVE_KEY) != null;
+       
         if (recipients.hasNext()) {
             String rcpt = recipients.next();
             
             // store the current recipient we are processing
-            session.getAttributes().put(CURRENT_RCPT_KEY, rcpt);
+            session.setAttribute(CURRENT_RCPT_KEY, rcpt);
 
             // only write the request if the SMTPServer does not support
             // PIPELINING and we don't want to use it
