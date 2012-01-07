@@ -37,7 +37,7 @@ public abstract class AbstractSMTPStartTLSClientTest extends AbstractSMTPClientT
         SMTPConfigurationImpl config = new SMTPConfigurationImpl();
         
         SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain(hook);
-        return new NettyServer(new SMTPProtocol(chain, config), Encryption.createStartTls(BogusSslContextFactory.getServerContext()));
+        return new NettyServer(new SMTPProtocol(chain, config, new MockLogger()), Encryption.createStartTls(BogusSslContextFactory.getServerContext()));
     }
 
     @Override

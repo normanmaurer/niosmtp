@@ -55,7 +55,7 @@ public abstract class AbstractSMTPStartTLSClientTryTest extends AbstractSMTPStar
 
             
         };
-        return new NettyServer(new SMTPProtocol(chain, config), Encryption.createStartTls(BogusSslContextFactory.getServerContext()));
+        return new NettyServer(new SMTPProtocol(chain, config, new MockLogger()), Encryption.createStartTls(BogusSslContextFactory.getServerContext()));
         
     }
 

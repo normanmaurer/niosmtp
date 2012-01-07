@@ -26,6 +26,7 @@ import java.util.concurrent.CountDownLatch;
 
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.core.SMTPRequestImpl;
+import me.normanmaurer.niosmtp.delivery.MockLogger;
 import me.normanmaurer.niosmtp.transport.impl.SMTPClientConfigImpl;
 
 import org.apache.james.protocols.api.handler.WiringException;
@@ -42,7 +43,7 @@ public abstract class AbstractSMTPClientTransportTest {
     protected NettyServer create(Hook hook) throws WiringException {
         SMTPConfigurationImpl config = new SMTPConfigurationImpl();
         SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain(hook);
-        return new NettyServer(new SMTPProtocol(chain, config));
+        return new NettyServer(new SMTPProtocol(chain, config, new MockLogger()));
 
     }
 

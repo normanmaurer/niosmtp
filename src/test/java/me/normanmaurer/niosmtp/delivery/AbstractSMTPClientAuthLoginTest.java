@@ -60,7 +60,7 @@ public abstract class AbstractSMTPClientAuthLoginTest extends AbstractSMTPClient
     protected NettyServer create(Hook hook) throws WiringException {
         SMTPConfigurationImpl config = new SMTPConfigurationImpl();
         SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain(hook, new TestAuthHook());
-        return new NettyServer(new SMTPProtocol(chain, config));
+        return new NettyServer(new SMTPProtocol(chain, config, new MockLogger()));
     }
 
     @Override

@@ -35,6 +35,7 @@ import org.apache.james.protocols.smtp.core.esmtp.StartTlsCmdHandler;
 
 import me.normanmaurer.niosmtp.delivery.AbstractSMTPClientUnsupportedExtensionTest;
 import me.normanmaurer.niosmtp.delivery.LMTPDeliveryAgent;
+import me.normanmaurer.niosmtp.delivery.MockLogger;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgent;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 
@@ -67,7 +68,7 @@ public abstract class AbstractLMTPClientUnsupportedExtensionTest extends Abstrac
         };
         chain.wireExtensibleHandlers();
 
-        return new NettyServer(new SMTPProtocol(chain, config));
+        return new NettyServer(new SMTPProtocol(chain, config, new MockLogger()));
     }
     
     protected NettyServer create(SSLContext context) throws WiringException {
@@ -92,7 +93,7 @@ public abstract class AbstractLMTPClientUnsupportedExtensionTest extends Abstrac
             
         };
         chain.wireExtensibleHandlers();
-        return new NettyServer(new SMTPProtocol(chain, config), Encryption.createStartTls(context));
+        return new NettyServer(new SMTPProtocol(chain, config, new MockLogger()), Encryption.createStartTls(context));
     }
     
     protected SMTPDeliveryAgent createAgent(SMTPClientTransport transport) {

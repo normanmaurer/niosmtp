@@ -34,6 +34,7 @@ import me.normanmaurer.niosmtp.delivery.AssertCheck;
 import me.normanmaurer.niosmtp.delivery.AsyncAssertCheck;
 import me.normanmaurer.niosmtp.delivery.DeliveryRecipientStatus;
 import me.normanmaurer.niosmtp.delivery.LMTPDeliveryAgent;
+import me.normanmaurer.niosmtp.delivery.MockLogger;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryAgent;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliveryEnvelope;
 import me.normanmaurer.niosmtp.delivery.impl.SMTPDeliveryAgentConfigImpl;
@@ -66,7 +67,7 @@ public abstract class AbstractLMTPClientTest extends AbstractSMTPClientTest{
         }
         LMTPProtocolHandlerChain chain = new LMTPProtocolHandlerChain(hook);
 
-        return new NettyServer(new SMTPProtocol(chain, new LMTPConfigurationImpl()));
+        return new NettyServer(new SMTPProtocol(chain, new LMTPConfigurationImpl(), new MockLogger()));
     }
     
 

@@ -35,7 +35,7 @@ public abstract class AbstractSMTPSClientTest extends AbstractSMTPClientTest{
     protected NettyServer create(Hook hook) throws WiringException {
         SMTPConfigurationImpl config = new SMTPConfigurationImpl();
         SMTPProtocolHandlerChain chain = new SMTPProtocolHandlerChain(hook);
-        return new NettyServer(new SMTPProtocol(chain, config), Encryption.createTls(BogusSslContextFactory.getServerContext()));
+        return new NettyServer(new SMTPProtocol(chain, config, new MockLogger()), Encryption.createTls(BogusSslContextFactory.getServerContext()));
 
     }
 
