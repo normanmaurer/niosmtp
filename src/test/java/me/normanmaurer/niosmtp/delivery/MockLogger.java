@@ -24,92 +24,89 @@ public class MockLogger implements Logger{
 
     @Override
     public boolean isDebugEnabled() {
-        // TODO Auto-generated method stub
-        return false;
+        return true;
+
     }
 
     @Override
     public boolean isErrorEnabled() {
-        // TODO Auto-generated method stub
-        return false;
+        return true;
     }
 
     @Override
     public boolean isInfoEnabled() {
-        // TODO Auto-generated method stub
-        return false;
+        return true;
+
     }
 
     @Override
     public boolean isTraceEnabled() {
-        // TODO Auto-generated method stub
-        return false;
+        return true;
+
     }
 
     @Override
     public boolean isWarnEnabled() {
-        // TODO Auto-generated method stub
-        return false;
+        return true;
     }
 
     @Override
     public void trace(String message) {
-        // TODO Auto-generated method stub
-        
+        System.out.println(message);
     }
 
     @Override
     public void trace(String message, Throwable t) {
-        // TODO Auto-generated method stub
-        
+        System.out.println(message);
+        t.printStackTrace();
     }
 
     @Override
     public void debug(String message) {
-        // TODO Auto-generated method stub
+        System.out.println(message);
         
     }
 
     @Override
     public void debug(String message, Throwable t) {
-        // TODO Auto-generated method stub
-        
+        System.out.println(message);
+        t.printStackTrace();        
     }
 
     @Override
     public void info(String message) {
-        // TODO Auto-generated method stub
+        System.out.println(message);
         
     }
 
     @Override
     public void info(String message, Throwable t) {
-        // TODO Auto-generated method stub
-        
+        System.out.println(message);
+        t.printStackTrace();        
     }
 
     @Override
     public void warn(String message) {
-        // TODO Auto-generated method stub
+        System.out.println(message);
         
     }
 
     @Override
     public void warn(String message, Throwable t) {
-        // TODO Auto-generated method stub
-        
+        System.out.println(message);
+        t.printStackTrace();        
     }
 
     @Override
     public void error(String message) {
-        // TODO Auto-generated method stub
+        System.out.println(message);
         
     }
 
     @Override
     public void error(String message, Throwable t) {
-        // TODO Auto-generated method stub
-        
+        System.out.println(message);
+        t.printStackTrace();        
     }
 
 }
