@@ -313,7 +313,7 @@
   <dependencies>
    
     <dependency>
-      <groupId>org.jboss.netty</groupId>
+      <groupId>io.netty</groupId>
       <artifactId>netty</artifactId>
       <version>${netty.version}</version>
     </dependency>
@@ -364,7 +364,7 @@
     <target.jdk>1.6</target.jdk>
     <protocols.version>1.6.1-SNAPSHOT</protocols.version>
     <slf4j.version>1.6.3</slf4j.version>
-    <netty.version>3.2.7.Final</netty.version>
+    <netty.version>3.3.0.Final</netty.version>
     <commons-codec.version>1.5</commons-codec.version>
     <junit.version>4.10</junit.version>
   </properties>
