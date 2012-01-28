@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class SMTPResponseDecoder extends OneToOneDecoder implements SMTPClientConstants{
-    private final Logger logger = LoggerFactory.getLogger(SMTPResponseDecoder.class);
+    private final static Logger logger = LoggerFactory.getLogger(SMTPResponseDecoder.class);
 
     @Override
     protected Object decode(ChannelHandlerContext ctx, Channel channel, Object msg) throws Exception {
@@ -69,8 +69,8 @@ public class SMTPResponseDecoder extends OneToOneDecoder implements SMTPClientCo
 
                 }
                 ctx.setAttachment(null);
-                if (logger.isInfoEnabled()) {
-                    logger.info("Channel " + ctx.getChannel().getId() + " received: [" + StringUtils.toString(response) + "]");
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Channel " + ctx.getChannel().getId() + " received: [" + StringUtils.toString(response) + "]");
                 }
                 return response;
             } else if (separator == SMTPResponse.SEPERATOR) {

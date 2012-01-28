@@ -45,8 +45,8 @@ public class SMTPRequestEncoder extends OneToOneEncoder implements SMTPClientCon
             SMTPRequest req = (SMTPRequest) msg;
             String request = StringUtils.toString((SMTPRequest) req);
             
-            if (logger.isInfoEnabled()) {
-                logger.info("Channel " + ctx.getChannel().getId() + " sent: [" + request + "]");
+            if (logger.isDebugEnabled()) {
+                logger.debug("Channel " + ctx.getChannel().getId() + " sent: [" + request + "]");
             }
             
           
