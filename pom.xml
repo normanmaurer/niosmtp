@@ -94,11 +94,11 @@
         <artifactId>maven-jar-plugin</artifactId>
       </plugin>
       <!-- Site generation -->
+      <!--
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
         <executions>
-          <!-- Attach non-reporting site-descriptor when installing -->
           <execution>
             <id>attach-descriptor</id>
             <goals>
@@ -230,6 +230,7 @@
           </reportPlugins>
         </configuration>
       </plugin>
+      -->
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
