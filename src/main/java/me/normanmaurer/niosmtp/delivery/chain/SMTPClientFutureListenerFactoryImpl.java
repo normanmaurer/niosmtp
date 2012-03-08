@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Locale;
 
-import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPClientFutureListener;
 import me.normanmaurer.niosmtp.SMTPMessage;
 import me.normanmaurer.niosmtp.SMTPException;
@@ -34,12 +33,6 @@ import me.normanmaurer.niosmtp.transport.impl.FutureResultImpl;
 
 public class SMTPClientFutureListenerFactoryImpl implements SMTPClientFutureListenerFactory{
 
-    private final static SMTPClientFutureListener<FutureResult<SMTPResponse>> EMPTY = new SMTPClientFutureListener<FutureResult<SMTPResponse>>() {
-
-        @Override
-        public void operationComplete(SMTPClientFuture<FutureResult<SMTPResponse>> future) {            
-        }
-    };
     @Override
     public SMTPClientFutureListener<FutureResult<SMTPResponse>> getListener(SMTPClientSession session, SMTPRequest request) throws SMTPException {
 
@@ -65,7 +58,7 @@ public class SMTPClientFutureListenerFactoryImpl implements SMTPClientFutureList
                 return AuthLoginResponseListener.INSTANCE;
             }
         } else if (SMTPRequest.QUIT_COMMAND.equals(cmd)) {
-            return EMPTY;
+            return QuitResponseListener.INSTANCE;
         }
 
         throw new SMTPException("No valid callback found for request " + request);
