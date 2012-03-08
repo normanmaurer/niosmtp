@@ -161,9 +161,6 @@ public abstract class ChainedSMTPClientFutureListener<E> implements SMTPClientFu
             future.setResult(resultList);
 
             next(session, SMTPRequestImpl.quit());
-            session.close();
-
-
         } else {
             initSession(session);
             if (session.getSupportedExtensions().contains(PIPELINING_EXTENSION) && ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() != PipeliningMode.NO) {
