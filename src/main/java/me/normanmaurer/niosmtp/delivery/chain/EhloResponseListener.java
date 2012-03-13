@@ -78,7 +78,9 @@ public class EhloResponseListener extends ChainedSMTPClientFutureListener<SMTPRe
         int code = response.getCode();
 
         String mail = ((SMTPDeliveryEnvelope)session.getAttribute(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
-        if (code < 400) {
+
+        // servers that do not implement EHLO may return 500 (as per RFC 821) or 502 (RFC 1869)
+        if (code < 400 || code == 500 || code == 502) {
 
             // Check if we depend on pipelining 
             if (!supportsPipelining && ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() == PipeliningMode.DEPEND) {
