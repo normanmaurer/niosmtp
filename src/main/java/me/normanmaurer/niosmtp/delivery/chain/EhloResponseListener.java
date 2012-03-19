@@ -51,6 +51,8 @@ public class EhloResponseListener extends ChainedSMTPClientFutureListener<SMTPRe
      */
     public static final EhloResponseListener INSTANCE = new EhloResponseListener();
     
+    private static final SMTPException EHLO_NOT_SUPPORTED_EXCEPTION = new SMTPUnsupportedExtensionException("Extended SMTP is not supported");
+
     private static final SMTPException PIPELINING_NOT_SUPPORTED_EXECTION = new SMTPUnsupportedExtensionException("Extension PIPELINING is not supported");
     
     private static final SMTPException STARTTLS_NOT_SUPPORTED_EXECTION = new SMTPUnsupportedExtensionException("Extension STARTTLS is not supported");
@@ -61,28 +63,39 @@ public class EhloResponseListener extends ChainedSMTPClientFutureListener<SMTPRe
     
     @Override
     public void onResult(SMTPClientSession session, SMTPResponse response) throws SMTPException {
-        boolean supportsPipelining = false;
-        boolean supportsStartTLS = false;
-        initSupportedExtensions(session, response);
-        
-        // Check if the SMTPServer supports PIPELINING 
-        Set<String> extensions = session.getSupportedExtensions();
-
-        if (extensions.contains(PIPELINING_EXTENSION)) {
-            supportsPipelining = true;
-        }
-        if (extensions.contains(STARTTLS_EXTENSION)) {
-            supportsStartTLS = true;
-        }
-
         int code = response.getCode();
 
-        String mail = ((SMTPDeliveryEnvelope)session.getAttribute(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
-
         // servers that do not implement EHLO may return 500 (as per RFC 821) or 502 (RFC 1869)
-        if (code < 400 || code == 500 || code == 502) {
+        if(code == 500 || code == 502) {
 
-            // Check if we depend on pipelining 
+            // pipelining, starttls, and auth won't be supported if EHLO is not supported, so we bail out now
+            if(((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() == PipeliningMode.DEPEND ||
+                    session.getDeliveryMode() == SMTPDeliveryMode.STARTTLS_DEPEND ||
+                    ((SMTPDeliveryAgentConfig)session.getConfig()).getAuthentication() != null) {
+
+                throw EHLO_NOT_SUPPORTED_EXCEPTION;
+            }
+
+            // otherwise lets try a regular HELO
+            next(session, SMTPRequestImpl.helo(((SMTPDeliveryAgentConfig)session.getConfig()).getHeloName()));
+
+        } else if (code < 400) {
+
+            boolean supportsPipelining = false;
+            boolean supportsStartTLS = false;
+            initSupportedExtensions(session, response);
+
+            // Check if the SMTPServer supports PIPELINING
+            Set<String> extensions = session.getSupportedExtensions();
+
+            if (extensions.contains(PIPELINING_EXTENSION)) {
+                supportsPipelining = true;
+            }
+            if (extensions.contains(STARTTLS_EXTENSION)) {
+                supportsStartTLS = true;
+            }
+
+            // Check if we depend on pipelining
             if (!supportsPipelining && ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() == PipeliningMode.DEPEND) {
                 throw  PIPELINING_NOT_SUPPORTED_EXECTION;
             }
@@ -92,7 +105,7 @@ public class EhloResponseListener extends ChainedSMTPClientFutureListener<SMTPRe
             }
             
             
-            
+
             if (supportsStartTLS && (session.getDeliveryMode() == SMTPDeliveryMode.STARTTLS_DEPEND || session.getDeliveryMode() == SMTPDeliveryMode.STARTTLS_TRY)) {
                 next(session, SMTPRequestImpl.startTls());
             } else {
@@ -105,6 +118,7 @@ public class EhloResponseListener extends ChainedSMTPClientFutureListener<SMTPRe
                     if (supportsPipelining && ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() != PipeliningMode.NO) {
                         pipelining(session);
                     } else {
+                        String mail = ((SMTPDeliveryEnvelope)session.getAttribute(CURRENT_SMTP_TRANSACTION_KEY)).getSender();
                         next(session, SMTPRequestImpl.mail(mail));
                     }
                 } else {
