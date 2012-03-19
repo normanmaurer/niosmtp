@@ -105,6 +105,7 @@ public class SMTPDeliveryAgent implements SMTPClientConstants, SMTPDeliverySessi
                 session.setAttribute(DELIVERY_STATUS_KEY, new ArrayList<DeliveryRecipientStatus>());
                 session.setAttribute(DELIVERY_RESULT_LIST_KEY, new ArrayList<FutureResult<Iterator<DeliveryRecipientStatus>>>());
                 session.setAttribute(SMTP_CLIENT_FUTURE_LISTENER_FACTORY, createFactory());
+                session.setAttribute(SMTP_TRANSACTION_ACTIVE_KEY, false);
             }
 
             @Override

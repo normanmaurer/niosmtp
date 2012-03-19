@@ -79,6 +79,7 @@ public class PostDataResponseListener extends ChainedSMTPClientFutureListener<Co
             }
 
         }    
+        session.setAttribute(SMTP_TRANSACTION_ACTIVE_KEY, false);
         setDeliveryStatus(session);
     }
 
