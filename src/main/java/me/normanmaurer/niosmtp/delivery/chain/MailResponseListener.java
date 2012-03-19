@@ -61,7 +61,8 @@ public class MailResponseListener extends AbstractPipeliningResponseListener {
             
             // store the current recipient we are processing
             session.setAttribute(CURRENT_RCPT_KEY, rcpt);
-            
+            session.setAttribute(SMTP_TRANSACTION_ACTIVE_KEY, true);
+
             // only write the request if the SMTPServer does not support PIPELINING and we don't want to use it
             // as otherwise we already sent this 
             if (session.getAttribute(PIPELINING_ACTIVE_KEY) == null || ((SMTPDeliveryAgentConfig)session.getConfig()).getPipeliningMode() == PipeliningMode.NO) {

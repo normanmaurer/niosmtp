@@ -52,6 +52,11 @@ public interface NettyConstants {
     public static final String CONNECT_HANDLER_KEY = "connectHandler";
     
     /**
+     * The key to use when adding the {@link SMTPDisconnectHandler} to the {@link ChannelPipeline}
+     */
+    public static final String DISCONNECT_HANDLER_KEY = "disconnectHandler";
+
+    /**
      * The key to use when adding the {@link SMTPResponseDecoder} to the {@link ChannelPipeline}
      */
     public static final String SMTP_RESPONSE_DECODER_KEY = "smtpResponseDecoder";
