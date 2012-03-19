@@ -25,6 +25,7 @@ package me.normanmaurer.niosmtp;
 public interface SMTPRequest {
     
     public final static String STARTTLS_COMMAND = "STARTTLS";
+    public final static String HELO_COMMAND = "HELO";
     public final static String EHLO_COMMAND = "EHLO";
     public final static String MAIL_COMMAND = "MAIL FROM:";
     public final static String RCPT_COMMAND = "RCPT TO:";
