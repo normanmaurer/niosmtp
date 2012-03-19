@@ -43,6 +43,8 @@ public class SMTPClientFutureListenerFactoryImpl implements SMTPClientFutureList
         }
         if (SMTPRequest.EHLO_COMMAND.equals(cmd)) {
             return EhloResponseListener.INSTANCE;
+        } else if (SMTPRequest.HELO_COMMAND.equals(cmd)) {
+            return HeloResponseListener.INSTANCE;
         } else if (SMTPRequest.MAIL_COMMAND.equals(cmd)) {
             return MailResponseListener.INSTANCE;
         } else if (SMTPRequest.RCPT_COMMAND.equals(cmd)) {
