@@ -71,7 +71,8 @@ public class SMTPClientPipelineFactory implements ChannelPipelineFactory, NettyC
         pipeline.addLast(SMTP_PIPELINING_REQUEST_ENCODER_KEY, SMTP_PIPELINING_REQUEST_ENCODER);
 
         pipeline.addLast(CHUNK_WRITE_HANDLER_KEY, new ChunkedWriteHandler());
-        
+        pipeline.addLast(DISCONNECT_HANDLER_KEY, new SMTPDisconnectHandler(future));
+
         // Add the idle timeout handler
         pipeline.addLast(IDLE_HANDLER_KEY, new IdleStateHandler(timer, 0, 0, config.getResponseTimeout()));
         pipeline.addLast(CONNECT_HANDLER_KEY, createConnectHandler());

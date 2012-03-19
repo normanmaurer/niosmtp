@@ -71,6 +71,12 @@ public interface SMTPDeliverySessionConstants {
     public final static String SMTP_TRANSACTIONS_KEY = "smtp_transactions";
     
     /**
+     * Key under which the state of a transaction within a SMTP session is stored. Transactions are
+     * "active" between the "MAIL FROM" and when the server responds to the "DATA".
+     */
+    public final static String SMTP_TRANSACTION_ACTIVE_KEY = "smtp_transaction_active";
+
+    /**
      * Key under which the current {@link SMTPDeliveryEnvelope} is stored
      */
     public final static String CURRENT_SMTP_TRANSACTION_KEY = "cur_smtp_transaction";
