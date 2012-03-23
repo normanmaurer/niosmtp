@@ -28,7 +28,7 @@
   <groupId>me.normanmaurer.niosmtp</groupId>
   <artifactId>niosmtp</artifactId>
   <name>niosmtp</name>
-  <version>0.2-SNAPSHOT</version>
+  <version>0.1-SNAPSHOT</version>
   <description>
     niosmtp is an async based SMTP/LMTP client, which can be used to send an big amount of emails
     in a fast manner. The transport layer is decoupled from the protocol logic, this allows easy 
@@ -92,18 +92,13 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <configuration>
-          <archive>
-            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-          </archive>
-        </configuration>
       </plugin>
       <!-- Site generation -->
-      <!--
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
         <executions>
+          <!-- Attach non-reporting site-descriptor when installing -->
           <execution>
             <id>attach-descriptor</id>
             <goals>
@@ -235,7 +230,6 @@
           </reportPlugins>
         </configuration>
       </plugin>
-      -->
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
@@ -368,7 +362,7 @@
 
   <properties>
     <target.jdk>1.6</target.jdk>
-    <protocols.version>1.6.2</protocols.version>
+    <protocols.version>1.6.1</protocols.version>
     <slf4j.version>1.6.3</slf4j.version>
     <netty.version>3.3.0.Final</netty.version>
     <commons-codec.version>1.5</commons-codec.version>
