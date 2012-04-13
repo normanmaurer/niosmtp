@@ -1,0 +1,9 @@
+me.normanmaurer.niosmtp
+me.normanmaurer.niosmtp.core
+me.normanmaurer.niosmtp.delivery
+me.normanmaurer.niosmtp.delivery.chain
+me.normanmaurer.niosmtp.delivery.impl
+me.normanmaurer.niosmtp.transport
+me.normanmaurer.niosmtp.transport.impl
+me.normanmaurer.niosmtp.transport.netty
+me.normanmaurer.niosmtp.transport.netty.internal
