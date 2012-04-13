@@ -770,9 +770,15 @@ dt {
   float: left;
   margin-left: 0px;
 }
+
+#header nav li.docs {
+  float: left;
+  margin-left: 0px;
+}
+
 #header nav li.downloads {
   float: right;
-  margin-left: 6px;
+  margin-left: 1px;
 }
 #header nav li.title {
   float: right;
