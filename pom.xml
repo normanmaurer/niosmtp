@@ -28,7 +28,7 @@
   <groupId>me.normanmaurer.niosmtp</groupId>
   <artifactId>niosmtp</artifactId>
   <name>niosmtp</name>
-  <version>0.1.1-SNAPSHOT</version>
+  <version>0.1.1</version>
   <description>
     niosmtp is an async based SMTP/LMTP client, which can be used to send an big amount of emails
     in a fast manner. The transport layer is decoupled from the protocol logic, this allows easy 
