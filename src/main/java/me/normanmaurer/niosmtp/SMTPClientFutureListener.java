@@ -28,7 +28,7 @@ public interface SMTPClientFutureListener<E> {
     /**
      * Callback which will get called once the operation was complete
      * 
-     * @param status
+     * @param future
      */
     void operationComplete(SMTPClientFuture<E> future); 
 }

@@ -115,7 +115,7 @@ public abstract class AbstractSMTPClientSession implements SMTPClientSession {
 
     /**
      * Implementation which just send each {@link SMTPRequest} which is hold in the {@link SMTPPipeliningRequest#getRequests()} method via
-     * {@link #send(SMTPRequest, me.normanmaurer.niosmtp.SMTPResponseCallback)} method. 
+     * {@link #send(SMTPRequest)} method. 
      * 
      */
     @Override

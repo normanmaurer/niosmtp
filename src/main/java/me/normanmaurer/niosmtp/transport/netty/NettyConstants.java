@@ -18,6 +18,7 @@ package me.normanmaurer.niosmtp.transport.netty;
 
 import me.normanmaurer.niosmtp.transport.netty.internal.SMTPClientIdleHandler;
 import me.normanmaurer.niosmtp.transport.netty.internal.SMTPConnectHandler;
+import me.normanmaurer.niosmtp.transport.netty.internal.SMTPDisconnectHandler;
 import me.normanmaurer.niosmtp.transport.netty.internal.SMTPPipeliningRequestEncoder;
 import me.normanmaurer.niosmtp.transport.netty.internal.SMTPRequestEncoder;
 import me.normanmaurer.niosmtp.transport.netty.internal.SMTPResponseDecoder;
@@ -84,7 +85,7 @@ public interface NettyConstants {
     public static final String SSL_HANDLER_KEY = "sslHandler";
     
     /**
-     * The key to use when adding the {@link SslHandshakeHandler} to the {@link ChannelPipeline}
+     * The key to use when adding the SslHandshakeHandler to the {@link ChannelPipeline}
      */
     public static final String SSL_HANDSHAKE_HANDLER_KEY = "sslHandshakeHandler";
     

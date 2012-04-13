@@ -24,7 +24,8 @@ import me.normanmaurer.niosmtp.delivery.chain.SMTPClientFutureListenerFactory;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
- * Constants for temporary data which will get stored in the {@link SMTPClientSession#getAttributes()} while sending the message
+ * Constants for temporary data which will get stored via the {@link SMTPClientSession#setAttribute(String, Object)()}  while sending the message. These
+ * can then be accessed via {@link SMTPClientSession#getAttribute(String)}.
  * 
  * @author Norman Maurer
  *

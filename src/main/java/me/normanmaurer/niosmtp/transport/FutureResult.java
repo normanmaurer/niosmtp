@@ -77,7 +77,7 @@ public abstract class FutureResult<E> {
     }    
     
     /**
-     * Return the result. This MAY return null if {@link #getCause()} returns not null
+     * Return the result. This MAY return null if {@link #getException()} returns not <code>null</code>
      * 
      * @return status
      */

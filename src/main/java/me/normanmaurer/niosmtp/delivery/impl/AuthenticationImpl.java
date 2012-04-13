@@ -52,7 +52,7 @@ public class AuthenticationImpl implements Authentication{
     }        
     
     /**
-     * Create an {@link Authentication} instance which use {@link AuthMode#Plain}
+     * Create an {@link Authentication} instance which use plain mode
      * 
      * @param username
      * @param password
@@ -64,7 +64,7 @@ public class AuthenticationImpl implements Authentication{
     
     
     /**
-     * Create an {@link Authentication} instance which use {@link AuthMode#Login}
+     * Create an {@link Authentication} instance which use login mode
      * 
      * @param username
      * @param password
