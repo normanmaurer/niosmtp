@@ -307,10 +307,12 @@
     </extensions>
   </build>
   <distributionManagement>
+    <!--
     <site>
       <id>github-niosmtp-site</id>
       <url>gitsite:git@github.com/normanmaurer/niosmtp.git</url>
     </site>
+    -->
   </distributionManagement>
   <dependencies>
    
