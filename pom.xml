@@ -368,7 +368,7 @@
     <target.jdk>1.6</target.jdk>
     <protocols.version>1.6.1</protocols.version>
     <slf4j.version>1.6.3</slf4j.version>
-    <netty.version>3.4.2.Final</netty.version>
+    <netty.version>3.4.4.Final</netty.version>
     <commons-codec.version>1.5</commons-codec.version>
     <junit.version>4.10</junit.version>
   </properties>
