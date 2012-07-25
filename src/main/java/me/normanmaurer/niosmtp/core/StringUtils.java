@@ -74,7 +74,7 @@ public class StringUtils implements SMTPClientConstants{
         if (argument == null) {
             return command;
         } else {
-            return command + SMTPRequest.SEPERATOR + argument;
+            return command + request.getSeparator() + argument;
         }
     }
     
