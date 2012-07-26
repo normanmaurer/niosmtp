@@ -30,11 +30,17 @@ public class SMTPRequestImpl implements SMTPRequest{
 
     private final String command;
     private final String argument;
+    private final char separator;
 
     
-    public SMTPRequestImpl(String command, String argument) {
+    public SMTPRequestImpl(String command, String argument, char separator) {
         this.command = command;
         this.argument = argument;
+        this.separator = separator;
+    }
+
+    public SMTPRequestImpl(String command, String argument) {
+        this(command, argument, ' ');
     }
     
     @Override
@@ -47,6 +53,11 @@ public class SMTPRequestImpl implements SMTPRequest{
         return argument;
     }
     
+    @Override
+    public char getSeparator() {
+        return separator;
+    }
+
     @Override
     public String toString() {
         return StringUtils.toString(this);
@@ -90,7 +101,7 @@ public class SMTPRequestImpl implements SMTPRequest{
      * @return rcpt
      */
     public static SMTPRequest rcpt(String recipient) {
-        return new SMTPRequestImpl("RCPT TO:", "<" + recipient + ">");
+        return new SMTPRequestImpl(RCPT_COMMAND, "<" + recipient + ">", ':');
     }
     
     
@@ -104,7 +115,7 @@ public class SMTPRequestImpl implements SMTPRequest{
         if (sender == null) {
             sender = "";
         }
-        return new SMTPRequestImpl("MAIL FROM:",  "<" + sender + ">");
+        return new SMTPRequestImpl(MAIL_COMMAND,  "<" + sender + ">", ':');
     }
     
     /**
