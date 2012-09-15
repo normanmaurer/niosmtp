@@ -16,43 +16,37 @@
 */
 package me.normanmaurer.niosmtp.transport.netty.internal;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.MessageToByteEncoder;
 import me.normanmaurer.niosmtp.SMTPRequest;
 import me.normanmaurer.niosmtp.core.StringUtils;
 import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * {@link OneToOneEncoder} which encoded {@link SMTPRequest} objects to {@link ChannelBuffer}
+ * {@link MessageToByteEncoder} which encoded {@link SMTPRequest} objects to {@link ChannelBuffer}
  * 
  * @author Norman Maurer
  *
  */
-public class SMTPRequestEncoder extends OneToOneEncoder implements SMTPClientConstants{
+public class SMTPRequestEncoder extends MessageToByteEncoder<SMTPRequest> implements SMTPClientConstants {
     private final Logger logger = LoggerFactory.getLogger(SMTPRequestEncoder.class);
 
     private final static byte[] CRLF = new byte[] {'\r', '\n'};
-    
+
     @Override
-    protected Object encode(ChannelHandlerContext ctx, Channel arg1, Object msg) throws Exception {
-        if (msg instanceof SMTPRequest) {
-            SMTPRequest req = (SMTPRequest) msg;
+    public void encode(ChannelHandlerContext ctx, SMTPRequest req, ByteBuf buf) throws Exception {
             String request = StringUtils.toString((SMTPRequest) req);
             
-            if (logger.isDebugEnabled()) {
-                logger.debug("Channel " + ctx.getChannel().getId() + " sent: [" + request + "]");
+            if (logger.isInfoEnabled()) {
+                logger.info("Channel " + ctx.channel().id() + " sent: [" + request + "]");
             }
             
-          
-            return ChannelBuffers.wrappedBuffer(request.getBytes(CHARSET), CRLF);
-        }
-        return msg;
+            buf.writeBytes(request.getBytes(CHARSET));
+            buf.writeBytes(CRLF);
     }
 
 }

@@ -16,7 +16,14 @@
 */
 package me.normanmaurer.niosmtp.transport.netty;
 
-import java.util.concurrent.Executors;
+import io.netty.channel.Channel;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.socket.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.channel.socket.oio.OioEventLoopGroup;
+import io.netty.channel.socket.oio.OioSocketChannel;
+import io.netty.logging.InternalLoggerFactory;
+import io.netty.logging.Slf4JLoggerFactory;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
@@ -27,12 +34,6 @@ import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransportFactory;
 
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.socket.ClientSocketChannelFactory;
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
-import org.jboss.netty.channel.socket.oio.OioClientSocketChannelFactory;
-import org.jboss.netty.logging.InternalLoggerFactory;
-import org.jboss.netty.logging.Slf4JLoggerFactory;
 import org.slf4j.Logger;
 
 /**
@@ -46,8 +47,9 @@ public class NettySMTPClientTransportFactory implements SMTPClientTransportFacto
     static {
         InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory());
     }
-    private final ClientSocketChannelFactory factory;
+    private final Class<? extends Channel> channel;
     private final SMTPClientSessionFactory sessionFactory;
+    private final EventLoopGroup group;
 
     private final static SMTPClientSessionFactory FACTORY = new SMTPClientSessionFactory() {
         
@@ -57,20 +59,12 @@ public class NettySMTPClientTransportFactory implements SMTPClientTransportFacto
         }
     };
 
-    public NettySMTPClientTransportFactory(final ClientSocketChannelFactory factory, SMTPClientSessionFactory sessionFactory) {
-        this.factory = factory;
+    public NettySMTPClientTransportFactory(final Class<? extends Channel> channel, EventLoopGroup group, SMTPClientSessionFactory sessionFactory) {
+        this.channel = channel;
         this.sessionFactory = sessionFactory;
+        this.group = group;
     }
 
-    /**
-     * Create a new NIO based {@link SMTPClientTransportFactory}
-     * 
-     * @param workerCount
-     * @return factory
-     */
-    public static SMTPClientTransportFactory createNio(int workerCount) {
-        return new NettySMTPClientTransportFactory(new NioClientSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool(), workerCount), FACTORY);
-    }
     
     /**
      * Create a new NIO based {@link SMTPClientTransportFactory}
@@ -78,7 +72,7 @@ public class NettySMTPClientTransportFactory implements SMTPClientTransportFacto
      * @return factory
      */
     public static SMTPClientTransportFactory createNio() {
-        return new NettySMTPClientTransportFactory(new NioClientSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool()), FACTORY);
+        return new NettySMTPClientTransportFactory(NioSocketChannel.class, new NioEventLoopGroup(), FACTORY);
     }
     
     /**
@@ -87,18 +81,18 @@ public class NettySMTPClientTransportFactory implements SMTPClientTransportFacto
      * @return factory
      */
     public static SMTPClientTransportFactory createOio() {
-        return new NettySMTPClientTransportFactory(new OioClientSocketChannelFactory(Executors.newCachedThreadPool()), FACTORY);
+        return new NettySMTPClientTransportFactory(OioSocketChannel.class, new OioEventLoopGroup(), FACTORY);
     }
     
     @Override
     public SMTPClientTransport createPlain() {
-        return new NettySMTPClientTransport(SMTPDeliveryMode.PLAIN, null, factory, sessionFactory);
+        return new NettySMTPClientTransport(SMTPDeliveryMode.PLAIN, null, channel, group,  sessionFactory);
     }
     
 
     @Override
     public SMTPClientTransport createSMTPS(SSLContext context) {
-        return new NettySMTPClientTransport(SMTPDeliveryMode.SMTPS, context, factory, sessionFactory);
+        return new NettySMTPClientTransport(SMTPDeliveryMode.SMTPS, context, channel, group, sessionFactory);
     }
     
 
@@ -110,7 +104,7 @@ public class NettySMTPClientTransportFactory implements SMTPClientTransportFacto
         } else {
             mode = SMTPDeliveryMode.STARTTLS_TRY;
         }
-        return new NettySMTPClientTransport(mode, context, factory, sessionFactory);
+        return new NettySMTPClientTransport(mode, context, channel, group, sessionFactory);
     }
     
 }

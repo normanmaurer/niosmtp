@@ -16,6 +16,21 @@
 */
 package me.normanmaurer.niosmtp.transport.netty.internal;
 
+import java.nio.charset.Charset;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundByteHandlerAdapter;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.ChannelHandler.Sharable;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.codec.ByteToByteDecoder;
+import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.Delimiters;
+import io.netty.handler.stream.ChunkedWriteHandler;
+import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.util.CharsetUtil;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.transport.FutureResult;
@@ -24,14 +39,6 @@ import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 import me.normanmaurer.niosmtp.transport.netty.NettyConstants;
 import me.normanmaurer.niosmtp.transport.netty.SMTPClientSessionFactory;
 
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.handler.codec.frame.DelimiterBasedFrameDecoder;
-import org.jboss.netty.handler.codec.frame.Delimiters;
-import org.jboss.netty.handler.stream.ChunkedWriteHandler;
-import org.jboss.netty.handler.timeout.IdleStateHandler;
-import org.jboss.netty.util.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,31 +49,34 @@ import org.slf4j.LoggerFactory;
  * 
  *
  */
-public class SMTPClientPipelineFactory implements ChannelPipelineFactory, NettyConstants{
-    protected final static Logger LOGGER = LoggerFactory.getLogger(SMTPClientPipelineFactory.class);
-    private final static SMTPResponseDecoder SMTP_RESPONSE_DECODER = new SMTPResponseDecoder();
+@Sharable
+public class SMTPClientPipelineInitializer extends ChannelInitializer<SocketChannel> implements NettyConstants{
+    protected final static Logger LOGGER = LoggerFactory.getLogger(SMTPClientPipelineInitializer.class);
     private final static SMTPRequestEncoder SMTP_REQUEST_ENCODER = new SMTPRequestEncoder();
     private final static SMTPPipeliningRequestEncoder SMTP_PIPELINING_REQUEST_ENCODER = new SMTPPipeliningRequestEncoder();
     private final static SMTPClientIdleHandler SMTP_CLIENT_IDLE_HANDLER = new SMTPClientIdleHandler();
-    private final Timer timer;
     protected final SMTPClientFutureImpl<FutureResult<SMTPResponse>> future;
     protected final SMTPClientConfig config;
     protected final SMTPClientSessionFactory factory;
     
-    public SMTPClientPipelineFactory(SMTPClientFutureImpl<FutureResult<SMTPResponse>> future, SMTPClientConfig config, Timer timer, SMTPClientSessionFactory factory) {
-        this.timer = timer;
+    public SMTPClientPipelineInitializer(SMTPClientFutureImpl<FutureResult<SMTPResponse>> future, SMTPClientConfig config, SMTPClientSessionFactory factory) {
         this.config = config;
         this.future = future;
         this.factory = factory;
     }
     
-    
+    protected SMTPConnectHandler createConnectHandler() {
+        return new SMTPConnectHandler(future, LOGGER, config, SMTPDeliveryMode.PLAIN, null, factory);
+    }
+
+
     @Override
-    public ChannelPipeline getPipeline() throws Exception {
-        ChannelPipeline pipeline = Channels.pipeline();
+    public void initChannel(SocketChannel channel) throws Exception {
+        ChannelPipeline pipeline = channel.pipeline();
         pipeline.addLast(SMTP_IDLE_HANDLER_KEY, SMTP_CLIENT_IDLE_HANDLER);
         pipeline.addLast(FRAMER_KEY, new DelimiterBasedFrameDecoder(8192, true, Delimiters.lineDelimiter()));
-        pipeline.addLast(SMTP_RESPONSE_DECODER_KEY, SMTP_RESPONSE_DECODER);
+
+        pipeline.addLast(SMTP_RESPONSE_DECODER_KEY, new SMTPResponseDecoder());
         pipeline.addLast(SMTP_REQUEST_ENCODER_KEY, SMTP_REQUEST_ENCODER);
         pipeline.addLast(SMTP_PIPELINING_REQUEST_ENCODER_KEY, SMTP_PIPELINING_REQUEST_ENCODER);
 
@@ -74,15 +84,8 @@ public class SMTPClientPipelineFactory implements ChannelPipelineFactory, NettyC
         pipeline.addLast(DISCONNECT_HANDLER_KEY, new SMTPDisconnectHandler(future));
 
         // Add the idle timeout handler
-        pipeline.addLast(IDLE_HANDLER_KEY, new IdleStateHandler(timer, 0, 0, config.getResponseTimeout()));
+        pipeline.addLast(IDLE_HANDLER_KEY, new IdleStateHandler(0, 0, config.getResponseTimeout()));
         pipeline.addLast(CONNECT_HANDLER_KEY, createConnectHandler());
-        return pipeline;
     }
-    
-    protected SMTPConnectHandler createConnectHandler() {
-        return new SMTPConnectHandler(future, LOGGER, config, SMTPDeliveryMode.PLAIN, null, factory);
-    }
-    
-
 
 }

@@ -16,6 +16,8 @@
 */
 package me.normanmaurer.niosmtp.transport.netty;
 
+import io.netty.channel.Channel;
+
 import java.util.Collection;
 
 import javax.net.ssl.SSLEngine;
@@ -28,7 +30,6 @@ import me.normanmaurer.niosmtp.transport.FutureResult;
 import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 
-import org.jboss.netty.channel.Channel;
 import org.slf4j.Logger;
 
 /**
@@ -36,7 +37,7 @@ import org.slf4j.Logger;
  * @author Norman Maurer
  *
  */
-public class NettyLMTPClientSession extends NettySMTPClientSession{
+public class NettyLMTPClientSession extends NettySMTPClientSession {
 
     public NettyLMTPClientSession(Channel channel, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode, SSLEngine engine) {
         super(channel, logger, config, mode, engine);

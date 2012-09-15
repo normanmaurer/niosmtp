@@ -16,91 +16,86 @@
 */
 package me.normanmaurer.niosmtp.transport.netty.internal;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.handler.codec.ByteToMessageDecoder;
+import io.netty.util.AttributeKey;
 import me.normanmaurer.niosmtp.SMTPException;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.core.SMTPResponseImpl;
 import me.normanmaurer.niosmtp.core.StringUtils;
 import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.handler.codec.oneone.OneToOneDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * {@link OneToOneDecoder} which decodes {@link SMTPResponse}'s. It also handles
+ * {@link ByteToMessageDecoder} which decodes {@link SMTPResponse}'s. It also handles
  * multi-line responses.
  * 
  * 
  * @author Norman Maurer
  * 
  */
-public class SMTPResponseDecoder extends OneToOneDecoder implements SMTPClientConstants{
+public class SMTPResponseDecoder extends ByteToMessageDecoder<SMTPResponse> implements SMTPClientConstants{
     private final static Logger logger = LoggerFactory.getLogger(SMTPResponseDecoder.class);
-
+    private final static AttributeKey<SMTPResponseImpl> key = new AttributeKey<SMTPResponseImpl>("response");
     @Override
-    protected Object decode(ChannelHandlerContext ctx, Channel channel, Object msg) throws Exception {
-        if (msg instanceof ChannelBuffer) {
-            ChannelBuffer line = (ChannelBuffer) msg;
+    public SMTPResponse decode(io.netty.channel.ChannelHandlerContext ctx, ByteBuf buf) throws Exception {
+        SMTPResponseImpl response = (SMTPResponseImpl) ctx.attr(key).get();
 
-            SMTPResponseImpl response = (SMTPResponseImpl) ctx.getAttachment();
+        // The separator must be on index 3 as the return code has always 3
+        // digits
+        int separator = buf.getByte(3);
 
-            // The separator must be on index 3 as the return code has always 3
-            // digits
-            int separator = line.getByte(3);
-
-            if (separator == SMTPResponse.LAST_SEPERATOR) {
-                // Ok we had a ' ' separator which means this was the end of the
-                // SMTPResponse
-                if (response == null) {
-                    int code = Integer.parseInt(line.readBytes(3).toString(CHARSET));
-                    response = new SMTPResponseImpl(code);
-                    // skip the next space
-                    line.skipBytes(1);
-                } else {
-                    // skip the code and the next space
-                    line.skipBytes(4);
-                }
-                
-                if (line.readable()) {
-                    response.addLine(line.toString(CHARSET));
-
-                }
-                ctx.setAttachment(null);
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Channel " + ctx.getChannel().getId() + " received: [" + StringUtils.toString(response) + "]");
-                }
-                return response;
-            } else if (separator == SMTPResponse.SEPERATOR) {
-                // The '-' separator is used for multi-line responses so just
-                // add it to the response
-                if (response == null) {
-                    int code = Integer.parseInt(line.readBytes(3).toString(CHARSET));
-                    response = new SMTPResponseImpl(code);
-                    ctx.setAttachment(response);
-                    
-                    // skip the next space
-                    line.skipBytes(1);
-
-                } else {
-                    // skip the code and the next space
-                    line.skipBytes(4);
-                }
-                if (line.readable()) {
-                    response.addLine(line.toString(CHARSET));
-                }
+        if (separator == SMTPResponse.LAST_SEPERATOR) {
+            // Ok we had a ' ' separator which means this was the end of the
+            // SMTPResponse
+            if (response == null) {
+                int code = Integer.parseInt(buf.readBytes(3).toString(CHARSET));
+                response = new SMTPResponseImpl(code);
+                // skip the next space
+                buf.skipBytes(1);
             } else {
-                // throw exception if the response does not have a valid format
-                throw new SMTPException("Unable to parse SMTPResponse: " + line.toString(CHARSET));
+                // skip the code and the next space
+                buf.skipBytes(4);
             }
 
-            return null;
+            if (buf.readable()) {
+                response.addLine(buf.toString(CHARSET));
+                buf.clear();
+            }
+            ctx.attr(key).remove();
+            if (logger.isDebugEnabled()) {
+                logger.debug("Channel " + ctx.channel().id() + " received: [" + StringUtils.toString(response) + "]");
+            }
+            return response;
+        } else if (separator == SMTPResponse.SEPERATOR) {
+            // The '-' separator is used for multi-line responses so just
+            // add it to the response
+            if (response == null) {
+                int code = Integer.parseInt(buf.readBytes(3).toString(CHARSET));
+                response = new SMTPResponseImpl(code);
+                ctx.attr(key).set(response);
+
+                // skip the next space
+                buf.skipBytes(1);
+
+            } else {
+                // skip the code and the next space
+                buf.skipBytes(4);
+            }
+            if (buf.readable()) {
+                response.addLine(buf.toString(CHARSET));
+                buf.clear();
+            }
         } else {
-            return msg;
+            // throw exception if the response does not have a valid format
+            throw new SMTPException("Unable to parse SMTPResponse: '" + buf.toString(CHARSET) + "'");
         }
 
+        return null;
+
     }
+
 
 }

@@ -16,9 +16,10 @@
 */
 package me.normanmaurer.niosmtp.transport.netty;
 
+import io.netty.channel.Channel;
+
 import javax.net.ssl.SSLEngine;
 
-import org.jboss.netty.channel.Channel;
 import org.slf4j.Logger;
 
 import me.normanmaurer.niosmtp.transport.SMTPClientConfig;

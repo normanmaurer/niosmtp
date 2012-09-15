@@ -16,11 +16,16 @@
 */
 package me.normanmaurer.niosmtp.transport.netty.internal;
 
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundMessageHandlerAdapter;
+import io.netty.util.AttributeKey;
+
 import javax.net.ssl.SSLEngine;
 
 import me.normanmaurer.niosmtp.SMTPClientFutureListener;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
+import me.normanmaurer.niosmtp.core.SMTPResponseImpl;
 import me.normanmaurer.niosmtp.transport.FutureResult;
 import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
@@ -28,11 +33,6 @@ import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 import me.normanmaurer.niosmtp.transport.impl.FutureResultImpl;
 import me.normanmaurer.niosmtp.transport.netty.SMTPClientSessionFactory;
 
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.slf4j.Logger;
 
 /** * 
@@ -42,7 +42,7 @@ import org.slf4j.Logger;
  * @author Norman Maurer
  *
  */
-public class SMTPConnectHandler extends SimpleChannelUpstreamHandler {
+public class SMTPConnectHandler extends ChannelInboundMessageHandlerAdapter<SMTPResponseImpl> {
 
     private final SSLEngine engine;
     private final SMTPDeliveryMode mode;
@@ -50,7 +50,8 @@ public class SMTPConnectHandler extends SimpleChannelUpstreamHandler {
     private final Logger logger;
     private final SMTPClientConfig config;
     private final SMTPClientSessionFactory factory;
-
+    private final static AttributeKey<SMTPClientSession> SESSION_ATTR = new AttributeKey<SMTPClientSession>("session");
+    
     public SMTPConnectHandler(SMTPClientFutureImpl<FutureResult<SMTPResponse>> future, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode, SSLEngine engine, SMTPClientSessionFactory factory){
         this.future = future;
         this.engine = engine;
@@ -61,33 +62,28 @@ public class SMTPConnectHandler extends SimpleChannelUpstreamHandler {
     }
     
     private SMTPClientSession getSession(ChannelHandlerContext ctx) {
-        Object attachment = ctx.getAttachment();
+        SMTPClientSession attachment = ctx.attr(SESSION_ATTR).get();
+        
         if (attachment == null) {
-            attachment =  factory.newSession(ctx.getChannel(), logger, config, mode, engine);
-            ctx.setAttachment(attachment);
+            attachment =  factory.newSession(ctx.channel(), logger, config, mode, engine);
+            ctx.attr(SESSION_ATTR).set(attachment);
         }
         return (SMTPClientSession) attachment;
     }
-    
-    
-    @Override
-    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
-        Object msg = e.getMessage();
-        if (msg instanceof SMTPResponse) {
-            ctx.getChannel().getPipeline().remove(this);
-            future.setSMTPClientSession(getSession(ctx));
-            future.setResult(new FutureResultImpl<SMTPResponse>((SMTPResponse) msg));
-        } else {
-            super.messageReceived(ctx, e);
-        }
-    }
-    
+
+
     @SuppressWarnings("unchecked")
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
-        ctx.getChannel().getPipeline().remove(this);
+    public void exceptionCaught(io.netty.channel.ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        ctx.channel().pipeline().remove(this);
         future.setSMTPClientSession(getSession(ctx));
-        future.setResult(FutureResult.create(e.getCause()));
+        future.setResult(FutureResult.create(cause));
+    }
 
+    @Override
+    public void messageReceived(io.netty.channel.ChannelHandlerContext ctx, SMTPResponseImpl msg) throws Exception {
+        ctx.channel().pipeline().remove(this);
+        future.setSMTPClientSession(getSession(ctx));
+        future.setResult(new FutureResultImpl<SMTPResponse>(msg));        
     }
 }

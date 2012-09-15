@@ -16,6 +16,18 @@
 */
 package me.normanmaurer.niosmtp.transport.netty;
 
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.logging.InternalLoggerFactory;
+import io.netty.logging.Slf4JLoggerFactory;
+
 import java.net.InetSocketAddress;
 
 import javax.net.ssl.SSLContext;
@@ -27,19 +39,9 @@ import me.normanmaurer.niosmtp.transport.FutureResult;
 import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
-import me.normanmaurer.niosmtp.transport.netty.internal.SMTPClientPipelineFactory;
+import me.normanmaurer.niosmtp.transport.netty.internal.SMTPClientPipelineInitializer;
 import me.normanmaurer.niosmtp.transport.netty.internal.SecureSMTPClientPipelineFactory;
 
-import org.jboss.netty.bootstrap.ClientBootstrap;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.group.DefaultChannelGroup;
-import org.jboss.netty.channel.socket.ClientSocketChannelFactory;
-import org.jboss.netty.logging.InternalLoggerFactory;
-import org.jboss.netty.logging.Slf4JLoggerFactory;
-import org.jboss.netty.util.HashedWheelTimer;
-import org.jboss.netty.util.Timer;
 
 /**
  * {@link SMTPClientTransport} which uses Netty under the hood
@@ -54,16 +56,17 @@ class NettySMTPClientTransport implements SMTPClientTransport{
     }
     private final SSLContext context;
     private final SMTPDeliveryMode mode;
-    private final Timer timer = new HashedWheelTimer();
-    private final ClientSocketChannelFactory factory;
+    private final Class<? extends Channel> channel;
     private final DefaultChannelGroup channelGroup = new DefaultChannelGroup();
     private final SMTPClientSessionFactory sessionFactory;
+    private EventLoopGroup group;
 
-    NettySMTPClientTransport(SMTPDeliveryMode mode, SSLContext context, ClientSocketChannelFactory factory, SMTPClientSessionFactory sessionFactory) {
+    NettySMTPClientTransport(SMTPDeliveryMode mode, SSLContext context, Class<? extends Channel> channel, EventLoopGroup group, SMTPClientSessionFactory sessionFactory) {
         this.context = context;
         this.mode = mode;
-        this.factory = factory;
+        this.channel = channel;
         this.sessionFactory = sessionFactory;
+        this.group = group;
     }
 
     
@@ -73,36 +76,33 @@ class NettySMTPClientTransport implements SMTPClientTransport{
     @Override
     public SMTPClientFuture<FutureResult<SMTPResponse>> connect(InetSocketAddress remote, SMTPClientConfig config) {
         SMTPClientFutureImpl<FutureResult<SMTPResponse>> future = new SMTPClientFutureImpl<FutureResult<SMTPResponse>>();
-        ClientBootstrap bootstrap = new ClientBootstrap(factory);
-        bootstrap.setOption("connectTimeoutMillis", config.getConnectionTimeout() * 1000);
-        bootstrap.setOption("tcpNoDelay", true);
-        bootstrap.setOption("keepAlive", true);
-        bootstrap.setOption("reuseAddress", true);
-
-        ChannelPipelineFactory cp;
+        Bootstrap bootstrap = new Bootstrap().channel(channel).option(ChannelOption.CONNECT_TIMEOUT_MILLIS, config.getConnectionTimeout() * 1000);
+        bootstrap.option(ChannelOption.TCP_NODELAY, true).option(ChannelOption.SO_KEEPALIVE, true).option(ChannelOption.SO_REUSEADDR, true);
+        bootstrap.group(group);
+        ChannelInitializer<SocketChannel> cp;
         switch (mode) {
         case PLAIN:
-            cp = new SMTPClientPipelineFactory(future, config, timer, sessionFactory);
+            cp = new SMTPClientPipelineInitializer(future, config, sessionFactory);
             break;
         case SMTPS:
             // just move on to STARTTLS_DEPEND
         case STARTTLS_TRY:
             // just move on to STARTTLS_DEPEND
         case STARTTLS_DEPEND:
-            cp = new SecureSMTPClientPipelineFactory(future, config, timer,context, mode, sessionFactory);
+            cp = new SecureSMTPClientPipelineFactory(future, config,context, mode, sessionFactory);
             break;
         default:
             throw new IllegalArgumentException("Unknown DeliveryMode " + mode);
         }
 
-        bootstrap.setPipelineFactory(cp);
+        bootstrap.handler(cp);
         InetSocketAddress local = config.getLocalAddress();
-        bootstrap.connect(remote, local).addListener(new ChannelFutureListener() {
+        bootstrap.localAddress(local).remoteAddress(remote).connect().addListener(new ChannelFutureListener() {
             
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
-                    channelGroup.add(future.getChannel());
+                    channelGroup.add(future.channel());
                 }
             }
         });
@@ -117,9 +117,8 @@ class NettySMTPClientTransport implements SMTPClientTransport{
     
     @Override
     public void destroy() {
-        timer.stop();
         channelGroup.close().awaitUninterruptibly();
-        factory.releaseExternalResources();
+        group.shutdown();
     }
 
 }

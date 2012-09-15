@@ -16,15 +16,13 @@
 */
 package me.normanmaurer.niosmtp.transport.netty.internal;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.MessageToByteEncoder;
 import me.normanmaurer.niosmtp.SMTPPipeliningRequest;
 import me.normanmaurer.niosmtp.core.StringUtils;
 import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,25 +32,22 @@ import org.slf4j.LoggerFactory;
  * @author Norman Maurer
  *
  */
-public class SMTPPipeliningRequestEncoder extends OneToOneEncoder implements SMTPClientConstants{
+public class SMTPPipeliningRequestEncoder extends MessageToByteEncoder<SMTPPipeliningRequest> implements SMTPClientConstants{
     private final Logger logger = LoggerFactory.getLogger(SMTPRequestEncoder.class);
 
     private final static byte[] CRLF = new byte[] {'\r', '\n'};
-    
+
+
     @Override
-    protected Object encode(ChannelHandlerContext ctx, Channel arg1, Object msg) throws Exception {
-        if (msg instanceof SMTPPipeliningRequest) {
-            SMTPPipeliningRequest req = (SMTPPipeliningRequest) msg;
-            String request = StringUtils.toString((SMTPPipeliningRequest) req);
-            
-            if (logger.isDebugEnabled()) {
-                logger.debug("Channel " + ctx.getChannel().getId() + " sent: [" + request + "]");
-            }
-            
-          
-            return ChannelBuffers.wrappedBuffer(request.getBytes(CHARSET), CRLF);
+    public void encode(ChannelHandlerContext ctx, SMTPPipeliningRequest msg, ByteBuf out) throws Exception {
+        SMTPPipeliningRequest req = (SMTPPipeliningRequest) msg;
+        String request = StringUtils.toString((SMTPPipeliningRequest) req);
+        
+        if (logger.isDebugEnabled()) {
+            logger.debug("Channel " + ctx.channel().id() + " sent: [" + request + "]");
         }
-        return msg;
+        out.writeBytes(request.getBytes(CHARSET));
+        out.writeBytes(CRLF);
     }
 
 }

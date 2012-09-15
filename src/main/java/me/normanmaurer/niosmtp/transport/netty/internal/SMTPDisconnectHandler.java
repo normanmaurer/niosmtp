@@ -16,15 +16,14 @@
 */
 package me.normanmaurer.niosmtp.transport.netty.internal;
 
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelStateHandlerAdapter;
 import me.normanmaurer.niosmtp.SMTPDisconnectedException;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.delivery.SMTPDeliverySessionConstants;
 import me.normanmaurer.niosmtp.transport.FutureResult;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
 /**
  * {@link SimpleChannelUpstreamHandler} implementation which will throw an {@link me.normanmaurer.niosmtp.SMTPDisconnectedException}
@@ -33,7 +32,7 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
  * @author Raman Gupta
  *
  */
-public class SMTPDisconnectHandler extends SimpleChannelUpstreamHandler implements SMTPDeliverySessionConstants {
+public class SMTPDisconnectHandler extends ChannelStateHandlerAdapter implements SMTPDeliverySessionConstants {
 
     private final SMTPClientFutureImpl<FutureResult<SMTPResponse>> future;
 
@@ -47,11 +46,12 @@ public class SMTPDisconnectHandler extends SimpleChannelUpstreamHandler implemen
     }
 
     @Override
-    public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         if(activeTransaction()) {
             throw new SMTPDisconnectedException("Connection closed during transaction.");
         }
-        super.channelClosed(ctx, e);
+        super.channelInactive(ctx);
     }
+
 
 }

@@ -17,6 +17,19 @@
 package me.normanmaurer.niosmtp.transport.netty;
 
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundMessageHandlerAdapter;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.ChannelStateHandlerAdapter;
+import io.netty.handler.ssl.SslHandler;
+import io.netty.handler.stream.ChunkedStream;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
@@ -46,19 +59,6 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 import me.normanmaurer.niosmtp.transport.impl.FutureResultImpl;
 
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
-import org.jboss.netty.handler.ssl.SslHandler;
-import org.jboss.netty.handler.stream.ChunkedStream;
 import org.slf4j.Logger;
 
 
@@ -85,9 +85,9 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
     private static final SMTPException STARTTLS_EXCEPTION = new SMTPException("SMTPClientSession already ecrypted!");
     
     public NettySMTPClientSession(Channel channel, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode,  SSLEngine engine) {
-        super(logger, config, mode, (InetSocketAddress) channel.getLocalAddress(), (InetSocketAddress) channel.getRemoteAddress());      
+        super(logger, config, mode, (InetSocketAddress) channel.localAddress(), (InetSocketAddress) channel.remoteAddress());      
         this.channel = channel;
-        channel.getPipeline().addBefore(IDLE_HANDLER_KEY, "callback", new CloseHandler(closeFuture, logger));
+        channel.pipeline().addBefore(IDLE_HANDLER_KEY, "callback", new CloseHandler(closeFuture, logger));
 
         this.engine = engine;
 
@@ -95,16 +95,12 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
     
 
     protected void addFutureHandler(final SMTPClientFutureImpl<FutureResult<SMTPResponse>> future) {
-        SimpleChannelUpstreamHandler handler = new FutureHandler<SMTPResponse>(future) {
+        FutureHandler<SMTPResponse, SMTPResponse> handler = new FutureHandler<SMTPResponse, SMTPResponse>(future) {
 
             @Override
-            public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
-                if (e.getMessage() instanceof SMTPResponse) {
-                    ctx.getPipeline().remove(this);
-                    future.setResult(new FutureResultImpl<SMTPResponse>((SMTPResponse)e.getMessage()));
-                } else {
-                    super.messageReceived(ctx, e);
-                }
+            public void messageReceived(ChannelHandlerContext ctx, SMTPResponse message) throws Exception {
+                ctx.pipeline().remove(this);
+                future.setResult(new FutureResultImpl<SMTPResponse>(message));
             }
 
             
@@ -114,29 +110,24 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
     }
     
     protected void addCollectionFutureHandler(final SMTPClientFutureImpl<FutureResult<Collection<SMTPResponse>>> future, final int responsesCount) {
-        FutureHandler<Collection<SMTPResponse>> handler = new FutureHandler<Collection<SMTPResponse>>(future) {
+        FutureHandler<Collection<SMTPResponse>, SMTPResponse> handler = new FutureHandler<Collection<SMTPResponse>, SMTPResponse>(future) {
             final Collection<SMTPResponse> responses = new ArrayList<SMTPResponse>();
             @Override
-            public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
-                if (e.getMessage() instanceof SMTPResponse) {
-                    responses.add((SMTPResponse) e.getMessage());
-                    if (responses.size() == responsesCount) {
-                        ctx.getPipeline().remove(this);
-                        future.setResult(new FutureResultImpl<Collection<SMTPResponse>>(responses));
-                    }
-                } else {
-                    super.messageReceived(ctx, e);
+            public void messageReceived(ChannelHandlerContext ctx, SMTPResponse message) throws Exception {
+                responses.add(message);
+                if (responses.size() == responsesCount) {
+                    ctx.pipeline().remove(this);
+                    future.setResult(new FutureResultImpl<Collection<SMTPResponse>>(responses));
                 }
             }
 
-            
         };
         addHandler(handler);
 
     }
 
-    private void addHandler(SimpleChannelUpstreamHandler handler) {
-        ChannelPipeline cp = channel.getPipeline();
+    private void addHandler(ChannelHandler handler) {
+        ChannelPipeline cp = channel.pipeline();
         int count = futureCount.incrementAndGet();
         String oldHandler = "futureHandler" + (count -1);
         if (count == 1 || cp.get(oldHandler) == null) {
@@ -148,7 +139,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
     
     @Override
     public String getId() {
-        return Integer.toString(channel.getId());
+        return Integer.toString(channel.id());
     }
 
     @SuppressWarnings("unchecked")
@@ -158,7 +149,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
             final SMTPClientFutureImpl<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>> future = new SMTPClientFutureImpl<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>>(false);
 
             SslHandler sslHandler =  new SslHandler(engine, false);
-            channel.getPipeline().addFirst(SSL_HANDLER_KEY, sslHandler);
+            channel.pipeline().addFirst(SSL_HANDLER_KEY, sslHandler);
             sslHandler.handshake().addListener(new ChannelFutureListener() {
                 
                 @Override
@@ -166,7 +157,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
                     if (cfuture.isSuccess()) {
                         future.setResult(FutureResult.createVoid());
                     } else {
-                        future.setResult(FutureResult.create(cfuture.getCause()));
+                        future.setResult(FutureResult.create(cfuture.cause()));
                     }
                 }
             });
@@ -232,21 +223,21 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
     }
     @Override
     public SMTPClientFuture<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>> close() {
-        channel.write(ChannelBuffers.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+        channel.write(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
         return closeFuture;
     }
 
 
     @Override
     public boolean isEncrypted() {
-        return channel.getPipeline().get(SslHandler.class) != null;
+        return channel.pipeline().get(SslHandler.class) != null;
     }
 
 
 
     @Override
     public boolean isClosed() {
-        return !channel.isConnected();
+        return !channel.isActive();
     }
 
     
@@ -256,10 +247,10 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
      * @param data
      * @return buffer
      */
-    private static ChannelBuffer createDataTerminatingChannelBuffer(byte[] data) {
+    private static ByteBuf createDataTerminatingChannelBuffer(byte[] data) {
         int length = data.length;
         if (length < 1) {
-            return ChannelBuffers.wrappedBuffer(CRLF_DOT_CRLF);
+            return Unpooled.wrappedBuffer(CRLF_DOT_CRLF);
         } else {
             byte[] terminating;
 
@@ -287,13 +278,13 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
 
                 }
             }
-            return ChannelBuffers.wrappedBuffer(data, terminating);
+            return Unpooled.wrappedBuffer(data, terminating);
         }
         
       
     }
     
-    private static final class CloseHandler extends SimpleChannelUpstreamHandler {
+    private static final class CloseHandler extends ChannelStateHandlerAdapter {
         private final SMTPClientFutureImpl<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>> closeFuture;
         private final Logger log;
 
@@ -306,19 +297,20 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
         
         
         @Override
-        public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
-            if (log.isDebugEnabled()) {
-                log.debug("Exception during processing", e.getCause());
-            }
+        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+            closeFuture.setResult(FutureResult.createVoid());
+            super.channelInactive(ctx);
         }
 
 
 
         @Override
-        public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-            closeFuture.setResult(FutureResult.createVoid());
-            super.channelClosed(ctx, e);
+        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+            if (log.isDebugEnabled()) {
+                log.debug("Exception during processing", cause);
+            }
         }
+
     }
     
     
@@ -351,23 +343,20 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
     }
     
     
-    protected abstract class FutureHandler<E> extends SimpleChannelUpstreamHandler {
+    protected abstract class FutureHandler<E,R> extends ChannelInboundMessageHandlerAdapter<R> {
 
-        protected SMTPClientFutureImpl<FutureResult<E>> future;
-
+        protected final SMTPClientFutureImpl<FutureResult<E>> future;
 
         public FutureHandler(SMTPClientFutureImpl<FutureResult<E>> future) {
             this.future = future;
         }
-       
 
         @SuppressWarnings("unchecked")
         @Override
-        public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
-            ctx.getPipeline().remove(this);
-            future.setResult(FutureResult.create(e.getCause()));
-            
+        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+            ctx.pipeline().remove(this);
+            future.setResult(FutureResult.create(cause));
         }
-        
+
     }
 }

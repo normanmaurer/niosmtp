@@ -16,7 +16,14 @@
 */
 package me.normanmaurer.niosmtp.transport.netty;
 
-import java.util.concurrent.Executors;
+import io.netty.channel.Channel;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.socket.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.channel.socket.oio.OioEventLoopGroup;
+import io.netty.channel.socket.oio.OioSocketChannel;
+import io.netty.logging.InternalLoggerFactory;
+import io.netty.logging.Slf4JLoggerFactory;
 
 import javax.net.ssl.SSLEngine;
 
@@ -25,12 +32,6 @@ import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransportFactory;
 import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.socket.ClientSocketChannelFactory;
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
-import org.jboss.netty.channel.socket.oio.OioClientSocketChannelFactory;
-import org.jboss.netty.logging.InternalLoggerFactory;
-import org.jboss.netty.logging.Slf4JLoggerFactory;
 import org.slf4j.Logger;
 
 /**
@@ -51,26 +52,17 @@ public class NettyLMTPClientTransportFactory extends NettySMTPClientTransportFac
         }
     };
     
-    public NettyLMTPClientTransportFactory(ClientSocketChannelFactory factory, SMTPClientSessionFactory sessionFactory) {
-        super(factory, sessionFactory);
+    public NettyLMTPClientTransportFactory(Class<? extends Channel> channel, EventLoopGroup group,  SMTPClientSessionFactory sessionFactory) {
+        super(channel, group, sessionFactory);
     }
-    /**
-     * Create a new NIO based {@link SMTPClientTransportFactory}
-     * 
-     * @param workerCount
-     * @return factory
-     */
-    public static SMTPClientTransportFactory createNio(int workerCount) {
-        return new NettySMTPClientTransportFactory(new NioClientSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool(), workerCount), FACTORY);
-    }
-    
+
     /**
      * Create a new NIO based {@link SMTPClientTransportFactory}
      * 
      * @return factory
      */
     public static SMTPClientTransportFactory createNio() {
-        return new NettySMTPClientTransportFactory(new NioClientSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool()), FACTORY);
+        return new NettySMTPClientTransportFactory(NioSocketChannel.class, new NioEventLoopGroup(), FACTORY);
     }
     
     /**
@@ -79,7 +71,7 @@ public class NettyLMTPClientTransportFactory extends NettySMTPClientTransportFac
      * @return factory
      */
     public static SMTPClientTransportFactory createOio() {
-        return new NettySMTPClientTransportFactory(new OioClientSocketChannelFactory(Executors.newCachedThreadPool()), FACTORY);
+        return new NettySMTPClientTransportFactory(OioSocketChannel.class, new OioEventLoopGroup(), FACTORY);
     }
     
 }
