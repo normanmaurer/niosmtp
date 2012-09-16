@@ -125,7 +125,6 @@ public abstract class AbstractSMTPClientTest {
         @Override
         protected void onDeliveryResult(Iterator<FutureResult<Iterator<DeliveryRecipientStatus>>> result) {
             FutureResult<Iterator<DeliveryRecipientStatus>> dr = result.next();
-            dr.getException().printStackTrace();
             assertTrue(dr.isSuccess());
             assertNull(dr.getException());
             Iterator<DeliveryRecipientStatus> it = dr.getResult();

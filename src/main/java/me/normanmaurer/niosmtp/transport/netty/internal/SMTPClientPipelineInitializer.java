@@ -16,21 +16,14 @@
 */
 package me.normanmaurer.niosmtp.transport.netty.internal;
 
-import java.nio.charset.Charset;
-
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundByteHandlerAdapter;
+import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.ByteToByteDecoder;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.Delimiters;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.handler.timeout.IdleStateHandler;
-import io.netty.util.CharsetUtil;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.transport.FutureResult;
@@ -39,6 +32,7 @@ import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 import me.normanmaurer.niosmtp.transport.netty.NettyConstants;
 import me.normanmaurer.niosmtp.transport.netty.SMTPClientSessionFactory;
 
+import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

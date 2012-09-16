@@ -39,14 +39,19 @@ public class SMTPRequestEncoder extends MessageToByteEncoder<SMTPRequest> implem
 
     @Override
     public void encode(ChannelHandlerContext ctx, SMTPRequest req, ByteBuf buf) throws Exception {
-            String request = StringUtils.toString((SMTPRequest) req);
-            
-            if (logger.isInfoEnabled()) {
-                logger.info("Channel " + ctx.channel().id() + " sent: [" + request + "]");
-            }
-            
-            buf.writeBytes(request.getBytes(CHARSET));
-            buf.writeBytes(CRLF);
+        String request = StringUtils.toString((SMTPRequest) req);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Channel " + ctx.channel().id() + " sent: [" + request + "]");
+        }
+
+        buf.writeBytes(request.getBytes(CHARSET));
+        buf.writeBytes(CRLF);
+    }
+
+    @Override
+    public boolean isEncodable(Object msg) throws Exception {
+        return msg instanceof SMTPRequest;
     }
 
 }

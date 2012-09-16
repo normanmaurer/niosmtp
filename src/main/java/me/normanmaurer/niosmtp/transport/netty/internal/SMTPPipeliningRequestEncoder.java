@@ -39,9 +39,8 @@ public class SMTPPipeliningRequestEncoder extends MessageToByteEncoder<SMTPPipel
 
 
     @Override
-    public void encode(ChannelHandlerContext ctx, SMTPPipeliningRequest msg, ByteBuf out) throws Exception {
-        SMTPPipeliningRequest req = (SMTPPipeliningRequest) msg;
-        String request = StringUtils.toString((SMTPPipeliningRequest) req);
+    public void encode(ChannelHandlerContext ctx, SMTPPipeliningRequest req, ByteBuf out) throws Exception {
+        String request = StringUtils.toString(req);
         
         if (logger.isDebugEnabled()) {
             logger.debug("Channel " + ctx.channel().id() + " sent: [" + request + "]");
@@ -50,4 +49,11 @@ public class SMTPPipeliningRequestEncoder extends MessageToByteEncoder<SMTPPipel
         out.writeBytes(CRLF);
     }
 
+
+    @Override
+    public boolean isEncodable(Object msg) throws Exception {
+        return msg instanceof SMTPPipeliningRequest;
+    }
+
+    
 }
