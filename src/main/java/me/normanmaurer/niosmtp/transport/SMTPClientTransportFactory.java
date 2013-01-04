@@ -28,8 +28,6 @@ import me.normanmaurer.niosmtp.SMTPUnsupportedExtensionException;
  */
 public interface SMTPClientTransportFactory {
 
-    
-   
     /**
      * Create a {@link SMTPClientTransport} instance which use plain SMTP 
      * 

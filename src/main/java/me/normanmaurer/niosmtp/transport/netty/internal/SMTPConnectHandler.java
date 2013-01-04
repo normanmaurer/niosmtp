@@ -69,7 +69,7 @@ public class SMTPConnectHandler extends ChannelInboundMessageHandlerAdapter<SMTP
             attachment =  factory.newSession(ctx.channel(), logger, config, mode, engine);
             ctx.attr(SESSION_ATTR).set(attachment);
         }
-        return (SMTPClientSession) attachment;
+        return attachment;
     }
 
 

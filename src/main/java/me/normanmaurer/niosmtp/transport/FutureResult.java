@@ -36,7 +36,7 @@ public abstract class FutureResult<E> {
      * @author Maurer
      *
      */
-    public final static class Void {      
+    public final static class Void {
     }
     
     private final static FutureResult<Void> VOID_RESULT= new FutureResult<Void>(null) {
@@ -77,7 +77,7 @@ public abstract class FutureResult<E> {
     }    
     
     /**
-     * Return the result. This MAY return null if {@link #getException()} returns not <code>null</code>
+     * Return the result. This MAY return null if {@link #getException()} returns not {@code null}.
      * 
      * @return status
      */
@@ -85,9 +85,7 @@ public abstract class FutureResult<E> {
     
     /**
      * Create a new {@link FutureResult} by taking care to wrap or cast the given {@link Throwable} to the right {@link SMTPException}
-     * 
-     * @param t
-     * @return result
+     *
      */
     @SuppressWarnings("rawtypes")
     public static FutureResult create(Throwable t) {

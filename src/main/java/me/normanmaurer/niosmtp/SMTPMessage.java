@@ -40,8 +40,7 @@ public interface SMTPMessage {
      * @throws IOException
      */
     InputStream get7bit() throws IOException;
-    
-    
+
     /**
      * This method is getting called if the SMTP-Server supports the 8BITMIME extension. 
      * <br/>

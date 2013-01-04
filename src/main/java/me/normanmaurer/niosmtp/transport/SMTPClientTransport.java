@@ -29,9 +29,6 @@ import me.normanmaurer.niosmtp.SMTPResponse;
  *
  */
 public interface SMTPClientTransport {
-
-    
-
     
     /**
      * Return the {@link SMTPDeliveryMode} which the {@link SMTPClientTransport} use
@@ -49,8 +46,6 @@ public interface SMTPClientTransport {
      * @return future
      */
     SMTPClientFuture<FutureResult<SMTPResponse>> connect(InetSocketAddress remote, SMTPClientConfig config);
-    
-    
 
     /**
      * Destroy this {@link SMTPClientTransport} and release all resources

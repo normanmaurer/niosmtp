@@ -166,8 +166,6 @@ public interface SMTPClientSession {
      */
     InetSocketAddress getRemoteAddress();
     
-    
-    
     /**
      * Return the local {@link InetSocketAddress} which the {@link SMTPClientSession} is bound to. If the {@link SMTPClientSession} is not yet bound this may return <code>null</code>
      * 

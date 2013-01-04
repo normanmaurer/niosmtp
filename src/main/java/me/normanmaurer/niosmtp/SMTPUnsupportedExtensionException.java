@@ -23,15 +23,11 @@ package me.normanmaurer.niosmtp;
  * @author Norman Maurer
  *
  */
-public class SMTPUnsupportedExtensionException extends SMTPException{
+public class SMTPUnsupportedExtensionException extends SMTPException {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = 6827695207281982135L;
 
     public SMTPUnsupportedExtensionException() {
-        super();
     }
 
     public SMTPUnsupportedExtensionException(String message, Throwable cause) {

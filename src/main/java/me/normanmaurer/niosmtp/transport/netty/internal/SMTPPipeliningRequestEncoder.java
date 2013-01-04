@@ -33,10 +33,13 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class SMTPPipeliningRequestEncoder extends MessageToByteEncoder<SMTPPipeliningRequest> {
-    private final Logger logger = LoggerFactory.getLogger(SMTPRequestEncoder.class);
+    private final static Logger logger = LoggerFactory.getLogger(SMTPRequestEncoder.class);
 
-    private final static byte[] CRLF = new byte[] {'\r', '\n'};
+    private final static byte[] CRLF = {'\r', '\n'};
 
+    public SMTPPipeliningRequestEncoder() {
+        super(SMTPPipeliningRequest.class);
+    }
 
     @Override
     public void encode(ChannelHandlerContext ctx, SMTPPipeliningRequest req, ByteBuf out) throws Exception {
@@ -48,12 +51,4 @@ public class SMTPPipeliningRequestEncoder extends MessageToByteEncoder<SMTPPipel
         out.writeBytes(request.getBytes(SMTPClientConstants.CHARSET));
         out.writeBytes(CRLF);
     }
-
-
-    @Override
-    public boolean isEncodable(Object msg) throws Exception {
-        return msg instanceof SMTPPipeliningRequest;
-    }
-
-    
 }

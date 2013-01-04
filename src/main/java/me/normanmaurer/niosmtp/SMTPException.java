@@ -24,15 +24,11 @@ import java.io.IOException;
  * @author Norman Maurer
  *
  */
-public class SMTPException extends IOException{
+public class SMTPException extends IOException {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = 3511332980540308682L;
 
     public SMTPException() {
-        super();
     }
 
     public SMTPException(String message, Throwable cause) {

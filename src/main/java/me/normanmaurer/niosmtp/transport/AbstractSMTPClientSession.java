@@ -53,7 +53,7 @@ public abstract class AbstractSMTPClientSession implements SMTPClientSession {
     private final InetSocketAddress remote;
     private final InetSocketAddress local;
     
-    public AbstractSMTPClientSession(Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode, InetSocketAddress local, InetSocketAddress remote) {
+    protected AbstractSMTPClientSession(Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode, InetSocketAddress local, InetSocketAddress remote) {
         this.logger = logger;
         this.mode = mode;
         this.config = config;
@@ -136,8 +136,8 @@ public abstract class AbstractSMTPClientSession implements SMTPClientSession {
         
         public AggregationListener(SMTPClientFutureImpl<FutureResult<Collection<SMTPResponse>>> future, int expectedResponses) {
             this.future = future;
-            this.count = expectedResponses;
-            this.responses = new ArrayList<SMTPResponse>(count);
+            count = expectedResponses;
+            responses = new ArrayList<SMTPResponse>(count);
         }
         @SuppressWarnings("unchecked")
         @Override

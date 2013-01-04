@@ -28,6 +28,7 @@ import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.transport.FutureResult;
 import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
+import me.normanmaurer.niosmtp.transport.netty.NettyConstants;
 import me.normanmaurer.niosmtp.transport.netty.SMTPClientSessionFactory;
 
 /**
@@ -56,7 +57,7 @@ public class SecureSMTPClientPipelineInitializer extends SMTPClientPipelineIniti
 
         if (mode == SMTPDeliveryMode.SMTPS) {
             final SslHandler sslHandler = new SslHandler(createSSLClientEngine(), false);
-            cp.addFirst(SSL_HANDLER_KEY, sslHandler);
+            cp.addFirst(NettyConstants.SSL_HANDLER_KEY, sslHandler);
         }
     }
 

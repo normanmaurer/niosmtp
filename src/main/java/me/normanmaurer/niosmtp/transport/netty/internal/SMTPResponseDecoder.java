@@ -41,9 +41,14 @@ import org.slf4j.LoggerFactory;
 public class SMTPResponseDecoder extends MessageToMessageDecoder<ByteBuf, SMTPResponse> {
     private final static Logger logger = LoggerFactory.getLogger(SMTPResponseDecoder.class);
     private final static AttributeKey<SMTPResponseImpl> key = new AttributeKey<SMTPResponseImpl>("response");
+
+    public SMTPResponseDecoder() {
+        super(ByteBuf.class);
+    }
+
     @Override
     public SMTPResponse decode(ChannelHandlerContext ctx, ByteBuf buf) throws Exception {
-        SMTPResponseImpl response = (SMTPResponseImpl) ctx.attr(key).get();
+        SMTPResponseImpl response = ctx.attr(key).get();
 
         // The separator must be on index 3 as the return code has always 3
         // digits
@@ -71,7 +76,8 @@ public class SMTPResponseDecoder extends MessageToMessageDecoder<ByteBuf, SMTPRe
                 logger.debug("Channel " + ctx.channel().id() + " received: [" + StringUtils.toString(response) + "]");
             }
             return response;
-        } else if (separator == SMTPResponse.SEPERATOR) {
+        }
+        if (separator == SMTPResponse.SEPERATOR) {
             // The '-' separator is used for multi-line responses so just
             // add it to the response
             if (response == null) {

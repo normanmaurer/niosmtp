@@ -36,16 +36,14 @@ public interface SMTPClientFuture<E> extends Future<E>{
      * @return result
      */
     E getNoWait();
-    
-    
+
     /**
      * Return the {@link SMTPClientSession} which belongs to the {@link SMTPClientFuture}. This may return null in some cases
      * 
      * @return session
      */
     SMTPClientSession getSession();
-    
-    
+
     /**
      * Add the {@link SMTPClientFutureListener} which will notified once the {@link SMTPClientFuture} is complete.
      * 

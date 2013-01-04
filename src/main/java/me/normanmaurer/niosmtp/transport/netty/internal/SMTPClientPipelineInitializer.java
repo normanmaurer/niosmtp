@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 @Sharable
-public class SMTPClientPipelineInitializer extends ChannelInitializer<SocketChannel> implements NettyConstants{
+public class SMTPClientPipelineInitializer extends ChannelInitializer<SocketChannel> {
     protected final static Logger LOGGER = LoggerFactory.getLogger(SMTPClientPipelineInitializer.class);
     private final static SMTPRequestEncoder SMTP_REQUEST_ENCODER = new SMTPRequestEncoder();
     private final static SMTPPipeliningRequestEncoder SMTP_PIPELINING_REQUEST_ENCODER = new SMTPPipeliningRequestEncoder();
@@ -66,19 +66,19 @@ public class SMTPClientPipelineInitializer extends ChannelInitializer<SocketChan
     @Override
     public void initChannel(SocketChannel channel) throws Exception {
         ChannelPipeline pipeline = channel.pipeline();
-        pipeline.addLast(SMTP_IDLE_HANDLER_KEY, SMTP_CLIENT_IDLE_HANDLER);
-        pipeline.addLast(FRAMER_KEY, new DelimiterBasedFrameDecoder(8192, true, Delimiters.lineDelimiter()));
+        pipeline.addLast(NettyConstants.SMTP_IDLE_HANDLER_KEY, SMTP_CLIENT_IDLE_HANDLER);
+        pipeline.addLast(NettyConstants.FRAMER_KEY, new DelimiterBasedFrameDecoder(8192, true, Delimiters.lineDelimiter()));
 
-        pipeline.addLast(SMTP_RESPONSE_DECODER_KEY, new SMTPResponseDecoder());
-        pipeline.addLast(SMTP_REQUEST_ENCODER_KEY, SMTP_REQUEST_ENCODER);
-        pipeline.addLast(SMTP_PIPELINING_REQUEST_ENCODER_KEY, SMTP_PIPELINING_REQUEST_ENCODER);
+        pipeline.addLast(NettyConstants.SMTP_RESPONSE_DECODER_KEY, new SMTPResponseDecoder());
+        pipeline.addLast(NettyConstants.SMTP_REQUEST_ENCODER_KEY, SMTP_REQUEST_ENCODER);
+        pipeline.addLast(NettyConstants.SMTP_PIPELINING_REQUEST_ENCODER_KEY, SMTP_PIPELINING_REQUEST_ENCODER);
 
-        pipeline.addLast(CHUNK_WRITE_HANDLER_KEY, new ChunkedWriteHandler());
-        pipeline.addLast(DISCONNECT_HANDLER_KEY, new SMTPDisconnectHandler(future));
+        pipeline.addLast(NettyConstants.CHUNK_WRITE_HANDLER_KEY, new ChunkedWriteHandler());
+        pipeline.addLast(NettyConstants.DISCONNECT_HANDLER_KEY, new SMTPDisconnectHandler(future));
 
         // Add the idle timeout handler
-        pipeline.addLast(IDLE_HANDLER_KEY, new IdleStateHandler(0, 0, config.getResponseTimeout()));
-        pipeline.addLast(CONNECT_HANDLER_KEY, createConnectHandler());
+        pipeline.addLast(NettyConstants.IDLE_HANDLER_KEY, new IdleStateHandler(0, 0, config.getResponseTimeout()));
+        pipeline.addLast(NettyConstants.CONNECT_HANDLER_KEY, createConnectHandler());
     }
 
 }

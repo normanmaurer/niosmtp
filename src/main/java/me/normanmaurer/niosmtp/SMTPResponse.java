@@ -29,19 +29,18 @@ public interface SMTPResponse {
     /**
      * Separator which is used to separate the last line 
      */
-    public final static char LAST_SEPERATOR = ' ';
+     char LAST_SEPERATOR = ' ';
     
     /**
      * Separator which is used to separate the code from the rest of the line for multi-response {@link SMTPResponse}'s
      * 
      */
-    public final static char SEPERATOR = '-';
+    char SEPERATOR = '-';
     
     /**
      * Separator for multi-line {@link SMTPResponse}'s
      */
-    public final static String LINES_SEPERATOR = "\r\n";
-    
+    String LINES_SEPERATOR = "\r\n";
 
     /**
      * Return the return code

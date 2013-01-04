@@ -68,26 +68,26 @@ import org.slf4j.Logger;
  * @author Norman Maurer
  *
  */
-class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPClientSession, SMTPClientConstants, NettyConstants{
+class NettySMTPClientSession extends AbstractSMTPClientSession {
 
 
     private final static byte CR = '\r';
     private final static byte LF = '\n';
     private final static byte DOT = '.';
-    private final static byte[] DOT_CRLF = new byte[] {DOT, CR, LF};
-    private final static byte[] CRLF_DOT_CRLF = new byte[] {CR, LF, DOT, CR, LF};
-    private final static byte[] LF_DOT_CRLF = new byte[] {LF, DOT, CR, LF};
+    private final static byte[] DOT_CRLF = {DOT, CR, LF};
+    private final static byte[] CRLF_DOT_CRLF = {CR, LF, DOT, CR, LF};
+    private final static byte[] LF_DOT_CRLF = {LF, DOT, CR, LF};
     
     private final Channel channel;
     private final SSLEngine engine;
-    private final SMTPClientFutureImpl<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>> closeFuture = new SMTPClientFutureImpl<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>>();
+    private final SMTPClientFutureImpl<FutureResult<FutureResult.Void>> closeFuture = new SMTPClientFutureImpl<FutureResult<FutureResult.Void>>();
     private final AtomicInteger futureCount = new AtomicInteger(0);
     private static final SMTPException STARTTLS_EXCEPTION = new SMTPException("SMTPClientSession already ecrypted!");
     
     public NettySMTPClientSession(Channel channel, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode,  SSLEngine engine) {
         super(logger, config, mode, (InetSocketAddress) channel.localAddress(), (InetSocketAddress) channel.remoteAddress());      
         this.channel = channel;
-        channel.pipeline().addBefore(IDLE_HANDLER_KEY, "callback", new CloseHandler(closeFuture, logger));
+        channel.pipeline().addBefore(NettyConstants.IDLE_HANDLER_KEY, "callback", new CloseHandler(closeFuture, logger));
 
         this.engine = engine;
 
@@ -144,12 +144,12 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
 
     @SuppressWarnings("unchecked")
     @Override
-    public SMTPClientFuture<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>> startTLS() {
+    public SMTPClientFuture<FutureResult<FutureResult.Void>> startTLS() {
         if (!isEncrypted()) {
-            final SMTPClientFutureImpl<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>> future = new SMTPClientFutureImpl<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>>(false);
+            final SMTPClientFutureImpl<FutureResult<FutureResult.Void>> future = new SMTPClientFutureImpl<FutureResult<FutureResult.Void>>(false);
 
             SslHandler sslHandler =  new SslHandler(engine, false);
-            channel.pipeline().addFirst(SSL_HANDLER_KEY, sslHandler);
+            channel.pipeline().addFirst(NettyConstants.SSL_HANDLER_KEY, sslHandler);
             sslHandler.handshake().addListener(new ChannelFutureListener() {
                 
                 @Override
@@ -164,7 +164,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
             
             return future;
         } else {
-            return new ReadySMTPClientFuture<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>>(this, FutureResult.create(STARTTLS_EXCEPTION));
+            return new ReadySMTPClientFuture<FutureResult<FutureResult.Void>>(this, FutureResult.create(STARTTLS_EXCEPTION));
         }
     }
     
@@ -198,7 +198,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
         if (msg instanceof SMTPByteArrayMessage) {
             byte[] data;
             
-            if (extensions.contains(_8BITMIME_EXTENSION)) {
+            if (extensions.contains(SMTPClientConstants._8BITMIME_EXTENSION)) {
                 data = ((SMTPByteArrayMessage)msg).get8BitAsByteArray();
             } else {
                 data = ((SMTPByteArrayMessage)msg).get7BitAsByteArray();
@@ -208,7 +208,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
             InputStream msgIn;
             try {
 
-                if (extensions.contains(_8BITMIME_EXTENSION)) {
+                if (extensions.contains(SMTPClientConstants._8BITMIME_EXTENSION)) {
                     msgIn = msg.get8Bit();
                 } else {
                     msgIn = msg.get7bit();
@@ -223,7 +223,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
         }
     }
     @Override
-    public SMTPClientFuture<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>> close() {
+    public SMTPClientFuture<FutureResult<FutureResult.Void>> close() {
         channel.write(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
         return closeFuture;
     }
@@ -244,9 +244,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
     
     /**
      * Create a {@link ByteBuf} which is terminated with a CRLF.CRLF sequence
-     * 
-     * @param data
-     * @return buffer
+     *
      */
     private static ByteBuf createDataTerminatingChannelBuffer(byte[] data) {
         int length = data.length;
@@ -286,11 +284,11 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
     }
     
     private static final class CloseHandler extends ChannelStateHandlerAdapter {
-        private final SMTPClientFutureImpl<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>> closeFuture;
+        private final SMTPClientFutureImpl<FutureResult<FutureResult.Void>> closeFuture;
         private final Logger log;
 
 
-        public CloseHandler(SMTPClientFutureImpl<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>> closeFuture, Logger log) {
+        public CloseHandler(SMTPClientFutureImpl<FutureResult<FutureResult.Void>> closeFuture, Logger log) {
             this.closeFuture = closeFuture;
             this.log = log;
         }
@@ -339,7 +337,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
     }
 
     @Override
-    public SMTPClientFuture<FutureResult<me.normanmaurer.niosmtp.transport.FutureResult.Void>> getCloseFuture() {
+    public SMTPClientFuture<FutureResult<FutureResult.Void>> getCloseFuture() {
         return closeFuture;
     }
     
@@ -348,7 +346,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
 
         protected final SMTPClientFutureImpl<FutureResult<E>> future;
 
-        public FutureHandler(SMTPClientFutureImpl<FutureResult<E>> future) {
+        protected FutureHandler(SMTPClientFutureImpl<FutureResult<E>> future) {
             this.future = future;
         }
 

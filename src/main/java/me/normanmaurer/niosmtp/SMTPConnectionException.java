@@ -22,15 +22,11 @@ package me.normanmaurer.niosmtp;
  * @author Norman Maurer
  *
  */
-public class SMTPConnectionException extends SMTPException{
+public class SMTPConnectionException extends SMTPException {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = 7347834262218872193L;
 
     public SMTPConnectionException() {
-        super();
     }
 
     public SMTPConnectionException(String message, Throwable cause) {

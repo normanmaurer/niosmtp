@@ -36,11 +36,6 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
     private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
     private InetSocketAddress localAddress = null;
     private int responseTimeout = DEFAULT_RESPONSE_TIMEOUT;
-    
-    public SMTPClientConfigImpl() {
-    }
-    
-
 
     /**
      * Set the connection timeout in seconds to use. Default is {@link #DEFAULT_CONNECTION_TIMEOUT}
@@ -55,6 +50,7 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
      * (non-Javadoc)
      * @see me.normanmaurer.niosmtp.SMTPClientConfig#getConnectionTimeout()
      */
+    @Override
     public int getConnectionTimeout() {
         return connectionTimeout;
     }
@@ -64,6 +60,7 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
      * (non-Javadoc)
      * @see me.normanmaurer.niosmtp.SMTPClientConfig#getLocalAddress()
      */
+    @Override
     public InetSocketAddress getLocalAddress() {
         return localAddress;
     }
@@ -78,12 +75,11 @@ public class SMTPClientConfigImpl implements SMTPClientConfig {
         this.localAddress = localAddress;
     }
 
-
-
     /*
      * (non-Javadoc)
      * @see me.normanmaurer.niosmtp.SMTPClientConfig#getResponseTimeout()
      */
+    @Override
     public int getResponseTimeout() {
         return responseTimeout;
     }

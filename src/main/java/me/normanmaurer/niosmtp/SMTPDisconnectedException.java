@@ -17,21 +17,17 @@
 package me.normanmaurer.niosmtp;
 
 /**
- * {@link me.normanmaurer.niosmtp.SMTPException} which will get thrown if the connection closes unexpectedly.
+ * {@link SMTPException} which will get thrown if the connection closes unexpectedly.
  * This most times means that the SMTP Server crashed or that the network connection was interrupted.
  *
  * @author Raman Gupta
  *
  */
-public class SMTPDisconnectedException extends SMTPException{
+public class SMTPDisconnectedException extends SMTPException {
 
-    /**
-     *
-     */
     private static final long serialVersionUID = 2383943619694157245L;
 
     public SMTPDisconnectedException() {
-        super();
     }
 
     public SMTPDisconnectedException(String message, Throwable cause) {

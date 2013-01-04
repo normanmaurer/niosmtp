@@ -25,13 +25,9 @@ package me.normanmaurer.niosmtp;
  */
 public class SMTPIdleException extends SMTPException{
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = 2383943619694157245L;
 
     public SMTPIdleException() {
-        super();
     }
 
     public SMTPIdleException(String message, Throwable cause) {

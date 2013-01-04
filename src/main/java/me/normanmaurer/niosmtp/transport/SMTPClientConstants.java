@@ -30,24 +30,21 @@ public interface SMTPClientConstants {
     /**
      * The {@link Charset} used for the SMTP protocol. This is <code>US-ASCII</code> (per rfc)
      */
-    public final static Charset CHARSET = Charset.forName("US-ASCII");
+    Charset CHARSET = Charset.forName("US-ASCII");
     
     
     /**
      * Identifier used to detect if the SMTP Server supports <code>PIPELINING</code>
      */
-    public final static String PIPELINING_EXTENSION = "PIPELINING";
+    String PIPELINING_EXTENSION = "PIPELINING";
     
     /**
      * Identifier used to detect if the SMTP Server supports <code>STARTTLS</code>
      */
-    public final static String STARTTLS_EXTENSION = "STARTTLS";
+    String STARTTLS_EXTENSION = "STARTTLS";
     
     /**
      * Identifier used to detect if the SMTP Server supports <code>8BITMIME</code>
      */
-    public final static String _8BITMIME_EXTENSION = "8BITMIME";
-    
-    
-
+   String _8BITMIME_EXTENSION = "8BITMIME";
 }
