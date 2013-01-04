@@ -26,13 +26,13 @@ import me.normanmaurer.niosmtp.transport.FutureResult;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
- * {@link SimpleChannelUpstreamHandler} implementation which will throw an {@link me.normanmaurer.niosmtp.SMTPDisconnectedException}
+ * {@link ChannelStateHandlerAdapter} implementation which will throw an {@link SMTPDisconnectedException}
  * if a connection was disconnected unexpectedly.
  *
  * @author Raman Gupta
  *
  */
-public class SMTPDisconnectHandler extends ChannelStateHandlerAdapter implements SMTPDeliverySessionConstants {
+public class SMTPDisconnectHandler extends ChannelStateHandlerAdapter {
 
     private final SMTPClientFutureImpl<FutureResult<SMTPResponse>> future;
 
@@ -42,7 +42,7 @@ public class SMTPDisconnectHandler extends ChannelStateHandlerAdapter implements
 
     private boolean activeTransaction() {
         final SMTPClientSession session = future.getSession();
-        return session != null && (Boolean) session.getAttribute(SMTP_TRANSACTION_ACTIVE_KEY);
+        return session != null && (Boolean) session.getAttribute(SMTPDeliverySessionConstants.SMTP_TRANSACTION_ACTIVE_KEY);
     }
 
     @Override

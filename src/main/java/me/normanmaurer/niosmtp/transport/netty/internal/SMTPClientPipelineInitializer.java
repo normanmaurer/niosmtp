@@ -32,12 +32,11 @@ import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 import me.normanmaurer.niosmtp.transport.netty.NettyConstants;
 import me.normanmaurer.niosmtp.transport.netty.SMTPClientSessionFactory;
 
-import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * {@link ChannelPipelineFactory} which is used for the SMTP Client
+ * {@link ChannelInitializer} which is used for the SMTP Client
  * 
  * @author Norman Maurer
  * 

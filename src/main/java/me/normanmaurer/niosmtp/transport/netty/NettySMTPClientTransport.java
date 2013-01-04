@@ -40,7 +40,7 @@ import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
 import me.normanmaurer.niosmtp.transport.SMTPClientTransport;
 import me.normanmaurer.niosmtp.transport.netty.internal.SMTPClientPipelineInitializer;
-import me.normanmaurer.niosmtp.transport.netty.internal.SecureSMTPClientPipelineFactory;
+import me.normanmaurer.niosmtp.transport.netty.internal.SecureSMTPClientPipelineInitializer;
 
 
 /**
@@ -69,10 +69,6 @@ class NettySMTPClientTransport implements SMTPClientTransport{
         this.group = group;
     }
 
-    
-    
-    
-    
     @Override
     public SMTPClientFuture<FutureResult<SMTPResponse>> connect(InetSocketAddress remote, SMTPClientConfig config) {
         SMTPClientFutureImpl<FutureResult<SMTPResponse>> future = new SMTPClientFutureImpl<FutureResult<SMTPResponse>>();
@@ -89,7 +85,7 @@ class NettySMTPClientTransport implements SMTPClientTransport{
         case STARTTLS_TRY:
             // just move on to STARTTLS_DEPEND
         case STARTTLS_DEPEND:
-            cp = new SecureSMTPClientPipelineFactory(future, config,context, mode, sessionFactory);
+            cp = new SecureSMTPClientPipelineInitializer(future, config,context, mode, sessionFactory);
             break;
         default:
             throw new IllegalArgumentException("Unknown DeliveryMode " + mode);
@@ -105,10 +101,9 @@ class NettySMTPClientTransport implements SMTPClientTransport{
                     channelGroup.add(future.channel());
                 }
             }
-        });
+        }).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         return future;
     }
-    
 
     @Override
     public SMTPDeliveryMode getDeliveryMode() {

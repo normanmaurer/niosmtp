@@ -28,22 +28,21 @@ import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
 import me.normanmaurer.niosmtp.transport.FutureResult;
 import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;
-import me.normanmaurer.niosmtp.transport.netty.NettyConstants;
 import me.normanmaurer.niosmtp.transport.netty.SMTPClientSessionFactory;
 
 /**
- * {@link ChannelPipelineFactory} which is used for SMTPS connections
+ * {@link SMTPClientPipelineInitializer} which is used for SMTPS connections
  * 
  * @author Norman Maurer
  * 
  *
  */
-public class SecureSMTPClientPipelineFactory extends SMTPClientPipelineInitializer implements NettyConstants{
+public class SecureSMTPClientPipelineInitializer extends SMTPClientPipelineInitializer {
 
     private final SSLContext context;
     private final SMTPDeliveryMode mode;
 
-    public SecureSMTPClientPipelineFactory(SMTPClientFutureImpl<FutureResult<SMTPResponse>> future, SMTPClientConfig config, SSLContext context, SMTPDeliveryMode mode, SMTPClientSessionFactory factory) {
+    public SecureSMTPClientPipelineInitializer(SMTPClientFutureImpl<FutureResult<SMTPResponse>> future, SMTPClientConfig config, SSLContext context, SMTPDeliveryMode mode, SMTPClientSessionFactory factory) {
         super(future, config, factory);
         this.context = context;
         this.mode = mode;

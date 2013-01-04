@@ -18,6 +18,7 @@ package me.normanmaurer.niosmtp.transport.netty.internal;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundMessageHandlerAdapter;
+import io.netty.channel.ChannelPipeline;
 import io.netty.util.AttributeKey;
 
 import javax.net.ssl.SSLEngine;
@@ -25,7 +26,6 @@ import javax.net.ssl.SSLEngine;
 import me.normanmaurer.niosmtp.SMTPClientFutureListener;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
-import me.normanmaurer.niosmtp.core.SMTPResponseImpl;
 import me.normanmaurer.niosmtp.transport.FutureResult;
 import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
@@ -36,13 +36,13 @@ import me.normanmaurer.niosmtp.transport.netty.SMTPClientSessionFactory;
 import org.slf4j.Logger;
 
 /** * 
- * The special thing about this implementation is that I will remove itself from the {@link ChannelPipeline} after the first {@link #messageReceived(ChannelHandlerContext, MessageEvent)}
+ * The special thing about this implementation is that I will remove itself from the {@link ChannelPipeline} after the first {@link #messageReceived(ChannelHandlerContext, SMTPResponse)}
  * was executed. It also takes care to create the {@link SMTPClientSession} and inject it the wrapped {@link SMTPClientFutureListener}.
  * 
  * @author Norman Maurer
  *
  */
-public class SMTPConnectHandler extends ChannelInboundMessageHandlerAdapter<SMTPResponseImpl> {
+public class SMTPConnectHandler extends ChannelInboundMessageHandlerAdapter<SMTPResponse> {
 
     private final SSLEngine engine;
     private final SMTPDeliveryMode mode;
@@ -53,6 +53,7 @@ public class SMTPConnectHandler extends ChannelInboundMessageHandlerAdapter<SMTP
     private final static AttributeKey<SMTPClientSession> SESSION_ATTR = new AttributeKey<SMTPClientSession>("session");
     
     public SMTPConnectHandler(SMTPClientFutureImpl<FutureResult<SMTPResponse>> future, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode, SSLEngine engine, SMTPClientSessionFactory factory){
+        super(SMTPResponse.class);
         this.future = future;
         this.engine = engine;
         this.mode = mode;
@@ -74,14 +75,14 @@ public class SMTPConnectHandler extends ChannelInboundMessageHandlerAdapter<SMTP
 
     @SuppressWarnings("unchecked")
     @Override
-    public void exceptionCaught(io.netty.channel.ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         ctx.channel().pipeline().remove(this);
         future.setSMTPClientSession(getSession(ctx));
         future.setResult(FutureResult.create(cause));
     }
 
     @Override
-    public void messageReceived(io.netty.channel.ChannelHandlerContext ctx, SMTPResponseImpl msg) throws Exception {
+    public void messageReceived(ChannelHandlerContext ctx, SMTPResponse msg) throws Exception {
         ctx.channel().pipeline().remove(this);
         future.setSMTPClientSession(getSession(ctx));
         future.setResult(new FutureResultImpl<SMTPResponse>(msg));        

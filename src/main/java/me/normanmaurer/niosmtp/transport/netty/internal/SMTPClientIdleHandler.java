@@ -16,6 +16,7 @@
 */
 package me.normanmaurer.niosmtp.transport.netty.internal;
 
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelStateHandlerAdapter;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.handler.timeout.IdleState;
@@ -35,7 +36,7 @@ import me.normanmaurer.niosmtp.SMTPIdleException;
 public class SMTPClientIdleHandler extends ChannelStateHandlerAdapter {
 
     @Override
-    public void userEventTriggered(io.netty.channel.ChannelHandlerContext ctx, Object evt) throws Exception {
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent e = (IdleStateEvent) evt;
             if (e.state() == IdleState.ALL_IDLE) {

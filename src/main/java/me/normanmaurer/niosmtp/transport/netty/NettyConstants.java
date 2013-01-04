@@ -16,17 +16,14 @@
 */
 package me.normanmaurer.niosmtp.transport.netty;
 
+import io.netty.channel.ChannelPipeline;
+
 import me.normanmaurer.niosmtp.transport.netty.internal.SMTPClientIdleHandler;
 import me.normanmaurer.niosmtp.transport.netty.internal.SMTPConnectHandler;
 import me.normanmaurer.niosmtp.transport.netty.internal.SMTPDisconnectHandler;
 import me.normanmaurer.niosmtp.transport.netty.internal.SMTPPipeliningRequestEncoder;
 import me.normanmaurer.niosmtp.transport.netty.internal.SMTPRequestEncoder;
 import me.normanmaurer.niosmtp.transport.netty.internal.SMTPResponseDecoder;
-
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.handler.ssl.SslHandler;
-import org.jboss.netty.handler.stream.ChunkedWriteHandler;
-import org.jboss.netty.handler.timeout.IdleStateHandler;
 
 
 /**
@@ -43,7 +40,7 @@ public interface NettyConstants {
     public static final String FRAMER_KEY = "framer";
     
     /**
-     * The key to use when adding the {@link IdleStateHandler} to the {@link ChannelPipeline}
+     * The key to use when adding the IdleStateHandler to the {@link ChannelPipeline}
      */
     public static final String IDLE_HANDLER_KEY = "idleHandler";
     
@@ -74,13 +71,13 @@ public interface NettyConstants {
 
     
     /**
-     * The key to use when adding the {@link ChunkedWriteHandler} to the {@link ChannelPipeline}
+     * The key to use when adding the ChunkedWriteHandler to the {@link ChannelPipeline}
      */
     public static final String CHUNK_WRITE_HANDLER_KEY ="chunkWriteHandler";
 
     
     /**
-     * The key to use when adding the {@link SslHandler} to the pipeline
+     * The key to use when adding the SslHandler to the pipeline
      */
     public static final String SSL_HANDLER_KEY = "sslHandler";
     

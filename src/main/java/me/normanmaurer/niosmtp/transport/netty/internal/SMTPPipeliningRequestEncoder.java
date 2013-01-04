@@ -27,12 +27,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * {@link OneToOneEncoder} which takes care to encode {@link SMTPPipeliningRequest}'s to {@link ChannelBuffer}'s
+ * {@link MessageToByteEncoder} which takes care to encode {@link SMTPPipeliningRequest}'s to {@link ByteBuf}'s
  * 
  * @author Norman Maurer
  *
  */
-public class SMTPPipeliningRequestEncoder extends MessageToByteEncoder<SMTPPipeliningRequest> implements SMTPClientConstants{
+public class SMTPPipeliningRequestEncoder extends MessageToByteEncoder<SMTPPipeliningRequest> {
     private final Logger logger = LoggerFactory.getLogger(SMTPRequestEncoder.class);
 
     private final static byte[] CRLF = new byte[] {'\r', '\n'};
@@ -45,7 +45,7 @@ public class SMTPPipeliningRequestEncoder extends MessageToByteEncoder<SMTPPipel
         if (logger.isDebugEnabled()) {
             logger.debug("Channel " + ctx.channel().id() + " sent: [" + request + "]");
         }
-        out.writeBytes(request.getBytes(CHARSET));
+        out.writeBytes(request.getBytes(SMTPClientConstants.CHARSET));
         out.writeBytes(CRLF);
     }
 

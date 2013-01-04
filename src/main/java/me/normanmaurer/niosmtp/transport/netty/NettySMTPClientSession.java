@@ -218,7 +218,8 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
                 msgIn = IOExceptionInputStream.INSTANCE;
             }
                    
-            channel.write(new ChunkedStream(new DataTerminatingInputStream(msgIn)));
+            channel.write(new ChunkedStream(new DataTerminatingInputStream(msgIn)))
+                    .addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         }
     }
     @Override
@@ -242,7 +243,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
 
     
     /**
-     * Create a {@link ChannelBuffer} which is terminated with a CRLF.CRLF sequence
+     * Create a {@link ByteBuf} which is terminated with a CRLF.CRLF sequence
      * 
      * @param data
      * @return buffer
@@ -333,7 +334,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession implements SMTPCl
 
         final int requests = request.getRequests().size();
         addCollectionFutureHandler(future, requests);
-        channel.write(request);      
+        channel.write(request).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         return future;
     }
 
