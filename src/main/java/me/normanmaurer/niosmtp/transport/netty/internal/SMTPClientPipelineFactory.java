@@ -64,7 +64,7 @@ public class SMTPClientPipelineFactory implements ChannelPipelineFactory, NettyC
     public ChannelPipeline getPipeline() throws Exception {
         ChannelPipeline pipeline = Channels.pipeline();
         pipeline.addLast(SMTP_IDLE_HANDLER_KEY, SMTP_CLIENT_IDLE_HANDLER);
-        pipeline.addLast(FRAMER_KEY, new LineBasedFrameDecoder(Integer.MAX_VALUE));
+        pipeline.addLast(FRAMER_KEY, new LineBasedFrameDecoder(8192));
         pipeline.addLast(SMTP_RESPONSE_DECODER_KEY, SMTP_RESPONSE_DECODER);
         pipeline.addLast(SMTP_REQUEST_ENCODER_KEY, SMTP_REQUEST_ENCODER);
         pipeline.addLast(SMTP_PIPELINING_REQUEST_ENCODER_KEY, SMTP_PIPELINING_REQUEST_ENCODER);
