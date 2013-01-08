@@ -4,3 +4,6 @@
 /.project
 /bin
 /.git
+.idea
+*.swp
+*.iml
