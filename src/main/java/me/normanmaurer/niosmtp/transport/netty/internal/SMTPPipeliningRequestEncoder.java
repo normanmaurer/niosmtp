@@ -37,9 +37,6 @@ public class SMTPPipeliningRequestEncoder extends MessageToByteEncoder<SMTPPipel
 
     private final static byte[] CRLF = {'\r', '\n'};
 
-    public SMTPPipeliningRequestEncoder() {
-        super(SMTPPipeliningRequest.class);
-    }
 
     @Override
     public void encode(ChannelHandlerContext ctx, SMTPPipeliningRequest req, ByteBuf out) throws Exception {

@@ -37,13 +37,9 @@ public class SMTPRequestEncoder extends MessageToByteEncoder<SMTPRequest> {
 
     private static final byte[] CRLF ={'\r', '\n'};
 
-    public SMTPRequestEncoder() {
-        super(SMTPRequest.class);
-    }
-
     @Override
     public void encode(ChannelHandlerContext ctx, SMTPRequest req, ByteBuf buf) throws Exception {
-        String request = StringUtils.toString((SMTPRequest) req);
+        String request = StringUtils.toString(req);
 
         if (logger.isDebugEnabled()) {
             logger.debug("Channel " + ctx.channel().id() + " sent: [" + request + "]");

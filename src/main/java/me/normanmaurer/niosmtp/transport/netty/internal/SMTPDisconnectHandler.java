@@ -53,5 +53,8 @@ public class SMTPDisconnectHandler extends ChannelStateHandlerAdapter {
         super.channelInactive(ctx);
     }
 
-
+    @Override
+    public void inboundBufferUpdated(ChannelHandlerContext ctx) throws Exception {
+        ctx.fireInboundBufferUpdated();
+    }
 }

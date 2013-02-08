@@ -53,7 +53,6 @@ public class SMTPConnectHandler extends ChannelInboundMessageHandlerAdapter<SMTP
     private final static AttributeKey<SMTPClientSession> SESSION_ATTR = new AttributeKey<SMTPClientSession>("session");
     
     public SMTPConnectHandler(SMTPClientFutureImpl<FutureResult<SMTPResponse>> future, Logger logger, SMTPClientConfig config, SMTPDeliveryMode mode, SSLEngine engine, SMTPClientSessionFactory factory){
-        super(SMTPResponse.class);
         this.future = future;
         this.engine = engine;
         this.mode = mode;

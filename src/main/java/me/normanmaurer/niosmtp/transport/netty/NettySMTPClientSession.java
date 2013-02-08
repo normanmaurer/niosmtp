@@ -301,8 +301,6 @@ class NettySMTPClientSession extends AbstractSMTPClientSession {
             super.channelInactive(ctx);
         }
 
-
-
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
             if (log.isDebugEnabled()) {
@@ -310,6 +308,10 @@ class NettySMTPClientSession extends AbstractSMTPClientSession {
             }
         }
 
+        @Override
+        public void inboundBufferUpdated(ChannelHandlerContext ctx) throws Exception {
+            ctx.fireInboundBufferUpdated();
+        }
     }
     
     

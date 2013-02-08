@@ -38,16 +38,13 @@ import org.slf4j.LoggerFactory;
  * @author Norman Maurer
  * 
  */
-public class SMTPResponseDecoder extends MessageToMessageDecoder<ByteBuf, SMTPResponse> {
+public class SMTPResponseDecoder extends MessageToMessageDecoder<ByteBuf> {
     private final static Logger logger = LoggerFactory.getLogger(SMTPResponseDecoder.class);
     private final static AttributeKey<SMTPResponseImpl> key = new AttributeKey<SMTPResponseImpl>("response");
 
-    public SMTPResponseDecoder() {
-        super(ByteBuf.class);
-    }
 
     @Override
-    public SMTPResponse decode(ChannelHandlerContext ctx, ByteBuf buf) throws Exception {
+    public Object decode(ChannelHandlerContext ctx, ByteBuf buf) throws Exception {
         SMTPResponseImpl response = ctx.attr(key).get();
 
         // The separator must be on index 3 as the return code has always 3
@@ -67,7 +64,7 @@ public class SMTPResponseDecoder extends MessageToMessageDecoder<ByteBuf, SMTPRe
                 buf.skipBytes(4);
             }
 
-            if (buf.readable()) {
+            if (buf.isReadable()) {
                 response.addLine(buf.toString(SMTPClientConstants.CHARSET));
                 buf.clear();
             }
@@ -92,7 +89,7 @@ public class SMTPResponseDecoder extends MessageToMessageDecoder<ByteBuf, SMTPRe
                 // skip the code and the next space
                 buf.skipBytes(4);
             }
-            if (buf.readable()) {
+            if (buf.isReadable()) {
                 response.addLine(buf.toString(SMTPClientConstants.CHARSET));
                 buf.clear();
             }

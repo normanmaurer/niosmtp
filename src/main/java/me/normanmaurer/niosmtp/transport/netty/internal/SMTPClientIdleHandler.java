@@ -40,11 +40,14 @@ public class SMTPClientIdleHandler extends ChannelStateHandlerAdapter {
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent e = (IdleStateEvent) evt;
             if (e.state() == IdleState.ALL_IDLE) {
-                throw new SMTPIdleException("Connection was idling for " + (System.currentTimeMillis()- e.durationMillis()) + " ms");
+                throw new SMTPIdleException("Connection IDLE for too long");
             }
         }
         super.userEventTriggered(ctx, evt);
     }
 
-
+    @Override
+    public void inboundBufferUpdated(ChannelHandlerContext ctx) throws Exception {
+        ctx.fireInboundBufferUpdated();
+    }
 }
