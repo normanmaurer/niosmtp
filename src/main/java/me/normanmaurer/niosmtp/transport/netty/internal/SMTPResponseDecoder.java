@@ -17,6 +17,7 @@
 package me.normanmaurer.niosmtp.transport.netty.internal;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.MessageToMessageDecoder;
@@ -38,6 +39,7 @@ import org.slf4j.LoggerFactory;
  * @author Norman Maurer
  * 
  */
+@ChannelHandler.Sharable
 public class SMTPResponseDecoder extends MessageToMessageDecoder<ByteBuf> {
     private final static Logger logger = LoggerFactory.getLogger(SMTPResponseDecoder.class);
     private final static AttributeKey<SMTPResponseImpl> key = new AttributeKey<SMTPResponseImpl>("response");

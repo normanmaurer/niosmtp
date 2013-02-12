@@ -25,8 +25,6 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.logging.InternalLoggerFactory;
-import io.netty.logging.Slf4JLoggerFactory;
 
 import java.net.InetSocketAddress;
 
@@ -50,10 +48,6 @@ import me.normanmaurer.niosmtp.transport.netty.internal.SecureSMTPClientPipeline
  *
  */
 class NettySMTPClientTransport implements SMTPClientTransport{
-    // niosmtp uses slf4j so also configure it for netty
-    static {
-        InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory());
-    }
     private final SSLContext context;
     private final SMTPDeliveryMode mode;
     private final Class<? extends Channel> channel;

@@ -17,6 +17,7 @@
 package me.normanmaurer.niosmtp.transport.netty.internal;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import me.normanmaurer.niosmtp.SMTPRequest;
@@ -32,6 +33,7 @@ import org.slf4j.LoggerFactory;
  * @author Norman Maurer
  *
  */
+@ChannelHandler.Sharable
 public class SMTPRequestEncoder extends MessageToByteEncoder<SMTPRequest> {
     private static final Logger logger = LoggerFactory.getLogger(SMTPRequestEncoder.class);
 
