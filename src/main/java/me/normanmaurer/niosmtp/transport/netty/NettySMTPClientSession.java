@@ -40,6 +40,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ssl.SSLEngine;
 
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 import me.normanmaurer.niosmtp.SMTPByteArrayMessage;
 import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPException;
@@ -150,10 +152,10 @@ class NettySMTPClientSession extends AbstractSMTPClientSession {
 
             SslHandler sslHandler =  new SslHandler(engine, false);
             channel.pipeline().addFirst(NettyConstants.SSL_HANDLER_KEY, sslHandler);
-            sslHandler.handshake().addListener(new ChannelFutureListener() {
+            sslHandler.handshakeFuture().addListener(new GenericFutureListener<Future<Channel>>() {
                 
                 @Override
-                public void operationComplete(ChannelFuture cfuture) throws Exception {
+                public void operationComplete(Future<Channel> cfuture) throws Exception {
                     if (cfuture.isSuccess()) {
                         future.setResult(FutureResult.createVoid());
                     } else {

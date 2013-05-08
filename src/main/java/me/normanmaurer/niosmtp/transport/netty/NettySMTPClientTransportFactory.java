@@ -26,8 +26,8 @@ import io.netty.channel.socket.oio.OioSocketChannel;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
-import io.netty.util.internal.InternalLoggerFactory;
-import io.netty.util.internal.Slf4JLoggerFactory;
+import io.netty.util.internal.logging.InternalLoggerFactory;
+import io.netty.util.internal.logging.Slf4JLoggerFactory;
 import me.normanmaurer.niosmtp.transport.SMTPClientConfig;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 import me.normanmaurer.niosmtp.transport.SMTPDeliveryMode;

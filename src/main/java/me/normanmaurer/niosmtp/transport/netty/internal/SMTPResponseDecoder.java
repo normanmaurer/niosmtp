@@ -17,6 +17,7 @@
 package me.normanmaurer.niosmtp.transport.netty.internal;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.MessageBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
@@ -46,7 +47,7 @@ public class SMTPResponseDecoder extends MessageToMessageDecoder<ByteBuf> {
 
 
     @Override
-    public Object decode(ChannelHandlerContext ctx, ByteBuf buf) throws Exception {
+    public void decode(ChannelHandlerContext ctx, ByteBuf buf, MessageBuf<Object> out) throws Exception {
         SMTPResponseImpl response = ctx.attr(key).get();
 
         // The separator must be on index 3 as the return code has always 3
@@ -74,7 +75,8 @@ public class SMTPResponseDecoder extends MessageToMessageDecoder<ByteBuf> {
             if (logger.isDebugEnabled()) {
                 logger.debug("Channel " + ctx.channel().id() + " received: [" + StringUtils.toString(response) + "]");
             }
-            return response;
+            out.add(response);
+            return;
         }
         if (separator == SMTPResponse.SEPERATOR) {
             // The '-' separator is used for multi-line responses so just
@@ -99,9 +101,6 @@ public class SMTPResponseDecoder extends MessageToMessageDecoder<ByteBuf> {
             // throw exception if the response does not have a valid format
             throw new SMTPException("Unable to parse SMTPResponse: '" + buf.toString(SMTPClientConstants.CHARSET) + "'");
         }
-
-        return null;
-
     }
 
 
