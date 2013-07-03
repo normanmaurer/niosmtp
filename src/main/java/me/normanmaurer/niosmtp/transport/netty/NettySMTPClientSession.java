@@ -20,13 +20,12 @@ package me.normanmaurer.niosmtp.transport.netty;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundMessageHandlerAdapter;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.ChannelStateHandlerAdapter;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedStream;
 
@@ -285,7 +284,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession {
       
     }
     
-    private static final class CloseHandler extends ChannelStateHandlerAdapter {
+    private static final class CloseHandler extends ChannelInboundHandlerAdapter {
         private final SMTPClientFutureImpl<FutureResult<FutureResult.Void>> closeFuture;
         private final Logger log;
 
@@ -308,11 +307,6 @@ class NettySMTPClientSession extends AbstractSMTPClientSession {
             if (log.isDebugEnabled()) {
                 log.debug("Exception during processing", cause);
             }
-        }
-
-        @Override
-        public void inboundBufferUpdated(ChannelHandlerContext ctx) throws Exception {
-            ctx.fireInboundBufferUpdated();
         }
     }
     
@@ -346,7 +340,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession {
     }
     
     
-    protected abstract class FutureHandler<E,R> extends ChannelInboundMessageHandlerAdapter<R> {
+    protected abstract class FutureHandler<E,R> extends SimpleChannelInboundHandler<R> {
 
         protected final SMTPClientFutureImpl<FutureResult<E>> future;
 

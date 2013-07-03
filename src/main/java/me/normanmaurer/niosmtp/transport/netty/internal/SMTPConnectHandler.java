@@ -17,8 +17,8 @@
 package me.normanmaurer.niosmtp.transport.netty.internal;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundMessageHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.AttributeKey;
 
 import javax.net.ssl.SSLEngine;
@@ -42,7 +42,7 @@ import org.slf4j.Logger;
  * @author Norman Maurer
  *
  */
-public class SMTPConnectHandler extends ChannelInboundMessageHandlerAdapter<SMTPResponse> {
+public class SMTPConnectHandler extends SimpleChannelInboundHandler<SMTPResponse> {
 
     private final SSLEngine engine;
     private final SMTPDeliveryMode mode;

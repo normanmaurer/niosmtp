@@ -17,7 +17,7 @@
 package me.normanmaurer.niosmtp.transport.netty.internal;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelStateHandlerAdapter;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
@@ -26,14 +26,14 @@ import me.normanmaurer.niosmtp.SMTPIdleException;
 
 
 /**
- * {@link ChannelStateHandlerAdapter} implementation which will throw an {@link SMTPIdleException} if a connection
+ * {@link ChannelInboundHandlerAdapter} implementation which will throw an {@link SMTPIdleException} if a connection
  * was idle for to long time
  * 
  * @author Norman Maurer
  *
  */
 @Sharable
-public class SMTPClientIdleHandler extends ChannelStateHandlerAdapter {
+public class SMTPClientIdleHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
@@ -44,10 +44,5 @@ public class SMTPClientIdleHandler extends ChannelStateHandlerAdapter {
             }
         }
         super.userEventTriggered(ctx, evt);
-    }
-
-    @Override
-    public void inboundBufferUpdated(ChannelHandlerContext ctx) throws Exception {
-        ctx.fireInboundBufferUpdated();
     }
 }

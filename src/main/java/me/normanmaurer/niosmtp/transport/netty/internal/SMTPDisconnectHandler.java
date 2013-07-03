@@ -17,7 +17,7 @@
 package me.normanmaurer.niosmtp.transport.netty.internal;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelStateHandlerAdapter;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import me.normanmaurer.niosmtp.SMTPDisconnectedException;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
@@ -26,13 +26,13 @@ import me.normanmaurer.niosmtp.transport.FutureResult;
 import me.normanmaurer.niosmtp.transport.SMTPClientSession;
 
 /**
- * {@link ChannelStateHandlerAdapter} implementation which will throw an {@link SMTPDisconnectedException}
+ * {@link ChannelInboundHandlerAdapter} implementation which will throw an {@link SMTPDisconnectedException}
  * if a connection was disconnected unexpectedly.
  *
  * @author Raman Gupta
  *
  */
-public class SMTPDisconnectHandler extends ChannelStateHandlerAdapter {
+public class SMTPDisconnectHandler extends ChannelInboundHandlerAdapter {
 
     private final SMTPClientFutureImpl<FutureResult<SMTPResponse>> future;
 
@@ -51,10 +51,5 @@ public class SMTPDisconnectHandler extends ChannelStateHandlerAdapter {
             throw new SMTPDisconnectedException("Connection closed during transaction.");
         }
         super.channelInactive(ctx);
-    }
-
-    @Override
-    public void inboundBufferUpdated(ChannelHandlerContext ctx) throws Exception {
-        ctx.fireInboundBufferUpdated();
     }
 }

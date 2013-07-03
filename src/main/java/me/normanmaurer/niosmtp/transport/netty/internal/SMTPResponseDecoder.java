@@ -17,9 +17,9 @@
 package me.normanmaurer.niosmtp.transport.netty.internal;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.MessageBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.MessageList;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.util.AttributeKey;
@@ -47,7 +47,7 @@ public class SMTPResponseDecoder extends MessageToMessageDecoder<ByteBuf> {
 
 
     @Override
-    public void decode(ChannelHandlerContext ctx, ByteBuf buf, MessageBuf<Object> out) throws Exception {
+    public void decode(ChannelHandlerContext ctx, ByteBuf buf, MessageList<Object> out) throws Exception {
         SMTPResponseImpl response = ctx.attr(key).get();
 
         // The separator must be on index 3 as the return code has always 3

@@ -30,6 +30,7 @@ import java.net.InetSocketAddress;
 
 import javax.net.ssl.SSLContext;
 
+import io.netty.util.concurrent.GlobalEventExecutor;
 import me.normanmaurer.niosmtp.SMTPClientFuture;
 import me.normanmaurer.niosmtp.SMTPResponse;
 import me.normanmaurer.niosmtp.core.SMTPClientFutureImpl;
@@ -51,7 +52,7 @@ class NettySMTPClientTransport implements SMTPClientTransport{
     private final SSLContext context;
     private final SMTPDeliveryMode mode;
     private final Class<? extends Channel> channel;
-    private final DefaultChannelGroup channelGroup = new DefaultChannelGroup();
+    private final DefaultChannelGroup channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
     private final SMTPClientSessionFactory sessionFactory;
     private EventLoopGroup group;
 
