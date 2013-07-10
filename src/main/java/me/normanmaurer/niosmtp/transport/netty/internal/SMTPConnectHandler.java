@@ -36,7 +36,7 @@ import me.normanmaurer.niosmtp.transport.netty.SMTPClientSessionFactory;
 import org.slf4j.Logger;
 
 /** * 
- * The special thing about this implementation is that I will remove itself from the {@link ChannelPipeline} after the first {@link #messageReceived(ChannelHandlerContext, SMTPResponse)}
+ * The special thing about this implementation is that I will remove itself from the {@link ChannelPipeline} after the first {@link #channelRead0(ChannelHandlerContext, SMTPResponse)}
  * was executed. It also takes care to create the {@link SMTPClientSession} and inject it the wrapped {@link SMTPClientFutureListener}.
  * 
  * @author Norman Maurer
@@ -81,7 +81,7 @@ public class SMTPConnectHandler extends SimpleChannelInboundHandler<SMTPResponse
     }
 
     @Override
-    public void messageReceived(ChannelHandlerContext ctx, SMTPResponse msg) throws Exception {
+    public void channelRead0(ChannelHandlerContext ctx, SMTPResponse msg) throws Exception {
         ctx.channel().pipeline().remove(this);
         future.setSMTPClientSession(getSession(ctx));
         future.setResult(new FutureResultImpl<SMTPResponse>(msg));        

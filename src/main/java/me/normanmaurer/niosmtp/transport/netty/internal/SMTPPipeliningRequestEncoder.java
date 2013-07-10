@@ -45,7 +45,7 @@ public class SMTPPipeliningRequestEncoder extends MessageToByteEncoder<SMTPPipel
         String request = StringUtils.toString(req);
         
         if (logger.isDebugEnabled()) {
-            logger.debug("Channel " + ctx.channel().id() + " sent: [" + request + "]");
+            logger.debug("Channel " + ctx.channel() + " sent: [" + request + "]");
         }
         out.writeBytes(request.getBytes(SMTPClientConstants.CHARSET));
         out.writeBytes(CRLF);

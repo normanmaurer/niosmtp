@@ -99,7 +99,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession {
         FutureHandler<SMTPResponse, SMTPResponse> handler = new FutureHandler<SMTPResponse, SMTPResponse>(future) {
 
             @Override
-            public void messageReceived(ChannelHandlerContext ctx, SMTPResponse message) throws Exception {
+            public void channelRead0(ChannelHandlerContext ctx, SMTPResponse message) throws Exception {
                 ctx.pipeline().remove(this);
                 future.setResult(new FutureResultImpl<SMTPResponse>(message));
             }
@@ -114,7 +114,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession {
         FutureHandler<Collection<SMTPResponse>, SMTPResponse> handler = new FutureHandler<Collection<SMTPResponse>, SMTPResponse>(future) {
             final Collection<SMTPResponse> responses = new ArrayList<SMTPResponse>();
             @Override
-            public void messageReceived(ChannelHandlerContext ctx, SMTPResponse message) throws Exception {
+            public void channelRead0(ChannelHandlerContext ctx, SMTPResponse message) throws Exception {
                 responses.add(message);
                 if (responses.size() == responsesCount) {
                     ctx.pipeline().remove(this);
@@ -140,7 +140,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession {
     
     @Override
     public String getId() {
-        return Integer.toString(channel.id());
+        return Integer.toString(channel.hashCode());
     }
 
     @SuppressWarnings("unchecked")
@@ -174,7 +174,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession {
         SMTPClientFutureImpl<FutureResult<SMTPResponse>> future = new SMTPClientFutureImpl<FutureResult<SMTPResponse>>(false);
         future.setSMTPClientSession(this);
         addFutureHandler(future);
-        channel.write(request);
+        channel.writeAndFlush(request);
         return future;
     }
     
@@ -204,7 +204,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession {
             } else {
                 data = ((SMTPByteArrayMessage)msg).get7BitAsByteArray();
             }
-            channel.write(createDataTerminatingChannelBuffer(data));
+            channel.writeAndFlush(createDataTerminatingChannelBuffer(data));
         } else {
             InputStream msgIn;
             try {
@@ -219,13 +219,13 @@ class NettySMTPClientSession extends AbstractSMTPClientSession {
                 msgIn = IOExceptionInputStream.INSTANCE;
             }
                    
-            channel.write(new ChunkedStream(new DataTerminatingInputStream(msgIn)))
+            channel.writeAndFlush(new ChunkedStream(new DataTerminatingInputStream(msgIn)))
                     .addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         }
     }
     @Override
     public SMTPClientFuture<FutureResult<FutureResult.Void>> close() {
-        channel.write(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+        channel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
         return closeFuture;
     }
 
@@ -330,7 +330,7 @@ class NettySMTPClientSession extends AbstractSMTPClientSession {
 
         final int requests = request.getRequests().size();
         addCollectionFutureHandler(future, requests);
-        channel.write(request).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+        channel.writeAndFlush(request).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         return future;
     }
 

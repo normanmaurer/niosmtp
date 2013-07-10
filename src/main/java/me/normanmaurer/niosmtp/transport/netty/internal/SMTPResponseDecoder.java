@@ -19,7 +19,6 @@ package me.normanmaurer.niosmtp.transport.netty.internal;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.MessageList;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.util.AttributeKey;
@@ -31,6 +30,8 @@ import me.normanmaurer.niosmtp.transport.SMTPClientConstants;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * {@link ByteToMessageDecoder} which decodes {@link SMTPResponse}'s. It also handles
@@ -47,7 +48,7 @@ public class SMTPResponseDecoder extends MessageToMessageDecoder<ByteBuf> {
 
 
     @Override
-    public void decode(ChannelHandlerContext ctx, ByteBuf buf, MessageList<Object> out) throws Exception {
+    public void decode(ChannelHandlerContext ctx, ByteBuf buf, List<Object> out) throws Exception {
         SMTPResponseImpl response = ctx.attr(key).get();
 
         // The separator must be on index 3 as the return code has always 3
@@ -73,7 +74,7 @@ public class SMTPResponseDecoder extends MessageToMessageDecoder<ByteBuf> {
             }
             ctx.attr(key).remove();
             if (logger.isDebugEnabled()) {
-                logger.debug("Channel " + ctx.channel().id() + " received: [" + StringUtils.toString(response) + "]");
+                logger.debug("Channel " + ctx.channel() + " received: [" + StringUtils.toString(response) + "]");
             }
             out.add(response);
             return;

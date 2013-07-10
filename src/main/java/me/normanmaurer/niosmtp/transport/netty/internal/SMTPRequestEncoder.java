@@ -44,7 +44,7 @@ public class SMTPRequestEncoder extends MessageToByteEncoder<SMTPRequest> {
         String request = StringUtils.toString(req);
 
         if (logger.isDebugEnabled()) {
-            logger.debug("Channel " + ctx.channel().id() + " sent: [" + request + "]");
+            logger.debug("Channel " + ctx.channel() + " sent: [" + request + "]");
         }
 
         buf.writeBytes(request.getBytes(SMTPClientConstants.CHARSET));
