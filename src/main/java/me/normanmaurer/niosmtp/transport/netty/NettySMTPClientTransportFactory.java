@@ -74,7 +74,11 @@ public class NettySMTPClientTransportFactory implements SMTPClientTransportFacto
     public static SMTPClientTransportFactory createNio() {
         return new NettySMTPClientTransportFactory(NioSocketChannel.class, new NioEventLoopGroup(), FACTORY);
     }
-    
+
+    public static SMTPClientTransportFactory createNio(EventLoopGroup group) {
+        return new NettySMTPClientTransportFactory(NioSocketChannel.class, group, FACTORY);
+    }
+
     /**
      * Create a new OIO based {@link SMTPClientTransportFactory}
      * 
