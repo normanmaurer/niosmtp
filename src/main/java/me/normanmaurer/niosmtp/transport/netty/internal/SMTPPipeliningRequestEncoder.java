@@ -37,8 +37,12 @@ import org.slf4j.LoggerFactory;
 public class SMTPPipeliningRequestEncoder extends MessageToByteEncoder<SMTPPipeliningRequest> {
     private final static Logger logger = LoggerFactory.getLogger(SMTPRequestEncoder.class);
 
-    private final static byte[] CRLF = {'\r', '\n'};
+    private final static byte CR = '\r';
+    private final static byte LF = '\n';
 
+    public SMTPPipeliningRequestEncoder() {
+        super(false);
+    }
 
     @Override
     public void encode(ChannelHandlerContext ctx, SMTPPipeliningRequest req, ByteBuf out) throws Exception {
@@ -47,7 +51,24 @@ public class SMTPPipeliningRequestEncoder extends MessageToByteEncoder<SMTPPipel
         if (logger.isDebugEnabled()) {
             logger.debug("Channel " + ctx.channel() + " sent: [" + request + "]");
         }
-        out.writeBytes(request.getBytes(SMTPClientConstants.CHARSET));
-        out.writeBytes(CRLF);
+
+        out.writeIndex(out.writerIndex() + encodeInternal(request, out));
+    }
+    
+    private static int encodeInternal(String request, ByteBuf buf) {
+        buf.ensureWritable(request.length() + 2);
+        
+        int offset = buf.arrayOffset() + buf.writerIndex();
+        byte[] array = buf.array();
+        
+        for (int i = 0; i < request.length(); i++) {
+            char nextChar = request.charAt(i);
+            array[offset + i] = (byte) nextChar;
+        }
+        
+        array[offset + request.length()] = CR;
+        array[offset + request.length() + 1] = LF;
+        
+        return request.length() + 2;
     }
 }
