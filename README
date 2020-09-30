@@ -1,1 +1,1 @@
-A NIO implementation of a SMTP/LMTP Transport and Agent
+A NIO(Non blocking I/O) implementation of a SMTP/LMTP Transport and Agent
